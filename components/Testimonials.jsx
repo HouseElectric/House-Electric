@@ -87,9 +87,11 @@ export default function Testimonials() {
     const nextIndex = (index + total) % total;
     setCurrentIndex(nextIndex);
     if (scrollRef.current) {
-      const card = scrollRef.current.children[nextIndex];
+      const container = scrollRef.current;
+      const card = container.children[nextIndex];
       if (card) {
-        card.scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" });
+        const targetLeft = card.offsetLeft - container.offsetLeft;
+        container.scrollTo({ left: targetLeft, behavior: "smooth" });
       }
     }
   };
@@ -106,9 +108,11 @@ export default function Testimonials() {
       setCurrentIndex((prev) => {
         const next = (prev + step) % total;
         if (scrollRef.current) {
-          const card = scrollRef.current.children[next];
+          const container = scrollRef.current;
+          const card = container.children[next];
           if (card) {
-            card.scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" });
+            const targetLeft = card.offsetLeft - container.offsetLeft;
+            container.scrollTo({ left: targetLeft, behavior: "smooth" });
           }
         }
         return next;
