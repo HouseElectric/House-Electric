@@ -38,20 +38,20 @@ export default function CTA() {
               >
                 Contact Us
               </a>
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-3 min-w-0">
                 <a
                   href={`tel:${phone.replace(/\s+/g, "")}`}
-                  className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-[13.5px] font-bold text-white transition-all hover:border-yellow/50 hover:bg-white/10"
+                  className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/5 px-3.5 py-2.5 text-xs sm:text-[13.5px] font-bold text-white transition-all hover:border-yellow/50 hover:bg-white/10"
                 >
-                  <PhoneIcon className="h-4 w-4 text-yellow" />
-                  {phone}
+                  <PhoneIcon className="h-4 w-4 flex-none shrink-0 text-yellow" />
+                  <span>{phone}</span>
                 </a>
                 <a
                   href={`mailto:${email}`}
-                  className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-[13.5px] font-bold text-white transition-all hover:border-yellow/50 hover:bg-white/10"
+                  className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/5 px-3.5 py-2.5 text-xs sm:text-[13.5px] font-bold text-white transition-all hover:border-yellow/50 hover:bg-white/10 break-all"
                 >
-                  <MailIcon className="h-4 w-4 text-yellow" />
-                  {email}
+                  <MailIcon className="h-4 w-4 flex-none shrink-0 text-yellow" />
+                  <span className="break-all">{email}</span>
                 </a>
               </div>
             </div>

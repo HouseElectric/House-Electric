@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
 import Reveal from "./Reveal";
 import { supabase } from "@/lib/supabase";
 
@@ -44,12 +44,19 @@ const FALLBACK = [
   },
 ];
 
-const PAGE = 3;
-
 export default function Testimonials() {
   const [all, setAll] = useState(FALLBACK);
-  const [page, setPage] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
+  const scrollRef = useRef(null);
+
+  useEffect(() => {
+    const check = () => setIsDesktop(window.innerWidth >= 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   useEffect(() => {
     if (!supabase) return;
@@ -72,23 +79,61 @@ export default function Testimonials() {
     })();
   }, []);
 
-  const pages = Math.ceil(all.length / PAGE);
-  const items = all.slice(page * PAGE, page * PAGE + PAGE);
+  const total = all.length;
+  const step = isDesktop ? 3 : 1;
+  const pageCount = isDesktop ? Math.ceil(total / 3) : total;
 
-  const go = (dir) => setPage((p) => (p + dir + pages) % pages);
+  const scrollToCard = (index) => {
+    const nextIndex = (index + total) % total;
+    setCurrentIndex(nextIndex);
+    if (scrollRef.current) {
+      const card = scrollRef.current.children[nextIndex];
+      if (card) {
+        card.scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" });
+      }
+    }
+  };
 
-  // Auto-swipe effect every 4.5 seconds
+  const go = (dir) => {
+    const amount = dir * step;
+    scrollToCard(currentIndex + amount);
+  };
+
+  // Auto-swipe timer
   useEffect(() => {
-    if (isPaused) return;
+    if (isPaused || total <= 1) return;
     const timer = setInterval(() => {
-      setPage((p) => (p + 1) % pages);
+      setCurrentIndex((prev) => {
+        const next = (prev + step) % total;
+        if (scrollRef.current) {
+          const card = scrollRef.current.children[next];
+          if (card) {
+            card.scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" });
+          }
+        }
+        return next;
+      });
     }, 4500);
     return () => clearInterval(timer);
-  }, [isPaused, pages]);
+  }, [isPaused, total, step]);
+
+  // Sync active index when user manually scrolls
+  const handleScroll = () => {
+    if (!scrollRef.current) return;
+    const container = scrollRef.current;
+    const scrollLeft = container.scrollLeft;
+    const cardWidth = container.children[0]?.offsetWidth || 300;
+    const newIndex = Math.round(scrollLeft / (cardWidth + 16));
+    if (newIndex >= 0 && newIndex < total && newIndex !== currentIndex) {
+      setCurrentIndex(newIndex);
+    }
+  };
+
+  const activeDotIndex = isDesktop ? Math.floor(currentIndex / 3) : currentIndex;
 
   return (
     <section className="pb-16 md:pb-[74px]" id="testimonials">
-      <div className="mx-auto max-w-wrap px-6">
+      <div className="mx-auto max-w-wrap px-4 sm:px-6">
         <div className="mb-8 flex items-end justify-between gap-5">
           <Reveal>
             <p className="eyebrow">Testimonials</p>
@@ -102,7 +147,7 @@ export default function Testimonials() {
           <div className="flex gap-2.5">
             <button
               onClick={() => go(-1)}
-              aria-label="Previous testimonials"
+              aria-label="Previous testimonial"
               className="grid h-10 w-10 place-items-center rounded-full border border-line bg-white shadow-sm transition-all hover:bg-yellow hover:border-yellow active:scale-95"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="#141414" strokeWidth="2.4" className="h-4 w-4">
@@ -111,7 +156,7 @@ export default function Testimonials() {
             </button>
             <button
               onClick={() => go(1)}
-              aria-label="Next testimonials"
+              aria-label="Next testimonial"
               className="grid h-10 w-10 place-items-center rounded-full border border-line bg-white shadow-sm transition-all hover:bg-yellow hover:border-yellow active:scale-95"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="#141414" strokeWidth="2.4" className="h-4 w-4">
@@ -124,67 +169,69 @@ export default function Testimonials() {
         <div
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
-          className="relative min-h-[260px]"
+          onTouchStart={() => setIsPaused(true)}
+          onTouchEnd={() => setIsPaused(false)}
+          className="relative"
         >
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-            <AnimatePresence mode="popLayout">
-              {items.map((q, i) => (
-                <motion.article
-                  key={q.name + page}
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -15 }}
-                  transition={{ duration: 0.45, delay: i * 0.08 }}
-                  whileHover={{ y: -6 }}
-                  className="group flex flex-col justify-between rounded-2xl border border-line/80 border-t-2 border-t-yellow/40 bg-white p-6 md:p-7 shadow-sm transition-all duration-300 hover:border-t-yellow hover:border-yellow/50 hover:shadow-xl"
-                >
-                  <div>
-                    <div className="mb-4 flex items-center justify-between">
-                      <span className="grid h-9 w-9 place-items-center rounded-xl bg-yellow/15 text-[22px] font-serif font-black text-ink group-hover:bg-yellow transition-colors">
-                        &ldquo;
-                      </span>
-                      <span className="rounded-full bg-yellow/10 px-2.5 py-1 text-[12px] font-bold tracking-wider text-yellow-dark">
-                        ★★★★★
-                      </span>
-                    </div>
-                    <p className="mb-6 min-h-[72px] text-[14.5px] leading-relaxed text-ink-soft">
-                      {q.text}
-                    </p>
+          {/* Horizontal Row Carousel for Mobile & Desktop */}
+          <div
+            ref={scrollRef}
+            onScroll={handleScroll}
+            className="flex gap-4 md:gap-6 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-4 px-1 scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+          >
+            {all.map((q, i) => (
+              <motion.article
+                key={q.name + i}
+                whileHover={{ y: -5 }}
+                className={`group flex flex-col justify-between rounded-2xl border border-line/80 border-t-2 border-t-yellow/40 bg-white p-6 md:p-7 shadow-sm transition-all duration-300 hover:border-t-yellow hover:border-yellow/50 hover:shadow-xl shrink-0 snap-start w-[85vw] max-w-[340px] md:w-[calc((100%-3rem)/3)] md:max-w-none ${i >= currentIndex && i < currentIndex + (isDesktop ? 3 : 1) ? "ring-2 ring-yellow/40" : ""
+                  }`}
+              >
+                <div>
+                  <div className="mb-4 flex items-center justify-between">
+                    <span className="grid h-9 w-9 place-items-center rounded-xl bg-yellow/15 text-[22px] font-serif font-black text-ink group-hover:bg-yellow transition-colors">
+                      &ldquo;
+                    </span>
+                    <span className="rounded-full bg-yellow/10 px-2.5 py-1 text-[12px] font-bold tracking-wider text-yellow-dark">
+                      ★★★★★
+                    </span>
                   </div>
+                  <p className="mb-6 min-h-[72px] text-[14.5px] leading-relaxed text-ink-soft">
+                    {q.text}
+                  </p>
+                </div>
 
-                  <div className="flex items-center gap-3.5 border-t border-line/60 pt-4">
-                    <img
-                      src={q.img}
-                      alt={q.name}
-                      width={42}
-                      height={42}
-                      className="h-[42px] w-[42px] rounded-full object-cover ring-2 ring-yellow/40 shadow-sm"
-                    />
-                    <div>
-                      <b className="block text-[14.5px] font-extrabold text-ink">
-                        {q.name}
-                      </b>
-                      <span className="text-[12.5px] font-medium text-ink-soft">
-                        {q.role}
-                      </span>
-                    </div>
+                <div className="flex items-center gap-3.5 border-t border-line/60 pt-4">
+                  <img
+                    src={q.img}
+                    alt={q.name}
+                    width={42}
+                    height={42}
+                    className="h-[42px] w-[42px] rounded-full object-cover ring-2 ring-yellow/40 shadow-sm"
+                  />
+                  <div>
+                    <b className="block text-[14.5px] font-extrabold text-ink">
+                      {q.name}
+                    </b>
+                    <span className="text-[12.5px] font-medium text-ink-soft">
+                      {q.role}
+                    </span>
                   </div>
-                </motion.article>
-              ))}
-            </AnimatePresence>
+                </div>
+              </motion.article>
+            ))}
           </div>
 
-          <div className="mt-8 flex items-center justify-center gap-2">
-            {Array.from({ length: pages }).map((_, i) => (
+          {/* Indicators */}
+          <div className="mt-6 flex items-center justify-center gap-2">
+            {Array.from({ length: pageCount }).map((_, i) => (
               <button
                 key={i}
-                onClick={() => setPage(i)}
-                aria-label={`Go to testimonial page ${i + 1}`}
-                className={`h-2.5 rounded-full transition-all duration-300 ${
-                  i === page
+                onClick={() => scrollToCard(isDesktop ? i * 3 : i)}
+                aria-label={`Go to testimonial slide ${i + 1}`}
+                className={`h-2.5 rounded-full transition-all duration-300 ${i === activeDotIndex
                     ? "w-8 bg-yellow shadow-sm"
                     : "w-2.5 bg-line hover:bg-yellow/50"
-                }`}
+                  }`}
               />
             ))}
           </div>
