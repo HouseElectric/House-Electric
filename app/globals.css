@@ -182,16 +182,24 @@ button.bg-yellow:hover::before {
 }
 
 @keyframes blob-float {
+
   0%,
   100% {
     transform: translate(0, 0) scale(1);
   }
+
   50% {
     transform: translate(3%, -4%) scale(1.08);
   }
 }
 
 /* ---------- Blog post rich-text content (from the Quill editor) ---------- */
+.prose-content,
+.prose-content * {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
 .prose-content h1,
 .prose-content h2,
 .prose-content h3 {
@@ -210,6 +218,8 @@ button.bg-yellow:hover::before {
 }
 .prose-content p {
   margin: 0 0 1.1em;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 .prose-content ul,
 .prose-content ol {
@@ -224,12 +234,14 @@ button.bg-yellow:hover::before {
 }
 .prose-content li {
   margin-bottom: 0.4em;
+  overflow-wrap: anywhere;
 }
 .prose-content a {
   color: #141414;
   font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 2px;
+  overflow-wrap: anywhere;
 }
 .prose-content blockquote {
   margin: 1.2em 0;
@@ -237,9 +249,34 @@ button.bg-yellow:hover::before {
   border-left: 3px solid #f2b01e;
   color: #45454b;
   font-style: italic;
+  overflow-wrap: anywhere;
 }
 .prose-content strong {
   color: #141414;
+}
+.prose-content img {
+  max-width: 100% !important;
+  height: auto !important;
+  border-radius: 0.75rem;
+  margin: 1.5em auto;
+  display: block;
+}
+.prose-content iframe,
+.prose-content embed,
+.prose-content video {
+  max-width: 100% !important;
+  border-radius: 0.75rem;
+}
+.prose-content table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+}
+.prose-content pre {
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
 }
 
 @media (prefers-reduced-motion: reduce) {

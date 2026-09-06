@@ -126,10 +126,10 @@ export default async function BlogPostPage({ params }) {
       </section>
 
       {/* Content card */}
-      <article className="relative z-[2] mx-auto -mt-8 max-w-5xl px-3 sm:px-6 pb-4 md:-mt-12">
-        <div className="rounded-[20px] bg-white p-4 sm:p-7 md:p-10 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.25)]">
+      <article className="relative z-[2] mx-auto -mt-8 max-w-4xl px-3 sm:px-6 pb-8 md:-mt-12 w-full min-w-0">
+        <div className="w-full max-w-full overflow-hidden rounded-2xl md:rounded-3xl bg-white p-5 sm:p-8 md:p-12 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.18)] border border-line/80">
           {post.cover_image && (
-            <div className="mb-8 mx-auto max-w-xl overflow-hidden rounded-2xl bg-cream aspect-square shadow-sm">
+            <div className="mb-8 mx-auto w-full overflow-hidden rounded-xl md:rounded-2xl bg-cream aspect-[16/9] max-h-[420px] shadow-sm">
               <img
                 src={post.cover_image}
                 alt={post.cover_image_alt || post.title}
@@ -138,32 +138,24 @@ export default async function BlogPostPage({ params }) {
             </div>
           )}
 
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-            {post.category && (
-              <span className="rounded-full bg-yellow/15 px-3.5 py-1.5 text-[11.5px] font-bold uppercase tracking-wide text-yellow-dark">
-                {post.category}
-              </span>
-            )}
-            <span className="text-[13px] font-semibold text-body">By {post.author || "House Electric Team"}</span>
-          </div>
-
-          <div className="mb-7 border-b border-line pb-6">
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-line/60 pb-4">
+            <span className="text-[13.5px] font-bold text-ink">By {post.author || "House Electric Team"}</span>
             <ShareButtons url={postUrl} title={post.title} />
           </div>
 
           {post.excerpt && (
-            <p className="mb-8 border-l-[3px] border-yellow pl-5 text-[17px] font-medium leading-relaxed text-ink-soft">
+            <p className="mb-8 border-l-4 border-yellow pl-5 py-1 text-[16.5px] sm:text-[17.5px] font-semibold leading-relaxed text-ink/90 bg-amber-50/40 rounded-r-xl break-words">
               {post.excerpt}
             </p>
           )}
 
           <div
-            className="prose-content max-w-none text-[16px] leading-relaxed text-ink-soft"
+            className="prose-content w-full max-w-full text-[15.5px] sm:text-[16.5px] leading-relaxed text-charcoal/90 break-words [overflow-wrap:anywhere] overflow-hidden"
             dangerouslySetInnerHTML={{ __html: post.content }}
           />
 
-          <div className="mt-10 border-t border-line pt-6">
-            <Link href="/blog" className="inline-flex items-center gap-2 text-[14px] font-bold text-ink hover:gap-3">
+          <div className="mt-12 border-t border-line/80 pt-6">
+            <Link href="/blog" className="inline-flex items-center gap-2 text-[14px] font-extrabold text-ink hover:text-yellow-dark transition-colors">
               <ArrowLeftIcon className="h-4 w-4" />
               Back to Blog
             </Link>
