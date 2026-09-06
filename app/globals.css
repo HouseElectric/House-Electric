@@ -1,0 +1,251 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+* {
+  scrollbar-color: #df9e10 #faf7f1;
+  scrollbar-width: thin;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* ---------- Themed scrollbar (WebKit) ---------- */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #faf7f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #df9e10;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #b97f0c;
+}
+
+::-webkit-scrollbar-corner {
+  background: #faf7f1;
+}
+
+/* Dark-background scrollable panels (e.g. the admin sidebar) opt in via this class */
+.scrollbar-dark {
+  scrollbar-color: #f2b01e rgba(255, 255, 255, 0.08);
+}
+
+.scrollbar-dark::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.scrollbar-dark::-webkit-scrollbar-thumb {
+  background: #f2b01e;
+}
+
+.scrollbar-dark::-webkit-scrollbar-thumb:hover {
+  background: #df9e10;
+}
+
+body {
+  color: #45454b;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: #f2b01e;
+  color: #141414;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  color: #141414;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+}
+
+h1 {
+  font-size: clamp(2.1rem, 4.8vw, 3.6rem);
+}
+
+h2 {
+  font-size: clamp(1.7rem, 3.4vw, 2.6rem);
+}
+
+/* ---------- Eyebrow pill badge ---------- */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #af7e0f;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, rgba(242, 176, 30, 0.16), rgba(242, 176, 30, 0.05));
+  border: 1px solid rgba(242, 176, 30, 0.35);
+  border-radius: 999px;
+  padding: 6px 14px 6px 10px;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+@media (max-width: 640px) {
+  .eyebrow {
+    font-size: 10.5px;
+    padding: 5px 12px 5px 8px;
+    letter-spacing: 0.05em;
+  }
+}
+
+.eyebrow::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #f2b01e;
+  box-shadow: 0 0 0 3px rgba(242, 176, 30, 0.25);
+  flex: none;
+}
+
+/* ---------- Glowing primary buttons (targets any element using bg-yellow) ---------- */
+a.bg-yellow,
+button.bg-yellow {
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 28px -10px rgba(242, 176, 30, 0.55);
+  transition: box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+a.bg-yellow:hover,
+button.bg-yellow:hover {
+  box-shadow: 0 16px 36px -8px rgba(223, 158, 16, 0.65);
+}
+
+a.bg-yellow:active,
+button.bg-yellow:active {
+  transform: scale(0.97);
+}
+
+/* Diagonal light sweep across primary buttons on hover */
+a.bg-yellow::before,
+button.bg-yellow::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(115deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  transform: skewX(-20deg);
+  transition: left 0.65s ease;
+  pointer-events: none;
+}
+
+a.bg-yellow:hover::before,
+button.bg-yellow:hover::before {
+  left: 130%;
+}
+
+/* ---------- Soft lift on card containers (opt-in via .card-hover) ---------- */
+.card-hover {
+  transition: box-shadow 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
+}
+
+.card-hover:hover {
+  box-shadow: 0 24px 50px -24px rgba(20, 20, 20, 0.28);
+  transform: translateY(-3px);
+  border-color: rgba(242, 176, 30, 0.4);
+}
+
+/* ---------- Gradient text for emphasis ---------- */
+.text-shine {
+  color: #f2b01e;
+}
+
+/* ---------- Decorative background glow blobs ---------- */
+.glow-blob {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(70px);
+  pointer-events: none;
+  z-index: 0;
+  animation: blob-float 9s ease-in-out infinite;
+}
+
+@keyframes blob-float {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(3%, -4%) scale(1.08);
+  }
+}
+
+/* ---------- Blog post rich-text content (from the Quill editor) ---------- */
+.prose-content h1,
+.prose-content h2,
+.prose-content h3 {
+  margin: 1.5em 0 0.5em;
+  font-weight: 800;
+  color: #141414;
+}
+.prose-content h1 {
+  font-size: 1.6em;
+}
+.prose-content h2 {
+  font-size: 1.35em;
+}
+.prose-content h3 {
+  font-size: 1.15em;
+}
+.prose-content p {
+  margin: 0 0 1.1em;
+}
+.prose-content ul,
+.prose-content ol {
+  margin: 0 0 1.1em;
+  padding-left: 1.4em;
+}
+.prose-content ul {
+  list-style: disc;
+}
+.prose-content ol {
+  list-style: decimal;
+}
+.prose-content li {
+  margin-bottom: 0.4em;
+}
+.prose-content a {
+  color: #141414;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.prose-content blockquote {
+  margin: 1.2em 0;
+  padding: 0.2em 0 0.2em 1.1em;
+  border-left: 3px solid #f2b01e;
+  color: #45454b;
+  font-style: italic;
+}
+.prose-content strong {
+  color: #141414;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+    scroll-behavior: auto;
+  }
+}
