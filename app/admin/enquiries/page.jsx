@@ -1,22 +1,52 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import AdminGuard from "@/components/admin/AdminGuard";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/lib/supabase";
-import { EyeIcon, InboxIcon, MailIcon, SearchIcon, TrashIcon, WhatsAppIcon } from "@/components/icons";
+import { ArrowLeftIcon, DownloadIcon, EyeIcon, InboxIcon, MailIcon, SearchIcon, TrashIcon, WhatsAppIcon, XIcon } from "@/components/icons";
 
 const STATUS_META = {
-  new: { label: "New", cls: "bg-blue-50 text-blue-700" },
-  in_progress: { label: "In Progress", cls: "bg-amber-50 text-amber-700" },
-  closed: { label: "Closed", cls: "bg-emerald-50 text-emerald-700" },
+  new: { label: "New", cls: "bg-blue-50 text-blue-700", dot: "bg-blue-500" },
+  in_progress: { label: "In Progress", cls: "bg-amber-50 text-amber-700", dot: "bg-amber-500" },
+  closed: { label: "Closed", cls: "bg-emerald-50 text-emerald-700", dot: "bg-emerald-500" },
+};
+
+const TYPE_META = {
+  booking: { label: "Booking", cls: "bg-blue-50 text-blue-700", gradient: "from-blue-600 to-indigo-700" },
+  amc: { label: "AMC", cls: "bg-yellow/15 text-yellow-dark", gradient: "from-amber-500 to-yellow-600" },
+  corporate: { label: "Corporate", cls: "bg-violet-50 text-violet-700", gradient: "from-violet-600 to-purple-700" },
 };
 
 const TYPE_LABELS = { booking: "Booking", amc: "AMC", corporate: "Corporate" };
 
 function Badge({ status }) {
   const m = STATUS_META[status] ?? STATUS_META.new;
-  return <span className={`whitespace-nowrap rounded-full px-2.5 py-1 text-[11.5px] font-bold ${m.cls}`}>{m.label}</span>;
+  return (
+    <span className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-[11.5px] font-bold ${m.cls}`}>
+      <span className={`h-1.5 w-1.5 rounded-full ${m.dot}`} />
+      {m.label}
+    </span>
+  );
+}
+
+function TypeBadge({ type }) {
+  const m = TYPE_META[type] ?? { label: type, cls: "bg-cream text-body" };
+  return <span className={`whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-bold ${m.cls}`}>{m.label}</span>;
+}
+
+const AVATAR_GRADIENTS = [
+  "from-blue-500 to-indigo-600",
+  "from-amber-500 to-orange-600",
+  "from-violet-500 to-purple-600",
+  "from-rose-500 to-pink-600",
+  "from-emerald-500 to-teal-600",
+];
+
+function avatarGradient(seed) {
+  const idx = (seed?.charCodeAt(0) || 0) % AVATAR_GRADIENTS.length;
+  return AVATAR_GRADIENTS[idx];
 }
 
 const FIELD_LABELS = {
@@ -72,6 +102,7 @@ export default function AdminEnquiriesPage() {
     await supabase.from("enquiries").update({ status }).eq("id", id);
     setEnquiries((prev) => prev.map((e) => (e.id === id ? { ...e, status } : e)));
     if (selected?.id === id) setSelected((prev) => ({ ...prev, status }));
+    toast.success(`Marked as ${STATUS_META[status]?.label ?? status}`);
   };
 
   const deleteEnquiry = async (id) => {
@@ -80,6 +111,7 @@ export default function AdminEnquiriesPage() {
     setEnquiries((prev) => prev.filter((e) => e.id !== id));
     if (selected?.id === id) setSelected(null);
     setDeleting(null);
+    toast.success("Enquiry deleted");
   };
 
   const openEnquiry = (enquiry) => {
@@ -128,6 +160,111 @@ export default function AdminEnquiriesPage() {
         .map(([key, label]) => ({ label, value: selected[key] }))
     : [];
 
+  // ==================== FULL-PAGE DETAIL VIEW ====================
+  if (selected) {
+    const name = selected.name || selected.contact_person || "—";
+    const gradient = TYPE_META[selected.type]?.gradient || "from-ink to-[#2a2a2a]";
+    return (
+      <AdminGuard>
+        <AdminLayout title="Enquiries">
+          <button
+            onClick={() => setSelected(null)}
+            className="mb-4 flex items-center gap-1.5 text-[13px] font-semibold text-body hover:text-ink"
+          >
+            <ArrowLeftIcon className="h-3.5 w-3.5" />
+            Back to Enquiries
+          </button>
+
+          <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-sm">
+            <div className={`relative overflow-hidden bg-gradient-to-br p-6 text-white sm:p-8 ${gradient}`}>
+              <span className="glow-blob -right-10 -top-16 h-48 w-48 bg-white/15" />
+              <span className="glow-blob -bottom-16 left-1/3 h-40 w-40 bg-white/10" />
+              <button
+                onClick={() => setSelected(null)}
+                aria-label="Close"
+                className="absolute right-5 top-5 grid h-8 w-8 place-items-center rounded-full bg-white/15 text-white transition-colors hover:bg-white/25"
+              >
+                <XIcon className="h-4 w-4" />
+              </button>
+              <div className="relative flex flex-wrap items-center gap-4">
+                <span className="grid h-16 w-16 flex-none place-items-center rounded-full bg-white/15 text-[22px] font-extrabold ring-2 ring-white/30">
+                  {name.charAt(0).toUpperCase()}
+                </span>
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    <p className="truncate text-[20px] font-extrabold">{name}</p>
+                    <span className="rounded-full bg-white/15 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide">
+                      {TYPE_META[selected.type]?.label ?? selected.type}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-[13px] text-white/70">Submitted {fmt(selected.created_at)}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-6 p-6 sm:p-8 lg:grid-cols-[1fr_300px]">
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                {detailFields.map((f) => (
+                  <div key={f.label} className="border-l-2 border-line pl-3">
+                    <div className="text-[11px] font-bold uppercase tracking-wide text-body">{f.label}</div>
+                    <div className="whitespace-pre-wrap text-[14px] font-medium text-ink">{f.value}</div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="space-y-5 lg:border-l lg:border-line lg:pl-6">
+                <div>
+                  <label className="mb-1.5 block text-[11.5px] font-bold uppercase tracking-wide text-body">Status</label>
+                  <select
+                    value={selected.status || "new"}
+                    onChange={(e) => updateStatus(selected.id, e.target.value)}
+                    className="w-full rounded-md border border-line px-3 py-2.5 text-[13.5px] text-ink outline-none focus:border-ink"
+                  >
+                    <option value="new">New</option>
+                    <option value="in_progress">In Progress</option>
+                    <option value="closed">Closed</option>
+                  </select>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  {selected.email && (
+                    <a
+                      href={`mailto:${selected.email}`}
+                      className="flex items-center justify-center gap-1.5 rounded-md bg-ink py-2.5 text-center text-[13px] font-bold text-white transition-all hover:-translate-y-0.5 hover:shadow-md"
+                    >
+                      <MailIcon className="h-4 w-4" />
+                      Email
+                    </a>
+                  )}
+                  {selected.mobile && (
+                    <a
+                      href={`https://wa.me/91${selected.mobile.replace(/[^0-9]/g, "").slice(-10)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-1.5 rounded-md bg-[#25D366] py-2.5 text-center text-[13px] font-bold text-white transition-all hover:-translate-y-0.5 hover:shadow-md"
+                    >
+                      <WhatsAppIcon className="h-4 w-4" />
+                      WhatsApp
+                    </a>
+                  )}
+                  <button
+                    onClick={() => deleteEnquiry(selected.id)}
+                    disabled={deleting === selected.id}
+                    className="flex items-center justify-center gap-1.5 rounded-md border border-line py-2.5 text-[13px] font-semibold text-red-500 transition-colors hover:border-red-200 hover:bg-red-50"
+                  >
+                    <TrashIcon className="h-3.5 w-3.5" />
+                    {deleting === selected.id ? "Deleting…" : "Delete Enquiry"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </AdminLayout>
+      </AdminGuard>
+    );
+  }
+
+  // ==================== LIST VIEW ====================
   return (
     <AdminGuard>
       <AdminLayout title="Enquiries">
@@ -163,18 +300,20 @@ export default function AdminEnquiriesPage() {
           </select>
           <button
             onClick={exportCSV}
-            className="whitespace-nowrap rounded-md bg-ink px-4 py-2.5 text-[13.5px] font-bold text-white transition-opacity hover:opacity-90"
+            className="flex items-center gap-2 whitespace-nowrap rounded-md bg-ink px-4 py-2.5 text-[13.5px] font-bold text-white transition-all hover:-translate-y-0.5 hover:shadow-md"
           >
+            <DownloadIcon className="h-4 w-4" />
             Export CSV
           </button>
           {newCount > 0 && (
-            <div className="whitespace-nowrap rounded-md bg-blue-50 px-3.5 py-2 text-[13px] font-bold text-blue-700">
+            <div className="flex items-center gap-1.5 whitespace-nowrap rounded-full bg-blue-50 px-3.5 py-2 text-[13px] font-bold text-blue-700">
+              <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
               {newCount} unread
             </div>
           )}
         </div>
 
-        <div className={`grid grid-cols-1 items-start gap-5 ${selected ? "lg:grid-cols-[1fr_380px]" : ""}`}>
+        <div>
           <div className="overflow-hidden rounded-2xl border border-line bg-white">
             <div className="border-b border-line bg-cream/40 px-5 py-3">
               <span className="text-[12px] font-bold uppercase tracking-wide text-body">
@@ -201,20 +340,31 @@ export default function AdminEnquiriesPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filtered.map((e) => (
+                    {filtered.map((e) => {
+                      const name = e.name || e.contact_person || "—";
+                      return (
                       <tr
                         key={e.id}
                         onClick={() => openEnquiry(e)}
-                        className={`cursor-pointer border-t border-line transition-colors hover:bg-cream/40 ${
+                        className={`group relative cursor-pointer border-t border-line transition-colors hover:bg-cream/40 ${
                           selected?.id === e.id ? "bg-cream/60" : !e.read ? "bg-yellow/5" : "bg-white"
                         }`}
                       >
-                        <td className="whitespace-nowrap px-4 py-3 text-[12px] font-bold text-body">
-                          {TYPE_LABELS[e.type] ?? e.type}
+                        <td className="whitespace-nowrap px-4 py-3">
+                          <TypeBadge type={e.type} />
                         </td>
                         <td className={`whitespace-nowrap px-4 py-3 text-ink ${e.read ? "font-medium" : "font-bold"}`}>
-                          {!e.read && <span className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-yellow" />}
-                          {e.name || e.contact_person || "—"}
+                          <div className="flex items-center gap-2.5">
+                            <span className="relative flex-none">
+                              <span className={`grid h-7 w-7 place-items-center rounded-full bg-gradient-to-br text-[11px] font-extrabold text-white shadow-sm transition-transform duration-200 group-hover:scale-105 ${avatarGradient(name)}`}>
+                                {name.charAt(0).toUpperCase()}
+                              </span>
+                              {!e.read && (
+                                <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-yellow" />
+                              )}
+                            </span>
+                            {name}
+                          </div>
                         </td>
                         <td className="whitespace-nowrap px-4 py-3 text-body">{e.mobile || e.email || "—"}</td>
                         <td className="max-w-[160px] truncate px-4 py-3 text-body">{e.service || e.requirement || "—"}</td>
@@ -242,69 +392,13 @@ export default function AdminEnquiriesPage() {
                           </div>
                         </td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
             )}
           </div>
-
-          {selected && (
-            <div className="sticky top-[76px] overflow-hidden rounded-2xl border border-line bg-white">
-              <div className="flex items-center justify-between border-b border-line px-5 py-4">
-                <h3 className="text-[14.5px] font-extrabold text-ink">Enquiry Details</h3>
-                <button onClick={() => setSelected(null)} className="text-[13px] font-semibold text-body hover:text-ink">
-                  Close
-                </button>
-              </div>
-              <div className="p-5">
-                <div className="mb-5">
-                  <label className="mb-1.5 block text-[11.5px] font-bold uppercase tracking-wide text-body">Status</label>
-                  <select
-                    value={selected.status || "new"}
-                    onChange={(e) => updateStatus(selected.id, e.target.value)}
-                    className="w-full rounded-md border border-line px-3 py-2 text-[13.5px] text-ink outline-none focus:border-ink"
-                  >
-                    <option value="new">New</option>
-                    <option value="in_progress">In Progress</option>
-                    <option value="closed">Closed</option>
-                  </select>
-                </div>
-
-                <div className="space-y-3.5">
-                  {detailFields.map((f) => (
-                    <div key={f.label}>
-                      <div className="text-[11px] font-bold uppercase tracking-wide text-body">{f.label}</div>
-                      <div className="whitespace-pre-wrap text-[13.5px] font-medium text-ink">{f.value}</div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="mt-5 flex gap-2">
-                  {selected.email && (
-                    <a
-                      href={`mailto:${selected.email}`}
-                      className="flex flex-1 items-center justify-center gap-1.5 rounded-md bg-ink py-2.5 text-center text-[13px] font-bold text-white"
-                    >
-                      <MailIcon className="h-4 w-4" />
-                      Email
-                    </a>
-                  )}
-                  {selected.mobile && (
-                    <a
-                      href={`https://wa.me/91${selected.mobile.replace(/[^0-9]/g, "").slice(-10)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex flex-1 items-center justify-center gap-1.5 rounded-md bg-[#25D366] py-2.5 text-center text-[13px] font-bold text-white"
-                    >
-                      <WhatsAppIcon className="h-4 w-4" />
-                      WhatsApp
-                    </a>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </AdminLayout>
     </AdminGuard>

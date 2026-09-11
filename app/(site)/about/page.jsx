@@ -6,7 +6,7 @@ import Reveal from "@/components/Reveal";
 import StatsBand from "@/components/StatsBand";
 import WhyChoose from "@/components/WhyChoose";
 import { HomeContentProvider } from "@/contexts/HomeContentContext";
-import { AmcBadge, AwardIcon, CheckCircle, GearIcon, PinIcon, ReportIcon, SearchIcon } from "@/components/icons";
+import { AmcBadge, AwardIcon, CheckCircle, GearIcon, PinIcon, ReportIcon, SearchIcon, ShieldIcon } from "@/components/icons";
 import { supabase } from "@/lib/supabase";
 import { getContactSettings } from "@/lib/getContactSettings";
 
@@ -362,6 +362,41 @@ export default async function AboutPage() {
                 </Reveal>
               );
             })}
+          </div>
+        </div>
+      </section>
+
+      {/* Safety & Compliance Section */}
+      <section className="py-12 md:py-[80px]">
+        <div className="mx-auto max-w-wrap px-6">
+          <Reveal className="mb-8 md:mb-10 max-w-[62ch]">
+            <p className="eyebrow">Safety &amp; compliance</p>
+            <h2 className="text-[clamp(1.65rem,3.2vw,2.4rem)] font-extrabold">
+              How We Keep Every Job <span className="text-yellow">Safe</span>
+            </h2>
+          </Reveal>
+
+          <div className="grid grid-cols-1 gap-4 sm:gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              { icon: ShieldIcon, title: "Safety-Focused Work", desc: "Standard safety practices followed on every job, residential or commercial." },
+              { icon: CheckCircle, title: "Proper Inspection", desc: "Every job starts with a proper inspection before any work begins." },
+              { icon: ReportIcon, title: "Testing & Documentation", desc: "Work is tested before handover, with findings documented for your records." },
+              { icon: AmcBadge, title: "Maintenance Reports", desc: "AMC and health-check customers receive a clear report after every visit." },
+              { icon: AwardIcon, title: "GST Invoice", desc: "Transparent, GST-compliant invoicing for all completed work." },
+              { icon: GearIcon, title: "Genuine Parts", desc: "Standard, reliable electrical components used across our work." },
+            ].map((f, i) => (
+              <Reveal key={f.title} delay={i * 0.06}>
+                <div className="flex h-full items-start gap-3.5 rounded-2xl border border-line/80 bg-white p-5 shadow-sm">
+                  <span className="grid h-10 w-10 flex-none place-items-center rounded-xl bg-yellow/15 text-ink ring-1 ring-yellow/30">
+                    <f.icon className="h-5 w-5" strokeWidth="1.8" />
+                  </span>
+                  <div>
+                    <b className="mb-1 block text-[14.5px] text-ink">{f.title}</b>
+                    <p className="text-[13px] leading-relaxed text-ink-soft">{f.desc}</p>
+                  </div>
+                </div>
+              </Reveal>
+            ))}
           </div>
         </div>
       </section>

@@ -5,14 +5,16 @@ import { useEffect } from "react";
 import { useAdminAuth } from "@/contexts/AdminAuthContext";
 
 export default function AdminGuard({ children }) {
-  const { user, loading, supabaseReady } = useAdminAuth();
+  const { user, isAdmin, loading, supabaseReady } = useAdminAuth();
   const router = useRouter();
 
   useEffect(() => {
     if (!loading && supabaseReady && !user) {
       router.replace("/admin/login");
+    } else if (!loading && supabaseReady && user && !isAdmin) {
+      router.replace("/account");
     }
-  }, [loading, supabaseReady, user, router]);
+  }, [loading, supabaseReady, user, isAdmin, router]);
 
   if (loading) {
     return (
@@ -37,7 +39,7 @@ export default function AdminGuard({ children }) {
     );
   }
 
-  if (!user) return null;
+  if (!user || !isAdmin) return null;
 
   return children;
 }

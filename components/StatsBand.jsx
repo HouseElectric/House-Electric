@@ -9,7 +9,7 @@ import { useHomeContent } from "@/contexts/HomeContentContext";
 const ICON_MAP = { users: UsersIcon, check: CheckCircle, building: BuildingIcon, award: AwardIcon };
 
 export default function StatsBand() {
-  const { stats, statsImage } = useHomeContent();
+  const { stats, statsImage, statsVisible } = useHomeContent();
   const isLocal = statsImage?.startsWith("/");
 
   return (
@@ -20,7 +20,11 @@ export default function StatsBand() {
         <img src={statsImage} alt="Modern house exterior at dusk" className="absolute inset-0 h-full w-full object-cover opacity-75" />
       )}
       <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(11,11,11,0.85)_0%,rgba(11,11,11,0.5)_55%,rgba(11,11,11,0.2)_100%)]" />
-      <div className="relative z-[2] mx-auto grid max-w-wrap grid-cols-1 items-center gap-10 px-6 py-14 md:grid-cols-[1fr_auto] md:py-[74px]">
+      <div
+        className={`relative z-[2] mx-auto grid max-w-wrap grid-cols-1 items-center gap-10 px-6 py-14 md:py-[74px] ${
+          statsVisible ? "md:grid-cols-[1fr_auto]" : ""
+        }`}
+      >
         <Reveal>
           <h2 className="mb-3.5 text-white text-[clamp(1.7rem,3.2vw,2.5rem)] font-extrabold leading-tight">
             Electrical Safety
@@ -32,13 +36,14 @@ export default function StatsBand() {
             you stay safe, compliant and worry-free.
           </p>
           <a
-            href="/health-check"
+            href="/services/electrical-health-check"
             className="inline-flex items-center gap-2 rounded-md bg-yellow px-6 py-3.5 text-sm font-bold text-ink transition-transform duration-200 hover:-translate-y-0.5 hover:bg-yellow-dark"
           >
             Book Your Inspection
           </a>
         </Reveal>
 
+        {statsVisible && (
         <Reveal delay={0.15}>
           <div className="grid min-w-[280px] sm:min-w-[310px] gap-5 rounded-2xl bg-white p-7 shadow-2xl">
             {stats.map((s) => {
@@ -57,6 +62,7 @@ export default function StatsBand() {
             })}
           </div>
         </Reveal>
+        )}
       </div>
     </section>
   );

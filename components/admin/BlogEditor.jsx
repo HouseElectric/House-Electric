@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import AdminLayout from "./AdminLayout";
 import { supabase } from "@/lib/supabase";
-import { uploadImage, cloudinaryConfigured } from "@/lib/cloudinary";
+import { uploadImage, imagekitConfigured } from "@/lib/imagekit";
 import { ArrowLeftIcon } from "@/components/icons";
 
 const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
@@ -122,8 +122,8 @@ function CoverImageField({ value, alt, onChangeAlt, onUpload, onRemove, showToas
             <>
               <p className="text-[13px] font-semibold text-body">{dragOver ? "Drop to upload" : "Click or drag & drop"}</p>
               <p className="mt-1 text-[11.5px] text-body">PNG, JPG, WebP — max 10 MB</p>
-              {!cloudinaryConfigured && (
-                <p className="mt-2 text-[11px] font-bold text-red-500">⚠ Cloudinary not configured</p>
+              {!imagekitConfigured && (
+                <p className="mt-2 text-[11px] font-bold text-red-500">⚠ ImageKit not configured</p>
               )}
             </>
           )}

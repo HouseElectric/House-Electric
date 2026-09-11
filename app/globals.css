@@ -8,6 +8,19 @@ html,
   scrollbar-width: thin;
 }
 
+/* Used across horizontally-scrollable mobile nav/tab rows to hide the scrollbar
+   while keeping the row swipeable — the browser's default scrollbar was showing
+   because Tailwind has no built-in scrollbar-hide utility. */
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -55,6 +68,40 @@ html {
 body {
   color: #45454b;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Establishes a positioning context for the footer's absolutely-positioned diagonal SVG
+   at all times; only its position value switches to fixed when printing (below). */
+.doc-print-footer {
+  position: relative;
+}
+
+/* ---------- Print: exact-match documents (quotations/invoices) ---------- */
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  html,
+  body {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  /* Fixed elements repeat at the same spot on every printed page in Chrome/Edge —
+     used to keep the document's bottom band pinned to every page, not just the last one. */
+  .doc-print-footer {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
+
+  /* Reserve space so the last line of real content never renders under the fixed footer. */
+  .doc-print-body {
+    padding-bottom: 76px !important;
+  }
 }
 
 ::selection {

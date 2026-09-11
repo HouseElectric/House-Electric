@@ -190,3 +190,27 @@ alter table public.services add column if not exists primary_cta_href text not n
 alter table public.services add column if not exists secondary_cta_label text not null default 'Get a Quote';
 alter table public.services add column if not exists secondary_cta_href text not null default '/contact';
 alter table public.services add column if not exists booking_subtitle text not null default 'Fill in your details and our team will confirm your booking shortly.';
+alter table public.services add column if not exists faqs jsonb not null default '[]'::jsonb;
+
+-- ============ services: two-tone hero headline (plain text + accent-highlighted phrase) ============
+alter table public.services add column if not exists hero_title_plain text;
+alter table public.services add column if not exists hero_title_highlight text;
+
+-- ============ services: optional rich sections (SLA stats strip, advantage cards, process steps) ============
+-- All admin-managed and all optional — a section only renders on the public page once its
+-- data is non-empty, so every service uses the exact same [slug] template with zero hardcoding.
+alter table public.services add column if not exists sla_stats jsonb not null default '[]'::jsonb;
+alter table public.services add column if not exists advantages_section jsonb not null default '{}'::jsonb;
+alter table public.services add column if not exists process_section jsonb not null default '{}'::jsonb;
+alter table public.services add column if not exists checklist_section jsonb not null default '{}'::jsonb;
+
+-- ============ services: optional headline override for the pricing card ============
+-- Shown instead of price_label when set — useful when the real price lives on a
+-- separate plans page (e.g. AMC's "See the AMC Plans") rather than a single figure.
+alter table public.services add column if not exists price_cta_label text;
+
+-- ============ amc_plans: admin-controlled "Most Popular" badge ============
+alter table public.amc_plans add column if not exists featured boolean not null default false;
+
+-- ============ technicians: profile photo ============
+alter table public.technicians add column if not exists photo_url text;

@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import {
   Arrow,
+  AwardIcon,
   BoltBadge,
   CheckCircle,
   ClockIcon,
@@ -21,17 +22,12 @@ const trustBadges = [
   { icon: CheckCircle, title: "Safe & Compliant" },
 ];
 
-const bottomMetrics = [
-  { icon: UsersIcon, val: "500+", label: "Happy Clients" },
-  { icon: StarIcon, val: "4.9/5", label: "Client Rating" },
-  { icon: ShieldIcon, val: "100%", label: "Safety First" },
-  { icon: PinIcon, val: "Local", label: "Trusted Team" },
-];
+const METRIC_ICON_MAP = { users: UsersIcon, star: StarIcon, shield: ShieldIcon, pin: PinIcon, award: AwardIcon, check: CheckCircle };
 
 const AUTOPLAY_MS = 6000;
 
 export default function Hero() {
-  const { heroSlides: slides } = useHomeContent();
+  const { heroSlides: slides, heroMetrics, heroMetricsVisible } = useHomeContent();
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
@@ -199,17 +195,22 @@ export default function Hero() {
         </div>
 
         {/* Bottom 4-Column Stats Strip */}
-        <div className="mt-6 grid grid-cols-4 gap-2 rounded-2xl border border-line/80 bg-white p-3.5 sm:p-4 shadow-sm divide-x divide-line/60">
-          {bottomMetrics.map((m) => (
-            <div key={m.label} className="flex flex-col items-center justify-center text-center px-1">
-              <m.icon className="mb-1 h-4 w-4 text-yellow-dark" />
-              <b className="text-sm sm:text-base font-black text-ink leading-tight">{m.val}</b>
-              <span className="text-[9.5px] sm:text-[11px] font-bold text-charcoal/60 uppercase tracking-wide">
-                {m.label}
-              </span>
-            </div>
-          ))}
-        </div>
+        {heroMetricsVisible && heroMetrics?.length > 0 && (
+          <div className="mt-6 grid grid-cols-4 gap-2 rounded-2xl border border-line/80 bg-white p-3.5 sm:p-4 shadow-sm divide-x divide-line/60">
+            {heroMetrics.map((m) => {
+              const Icon = METRIC_ICON_MAP[m.icon] || UsersIcon;
+              return (
+                <div key={m.label} className="flex flex-col items-center justify-center text-center px-1">
+                  <Icon className="mb-1 h-4 w-4 text-yellow-dark" />
+                  <b className="text-sm sm:text-base font-black text-ink leading-tight">{m.val}</b>
+                  <span className="text-[9.5px] sm:text-[11px] font-bold text-charcoal/60 uppercase tracking-wide">
+                    {m.label}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
       </div>
     </section>

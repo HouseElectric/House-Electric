@@ -15,7 +15,7 @@ export const DEFAULT_HOME = {
       subtitle:
         "From quick repairs to annual maintenance, House Electric keeps your home, business and workplace powered, safe and worry-free.",
       primaryLabel: "Book Electrical Health Check",
-      primaryHref: "/health-check",
+      primaryHref: "/services/electrical-health-check",
       secondaryLabel: "Get a Quote",
       secondaryHref: "/contact",
     },
@@ -43,11 +43,12 @@ export const DEFAULT_HOME = {
       subtitle:
         "Our detailed inspection finds hidden risks early — with a clear report and repair estimate, no surprises.",
       primaryLabel: "Book Health Check",
-      primaryHref: "/health-check",
+      primaryHref: "/services/electrical-health-check",
       secondaryLabel: "Get a Quote",
       secondaryHref: "/contact",
     },
   ],
+  statsVisible: true,
   stats: [
     { icon: "users", to: 500, suffix: "+", label: "Happy Customers" },
     { icon: "check", to: 98, suffix: "%", label: "Service Satisfaction" },
@@ -55,6 +56,13 @@ export const DEFAULT_HOME = {
     { icon: "award", to: 5, suffix: "+", label: "Years of Experience" },
   ],
   statsImage: "/stats-house.png",
+  heroMetricsVisible: true,
+  heroMetrics: [
+    { icon: "users", val: "500+", label: "Happy Clients" },
+    { icon: "star", val: "4.9/5", label: "Client Rating" },
+    { icon: "shield", val: "100%", label: "Safety First" },
+    { icon: "pin", val: "Local", label: "Trusted Team" },
+  ],
   process: {
     image: "/process-electrician.png",
     eyebrow: "Our process",

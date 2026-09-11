@@ -18,7 +18,9 @@ module.exports = {
         body: "#45454B",
         line: "#E8E4DC",
         cream: "#FAF7F1",
+        cream2: "#FAF7F1",
         muted: "#9A9285",
+        charcoal: "#141414",
       },
       fontFamily: {
         sans: ["var(--font-jakarta)", "system-ui", "sans-serif"],

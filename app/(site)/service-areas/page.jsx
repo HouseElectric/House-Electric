@@ -33,7 +33,7 @@ async function getAreas() {
 }
 
 export default async function ServiceAreasPage() {
-  const [areas, { city, state }] = await Promise.all([getAreas(), getContactSettings()]);
+  const [areas, { city, state, address }] = await Promise.all([getAreas(), getContactSettings()]);
 
   return (
     <main>
@@ -66,10 +66,20 @@ export default async function ServiceAreasPage() {
             <Reveal delay={0.15} className="overflow-hidden rounded-[10px] border border-line">
               <iframe
                 title="House Electric service area map"
-                src={`https://maps.google.com/maps?q=${encodeURIComponent(`${city}, ${state}`)}&t=&z=11&ie=UTF8&iwloc=&output=embed`}
+                src={`https://maps.google.com/maps?q=${encodeURIComponent(address || `${city}, ${state}`)}&t=&z=13&ie=UTF8&iwloc=&output=embed`}
                 className="h-[340px] w-full md:h-full"
                 loading="lazy"
               />
+            </Reveal>
+            <Reveal delay={0.2}>
+              <a
+                href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address || `${city}, ${state}`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 inline-flex items-center gap-2 rounded-md bg-yellow px-5 py-3 text-[13.5px] font-extrabold text-ink transition-all hover:-translate-y-0.5 hover:bg-yellow-dark"
+              >
+                Get Directions
+              </a>
             </Reveal>
           </div>
         </div>

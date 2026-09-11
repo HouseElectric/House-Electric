@@ -2,15 +2,17 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import {
+  AmcBadge,
   Arrow,
   ArticleIcon,
   BuildingIcon,
   ChevronDown,
   DashboardIcon,
   HomeIcon,
+  LogoutIcon,
   MailIcon,
   PhoneIcon,
   UsersIcon,
@@ -18,20 +20,22 @@ import {
   XIcon,
 } from "./icons";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
+import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { supabase } from "@/lib/supabase";
 
 const FALLBACK_SERVICE_LINKS = [
   { href: "/services/electrical-repair", label: "Electrical Repair" },
   { href: "/services/electrical-installation", label: "Electrical Installation" },
   { href: "/services/electrical-maintenance", label: "Electrical Maintenance" },
-  { href: "/health-check", label: "Health Check" },
-  { href: "/amc", label: "AMC" },
+  { href: "/services/electrical-health-check", label: "Health Check" },
+  { href: "/services/annual-maintenance-contract-amc", label: "AMC" },
 ];
 
 const BASE_LINKS = [
   { href: "/", label: "Home", icon: HomeIcon },
   { href: "/about", label: "About Us", icon: UsersIcon },
   { href: "/services", label: "Services", icon: WrenchIcon, hasChildren: true },
+  { href: "/amc/plans#plans", label: "AMC Plans", icon: AmcBadge },
   { href: "/projects", label: "Projects", icon: DashboardIcon },
   { href: "/corporate", label: "Corporate", icon: BuildingIcon },
   { href: "/blog", label: "Blog", icon: ArticleIcon },
@@ -63,7 +67,14 @@ export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [serviceLinks, setServiceLinks] = useState(FALLBACK_SERVICE_LINKS);
   const pathname = usePathname();
+  const router = useRouter();
   const { phone } = useSiteSettings();
+  const { user: customerUser, signOut } = useCustomerAuth() || {};
+
+  const handleLogout = async () => {
+    await signOut?.();
+    router.push("/");
+  };
 
   useEffect(() => {
     if (!supabase) return;
@@ -95,12 +106,15 @@ export default function Header() {
     };
   }, [open]);
 
-  const isActive = (href) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
+  const isActive = (href) => {
+    const path = href.split("#")[0];
+    return path === "/" ? pathname === "/" : pathname.startsWith(path);
+  };
   const isActiveGroup = (l) =>
     isActive(l.href) || (l.children && l.children.some((c) => c.href.startsWith("/") && pathname.startsWith(c.href)));
 
   return (
-    <header className="sticky top-0 z-[110] px-2 pt-2 transition-all duration-300 sm:px-4 sm:pt-3">
+    <header className="sticky top-0 z-[110] px-2 pt-2 transition-all duration-300 sm:px-4 sm:pt-3 print:hidden">
       <motion.div
         initial={{ y: -24, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -167,7 +181,25 @@ export default function Header() {
         </nav>
 
         {/* Desktop CTA Action Button */}
-        <div className="hidden xl:flex items-center gap-3 shrink-0">
+        <div className="hidden xl:flex items-center gap-2 shrink-0">
+          <a
+            href={customerUser ? "/account" : "/login"}
+            className="inline-flex items-center gap-1.5 rounded-full border border-line/90 px-4 py-2.5 text-xs font-extrabold text-charcoal/80 transition-all duration-200 hover:border-ink hover:text-ink"
+          >
+            <UsersIcon className="h-3.5 w-3.5" />
+            <span>{customerUser ? "My Account" : "Login"}</span>
+          </a>
+          {customerUser && (
+            <motion.button
+              onClick={handleLogout}
+              aria-label="Log out"
+              whileHover={{ scale: 1.06 }}
+              whileTap={{ scale: 0.94 }}
+              className="grid h-[38px] w-[38px] flex-none place-items-center rounded-full border border-line/90 text-charcoal/70 transition-all duration-200 hover:border-red-300 hover:bg-red-50 hover:text-red-600"
+            >
+              <LogoutIcon className="h-4 w-4" />
+            </motion.button>
+          )}
           <a
             href="/contact"
             className="inline-flex items-center gap-2 rounded-full bg-yellow px-5 py-2.5 text-xs font-extrabold text-ink shadow-[0_6px_20px_-4px_rgba(242,176,30,0.6)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-yellow-dark hover:shadow-[0_10px_25px_-4px_rgba(242,176,30,0.8)]"
@@ -316,6 +348,26 @@ export default function Header() {
 
                 {/* Mobile Drawer Direct Call Button */}
                 <div className="pt-6">
+                  <a
+                    href={customerUser ? "/account" : "/login"}
+                    onClick={() => setOpen(false)}
+                    className="mb-3 flex w-full items-center justify-center gap-2 rounded-2xl border border-line bg-white px-6 py-3 text-xs font-bold text-ink hover:border-ink"
+                  >
+                    <UsersIcon className="h-3.5 w-3.5" />
+                    <span>{customerUser ? "My Account" : "Login / Register"}</span>
+                  </a>
+                  {customerUser && (
+                    <button
+                      onClick={() => {
+                        setOpen(false);
+                        handleLogout();
+                      }}
+                      className="mb-3 flex w-full items-center justify-center gap-2 rounded-2xl border border-red-200 bg-red-50/60 px-6 py-3 text-xs font-bold text-red-600 hover:bg-red-50"
+                    >
+                      <LogoutIcon className="h-3.5 w-3.5" />
+                      <span>Log Out</span>
+                    </button>
+                  )}
                   <a
                     href="/contact"
                     onClick={() => setOpen(false)}

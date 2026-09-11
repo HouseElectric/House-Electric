@@ -30,7 +30,7 @@ export default function ServicesPage() {
         }
         subtitle="From a single repair to a full annual maintenance contract, House Electric provides end-to-end electrical solutions for residential, commercial and corporate customers."
         primaryCta={{ label: "Book a Service", href: "/contact" }}
-        secondaryCta={{ label: "Book Health Check", href: "/health-check" }}
+        secondaryCta={{ label: "Book Health Check", href: "/services/electrical-health-check" }}
         image="/service-installation.png"
         imageAlt="Professional electrical installation by House Electric"
       />
@@ -56,7 +56,7 @@ export default function ServicesPage() {
                   </p>
                 </div>
                 <a
-                  href="/health-check"
+                  href="/services/electrical-health-check"
                   className="inline-flex flex-none items-center gap-2.5 rounded-md bg-yellow px-7 py-4 text-sm font-extrabold text-ink shadow-[0_10px_25px_-5px_rgba(242,176,30,0.45)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-yellow-dark hover:shadow-[0_15px_30px_-5px_rgba(242,176,30,0.6)] sm:px-8"
                 >
                   Book Health Check

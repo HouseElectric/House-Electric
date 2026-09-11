@@ -2,11 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import toast from "react-hot-toast";
 import AdminGuard from "@/components/admin/AdminGuard";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { FormSection, Field, inputClass, ImageUploadField } from "@/components/admin/FormKit";
 import { supabase } from "@/lib/supabase";
-import { uploadImage, cloudinaryConfigured } from "@/lib/cloudinary";
+import { uploadImage, imagekitConfigured } from "@/lib/imagekit";
 import { DEFAULT_HOME, deepMerge } from "@/contexts/HomeContentContext";
 import {
   AwardIcon,
@@ -14,6 +15,12 @@ import {
   CheckCircle,
   ExternalLinkIcon,
   UsersIcon,
+  SparklesIcon,
+  WrenchIcon,
+  NetworkIcon,
+  ClipboardIcon,
+  ShieldIcon,
+  StarIcon,
 } from "@/components/icons";
 
 const ICON_OPTIONS = [
@@ -24,24 +31,28 @@ const ICON_OPTIONS = [
 ];
 
 const TABS = [
-  { key: "hero", label: "1. Hero" },
-  { key: "services", label: "2. Services" },
-  { key: "stats", label: "3. Stats" },
-  { key: "process", label: "4. Process" },
-  { key: "healthCheck", label: "5. Health Check" },
-  { key: "whyChoose", label: "6. Why Choose" },
-  { key: "customers", label: "7. Customers" },
-  { key: "testimonials", label: "8. Testimonials" },
+  { key: "hero", label: "Hero", icon: SparklesIcon },
+  { key: "services", label: "Services", icon: WrenchIcon },
+  { key: "stats", label: "Stats", icon: NetworkIcon },
+  { key: "process", label: "Process", icon: ClipboardIcon },
+  { key: "healthCheck", label: "Health Check", icon: ShieldIcon },
+  { key: "whyChoose", label: "Why Choose", icon: AwardIcon },
+  { key: "customers", label: "Customers", icon: UsersIcon },
+  { key: "testimonials", label: "Testimonials", icon: StarIcon },
 ];
 
-function LinkOutTab({ title, desc, href, label }) {
+function LinkOutTab({ title, desc, href, label, icon: Icon = ExternalLinkIcon }) {
   return (
-    <div className="rounded-2xl border border-line bg-white p-8 text-center">
-      <h4 className="mb-2 text-[15px] font-extrabold text-ink">{title}</h4>
-      <p className="mx-auto mb-5 max-w-[50ch] text-[13.5px] text-body">{desc}</p>
+    <div className="relative overflow-hidden rounded-2xl border border-line bg-white p-8 text-center">
+      <div className="pointer-events-none absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "radial-gradient(circle, #141414 1px, transparent 1px)", backgroundSize: "22px 22px" }} />
+      <span className="relative mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-cream text-ink shadow-sm ring-4 ring-white">
+        <Icon className="h-6 w-6" />
+      </span>
+      <h4 className="relative mb-2 text-[15px] font-extrabold text-ink">{title}</h4>
+      <p className="relative mx-auto mb-5 max-w-[50ch] text-[13.5px] text-body">{desc}</p>
       <Link
         href={href}
-        className="inline-flex items-center gap-2 rounded-md bg-yellow px-5 py-3 text-[13.5px] font-bold text-ink hover:bg-yellow-dark"
+        className="relative inline-flex items-center gap-2 rounded-md bg-yellow px-5 py-3 text-[13.5px] font-bold text-ink transition-all hover:-translate-y-0.5 hover:bg-yellow-dark hover:shadow-md"
       >
         {label}
         <ExternalLinkIcon className="h-3.5 w-3.5" />
@@ -76,9 +87,10 @@ export default function AdminHomePage() {
       .from("site_settings")
       .upsert([{ key: "home", data, updated_at: new Date().toISOString() }]);
     setSaving(false);
-    if (error) alert(error.message);
+    if (error) toast.error(error.message);
     else {
       setSaved(true);
+      toast.success("Home page saved");
       setTimeout(() => setSaved(false), 2500);
     }
   };
@@ -94,7 +106,7 @@ export default function AdminHomePage() {
       const url = await uploadImage(file, "house-electric/home");
       updateSlide(index, { ...data.heroSlides[index], image: url });
     } catch (err) {
-      alert(err.message);
+      toast.error(err.message);
     }
     setUploadingSlide(null);
   };
@@ -107,7 +119,7 @@ export default function AdminHomePage() {
       const url = await uploadImage(file, "house-electric/home");
       set("statsImage", url);
     } catch (err) {
-      alert(err.message);
+      toast.error(err.message);
     }
     setUploadingField(null);
   };
@@ -120,7 +132,7 @@ export default function AdminHomePage() {
       const url = await uploadImage(file, "house-electric/home");
       setField(section, key, url);
     } catch (err) {
-      alert(err.message);
+      toast.error(err.message);
     }
     setUploadingField(null);
   };
@@ -133,7 +145,7 @@ export default function AdminHomePage() {
       const url = await uploadImage(file, "house-electric/home");
       updateItem("customers", "spaces", index, "image", url);
     } catch (err) {
-      alert(err.message);
+      toast.error(err.message);
     }
     setUploadingField(null);
   };
@@ -172,11 +184,15 @@ export default function AdminHomePage() {
             , in the order it appears on the page. Switch tabs, edit, then save.
           </p>
           <div className="flex items-center gap-3">
-            {saved && <span className="text-[13px] font-semibold text-emerald-600">Saved!</span>}
+            {saved && (
+              <span className="flex items-center gap-1.5 text-[13px] font-semibold text-emerald-600">
+                <CheckCircle className="h-4 w-4" /> Saved!
+              </span>
+            )}
             <button
               onClick={save}
               disabled={saving}
-              className="whitespace-nowrap rounded-md bg-yellow px-6 py-3 text-[14px] font-bold text-ink hover:bg-yellow-dark disabled:opacity-60"
+              className="whitespace-nowrap rounded-md bg-yellow px-6 py-3 text-[14px] font-bold text-ink transition-all hover:-translate-y-0.5 hover:bg-yellow-dark hover:shadow-md disabled:translate-y-0 disabled:opacity-60"
             >
               {saving ? "Saving…" : "Save Changes"}
             </button>
@@ -185,43 +201,95 @@ export default function AdminHomePage() {
 
         {/* Tabs */}
         <div className="mb-6 flex flex-wrap gap-1.5 overflow-x-auto rounded-xl border border-line bg-white p-1.5">
-          {TABS.map((t) => (
-            <button
-              key={t.key}
-              onClick={() => setTab(t.key)}
-              className={`whitespace-nowrap rounded-lg px-3.5 py-2 text-[13px] font-semibold transition-colors ${
-                tab === t.key ? "bg-ink text-white" : "text-body hover:bg-cream"
-              }`}
-            >
-              {t.label}
-            </button>
-          ))}
+          {TABS.map((t, i) => {
+            const Icon = t.icon;
+            const active = tab === t.key;
+            return (
+              <button
+                key={t.key}
+                onClick={() => setTab(t.key)}
+                className={`flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3.5 py-2 text-[13px] font-semibold transition-all ${
+                  active ? "bg-ink text-white shadow-sm" : "text-body hover:bg-cream"
+                }`}
+              >
+                <Icon className={`h-3.5 w-3.5 ${active ? "text-yellow" : "text-body/50"}`} />
+                <span className="text-[10px] font-bold opacity-60">{i + 1}.</span>
+                {t.label}
+              </button>
+            );
+          })}
         </div>
 
-        {!cloudinaryConfigured && (
-          <p className="mb-4 text-[12px] font-bold text-red-500">⚠ Cloudinary not configured — photo uploads will fail</p>
+        {!imagekitConfigured && (
+          <p className="mb-4 text-[12px] font-bold text-red-500">⚠ ImageKit not configured — photo uploads will fail</p>
         )}
 
         {/* ---------------- HERO ---------------- */}
         {tab === "hero" && (
-          <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
-            {data.heroSlides.map((slide, i) => (
-              <FormSection key={i} title={`Slide ${i + 1}`}>
-                <SlideFields
-                  slide={slide}
-                  index={i}
-                  onChange={updateSlide}
-                  onUpload={uploadSlideImage}
-                  uploading={uploadingSlide === i}
+          <div className="space-y-5">
+            <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+              {data.heroSlides.map((slide, i) => (
+                <FormSection key={i} title={`Slide ${i + 1}`}>
+                  <SlideFields
+                    slide={slide}
+                    index={i}
+                    onChange={updateSlide}
+                    onUpload={uploadSlideImage}
+                    uploading={uploadingSlide === i}
+                  />
+                </FormSection>
+              ))}
+            </div>
+
+            <FormSection
+              title="Trust Metrics Strip"
+              hint={'The small stats row below the hero image (e.g. "500+ Happy Clients"). Only show numbers you can stand behind — hide this if you don\'t have verified figures yet.'}
+            >
+              <label className="flex items-center gap-2 text-[13px] font-semibold text-ink">
+                <input
+                  type="checkbox"
+                  checked={data.heroMetricsVisible}
+                  onChange={(e) => set("heroMetricsVisible", e.target.checked)}
                 />
-              </FormSection>
-            ))}
+                Show this strip on the homepage
+              </label>
+
+              {data.heroMetricsVisible && (
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                  {data.heroMetrics.map((m, i) => (
+                    <div key={i} className="rounded-xl border border-line p-3.5">
+                      <Field label="Value">
+                        <input
+                          value={m.val}
+                          onChange={(e) =>
+                            set("heroMetrics", data.heroMetrics.map((x, idx) => (idx === i ? { ...x, val: e.target.value } : x)))
+                          }
+                          className={inputClass}
+                        />
+                      </Field>
+                      <div className="mt-2">
+                        <Field label="Label">
+                          <input
+                            value={m.label}
+                            onChange={(e) =>
+                              set("heroMetrics", data.heroMetrics.map((x, idx) => (idx === i ? { ...x, label: e.target.value } : x)))
+                            }
+                            className={inputClass}
+                          />
+                        </Field>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </FormSection>
           </div>
         )}
 
         {/* ---------------- SERVICES (link out) ---------------- */}
         {tab === "services" && (
           <LinkOutTab
+            icon={WrenchIcon}
             title="Services Grid"
             desc="The 6 service cards (with photos & pricing) shown right after the hero are managed from their own dedicated page — add, edit, reorder or hide services there."
             href="/admin/services"
@@ -232,6 +300,16 @@ export default function AdminHomePage() {
         {/* ---------------- STATS ---------------- */}
         {tab === "stats" && (
           <div className="space-y-5">
+            <FormSection
+              title="Visibility"
+              hint="Only show these numbers if they're real and verified — otherwise hide the whole band."
+            >
+              <label className="flex items-center gap-2 text-[13px] font-semibold text-ink">
+                <input type="checkbox" checked={data.statsVisible} onChange={(e) => set("statsVisible", e.target.checked)} />
+                Show the stats counter band on the homepage
+              </label>
+            </FormSection>
+
             <FormSection title="Background Photo" hint="Shown behind the stats counter band.">
               <ImageUploadField
                 value={data.statsImage}
@@ -245,7 +323,7 @@ export default function AdminHomePage() {
             {data.stats.map((stat, i) => (
               <FormSection key={i} title={`Stat ${i + 1}`}>
                 <Field label="Icon">
-                  <div className="grid grid-cols-4 gap-2">
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                     {ICON_OPTIONS.map((o) => {
                       const OptIcon = o.icon;
                       const active = stat.icon === o.value;
@@ -464,6 +542,7 @@ export default function AdminHomePage() {
         {/* ---------------- TESTIMONIALS (link out) ---------------- */}
         {tab === "testimonials" && (
           <LinkOutTab
+            icon={StarIcon}
             title="Testimonials Carousel"
             desc="Customer reviews shown near the bottom of the homepage are managed from their own dedicated page — add, edit, publish/hide or delete testimonials there."
             href="/admin/testimonials"
@@ -474,7 +553,7 @@ export default function AdminHomePage() {
         <button
           onClick={save}
           disabled={saving}
-          className="mt-6 w-full rounded-md bg-yellow py-3.5 text-[14.5px] font-bold text-ink hover:bg-yellow-dark disabled:opacity-60 lg:w-auto lg:px-10"
+          className="mt-6 w-full rounded-md bg-yellow py-3.5 text-[14.5px] font-bold text-ink transition-all hover:-translate-y-0.5 hover:bg-yellow-dark hover:shadow-md disabled:translate-y-0 disabled:opacity-60 lg:w-auto lg:px-10"
         >
           {saving ? "Saving…" : "Save Changes"}
         </button>

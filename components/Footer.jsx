@@ -8,7 +8,7 @@ const QUICK_LINKS = [
   { href: "/", label: "Home" },
   { href: "/about", label: "About Us" },
   { href: "/services", label: "Services" },
-  { href: "/amc", label: "AMC" },
+  { href: "/services/annual-maintenance-contract-amc", label: "AMC" },
   { href: "/corporate", label: "Corporate" },
   { href: "/projects", label: "Projects" },
   { href: "/reviews", label: "Reviews" },
@@ -20,9 +20,9 @@ const QUICK_LINKS = [
 const SERVICE_LINKS = [
   { href: "/services/electrical-repair", label: "Electrical Repair" },
   { href: "/services/electrical-installation", label: "Electrical Installation" },
-  { href: "/services", label: "Electrical Maintenance" },
-  { href: "/health-check", label: "Electrical Health Check" },
-  { href: "/amc", label: "Annual Maintenance Contract" },
+  { href: "/services/electrical-maintenance", label: "Electrical Maintenance" },
+  { href: "/services/electrical-health-check", label: "Electrical Health Check" },
+  { href: "/services/annual-maintenance-contract-amc", label: "Annual Maintenance Contract" },
 ];
 
 const SOCIALS = [
@@ -45,14 +45,14 @@ const SOCIALS = [
 ];
 
 export default function Footer() {
-  const { phone, whatsapp, email, address, facebook, instagram, linkedin, youtube } = useSiteSettings();
+  const { phone, whatsapp, email, address, gstin, facebook, instagram, linkedin, youtube } = useSiteSettings();
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
-    <footer className="relative overflow-hidden bg-[#07080B] pt-16 text-[#A5A096] border-t border-white/10">
+    <footer className="relative overflow-hidden bg-[#07080B] pt-16 text-[#A5A096] border-t border-white/10 print:hidden">
       {/* Background Ambient Glows */}
       <div className="glow-blob left-[-5%] top-[-10%] h-[350px] w-[350px] bg-yellow/15 opacity-30 blur-[110px]" />
       <div className="glow-blob right-[-8%] bottom-[-15%] h-[320px] w-[320px] bg-amber-500/10 opacity-25 blur-[100px]" />
@@ -271,21 +271,52 @@ export default function Footer() {
           </div>
         </div>
 
+        {/* Legal Links Row */}
+        <div className="relative z-[2] mt-16 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 border-t border-white/10 pt-6 text-[12.5px] text-[#8C867D] sm:justify-start">
+          {[
+            { href: "/privacy-policy", label: "Privacy Policy" },
+            { href: "/terms-and-conditions", label: "Terms & Conditions" },
+            { href: "/refund-policy", label: "Cancellation & Refund Policy" },
+            { href: "/disclaimer", label: "Disclaimer" },
+          ].map((l) => (
+            <a key={l.href} href={l.href} className="hover:text-yellow transition-colors">
+              {l.label}
+            </a>
+          ))}
+        </div>
+
         {/* Bottom Copyright & Back-to-Top Strip */}
-        <div className="relative z-[2] mt-16 border-t border-white/10 py-6 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-4 text-[13px] text-[#8C867D] text-center sm:text-left">
+        <div className="relative z-[2] mt-4 border-t border-white/10 py-6 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-4 text-[13px] text-[#8C867D] text-center sm:text-left">
           <span>
             © 2026 House Electric. All rights reserved.
-            <span className="hidden sm:inline"> · </span>
-            <span className="block sm:inline text-[12px]">GSTIN: 07DDQPK2622Q1ZX</span>
+            {gstin && (
+              <>
+                <span className="hidden sm:inline"> · </span>
+                <span className="block sm:inline text-[12px]">GSTIN: {gstin}</span>
+              </>
+            )}
           </span>
 
-          <button
-            onClick={scrollToTop}
-            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-bold text-white hover:border-yellow hover:bg-yellow hover:text-ink transition-all"
-          >
-            <span>Back to Top</span>
-            <Arrow className="h-3.5 w-3.5 -rotate-90" />
-          </button>
+          <div className="flex items-center gap-4">
+            <a
+              href="https://www.nexa-solutions.in/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group text-[12px] text-[#8C867D] transition-colors"
+            >
+              Developed by{" "}
+              <span className="font-bold text-yellow transition-colors group-hover:text-yellow-dark">
+                Nexa Solutions
+              </span>
+            </a>
+            <button
+              onClick={scrollToTop}
+              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-bold text-white hover:border-yellow hover:bg-yellow hover:text-ink transition-all"
+            >
+              <span>Back to Top</span>
+              <Arrow className="h-3.5 w-3.5 -rotate-90" />
+            </button>
+          </div>
         </div>
       </div>
     </footer>

@@ -24,7 +24,7 @@ export default function HealthCheck() {
           </h2>
           <p className="mb-7 max-w-[48ch] text-[15.5px] leading-relaxed text-ink-soft">{hc.subtitle}</p>
           <a
-            href="/health-check"
+            href="/services/electrical-health-check"
             className="inline-flex items-center justify-center gap-2.5 rounded-md bg-yellow px-7 py-4 text-sm font-extrabold text-ink shadow-[0_10px_25px_-5px_rgba(242,176,30,0.45)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-yellow-dark hover:shadow-[0_15px_30px_-5px_rgba(242,176,30,0.6)] sm:px-8"
           >
             {hc.buttonLabel}

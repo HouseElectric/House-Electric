@@ -10,6 +10,7 @@ const DEFAULT_SETTINGS = {
   address: "Kh No. 307/202, 1st Floor, Plot No. 174, Street Number 4, Block-B, New Delhi, North Delhi, Delhi 110042",
   city: "New Delhi",
   state: "Delhi",
+  gstin: "07DDQPK2622Q1ZX",
   facebook: "",
   instagram: "",
   linkedin: "",

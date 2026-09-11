@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import toast from "react-hot-toast";
 import AdminGuard from "@/components/admin/AdminGuard";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/lib/supabase";
@@ -28,6 +29,7 @@ export default function AdminBlogListPage() {
     setDeleting(id);
     await supabase.from("blog_posts").delete().eq("id", id);
     setPosts((prev) => prev.filter((p) => p.id !== id));
+    toast.success("Blog post deleted");
     setDeleting(null);
   };
 

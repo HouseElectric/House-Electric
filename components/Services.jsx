@@ -55,7 +55,7 @@ const FALLBACK = [
     price_label: null,
     icon_key: "health",
     image_url: "/service-healthcheck.png",
-    href: "/health-check",
+    href: "/services/electrical-health-check",
   },
   {
     title: "Annual Maintenance Contract (AMC)",
@@ -63,7 +63,7 @@ const FALLBACK = [
     price_label: null,
     icon_key: "amc",
     image_url: "/service-amc.png",
-    href: "/amc",
+    href: "/services/annual-maintenance-contract-amc",
   },
   {
     title: "Emergency Electrical Service",

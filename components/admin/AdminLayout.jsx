@@ -4,8 +4,11 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAdminAuth } from "@/contexts/AdminAuthContext";
+import AdminNotificationsBell from "./AdminNotificationsBell";
 import {
+  AmcBadge,
   ArticleIcon,
+  CalendarIcon,
   DashboardIcon,
   ExternalLinkIcon,
   HomeIcon,
@@ -14,8 +17,10 @@ import {
   LogoutIcon,
   MapIcon,
   MenuIcon,
+  ReportIcon,
   SlidersIcon,
   StarIcon,
+  UsersIcon,
   WrenchIcon,
 } from "@/components/icons";
 
@@ -29,12 +34,26 @@ const NAV_GROUPS = [
     items: [{ href: "/admin/enquiries", label: "Enquiries", icon: InboxIcon }],
   },
   {
+    label: "Operations",
+    items: [
+      { href: "/admin/service-requests", label: "Service Requests", icon: InboxIcon },
+      { href: "/admin/appointments", label: "Appointments", icon: CalendarIcon },
+      { href: "/admin/technicians", label: "Technicians", icon: UsersIcon },
+      { href: "/admin/quotations", label: "Quotations", icon: ReportIcon },
+      { href: "/admin/invoices", label: "Invoices", icon: ReportIcon },
+      { href: "/admin/payments", label: "Payments", icon: ReportIcon },
+      { href: "/admin/amc", label: "AMC Management", icon: AmcBadge },
+      { href: "/admin/customers", label: "Customers", icon: UsersIcon },
+    ],
+  },
+  {
     label: "Content",
     items: [
       { href: "/admin/home", label: "Home Page", icon: HomeIcon },
       { href: "/admin/blog", label: "Blog Posts", icon: ArticleIcon },
       { href: "/admin/testimonials", label: "Testimonials", icon: StarIcon },
       { href: "/admin/projects", label: "Projects", icon: ImageIcon },
+      { href: "/admin/before-after", label: "Before / After", icon: ImageIcon },
     ],
   },
   {
@@ -149,15 +168,18 @@ export default function AdminLayout({ children, title }) {
             </button>
             <h1 className="truncate text-[15px] font-extrabold text-ink">{title}</h1>
           </div>
-          <a
-            href="/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 rounded-md border border-line px-3.5 py-2 text-[13px] font-semibold text-ink hover:border-ink"
-          >
-            View Site
-            <ExternalLinkIcon className="h-3.5 w-3.5" />
-          </a>
+          <div className="flex flex-none items-center gap-2.5">
+            <AdminNotificationsBell />
+            <a
+              href="/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 rounded-md border border-line px-3.5 py-2 text-[13px] font-semibold text-ink hover:border-ink"
+            >
+              View Site
+              <ExternalLinkIcon className="h-3.5 w-3.5" />
+            </a>
+          </div>
         </header>
 
         <main className="flex-1 p-5 lg:p-7">{children}</main>

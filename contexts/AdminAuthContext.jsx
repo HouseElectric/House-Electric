@@ -7,7 +7,17 @@ const AdminAuthContext = createContext(null);
 
 export function AdminAuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  const loadProfile = async (sessionUser) => {
+    if (!sessionUser) {
+      setIsAdmin(false);
+      return;
+    }
+    const { data } = await supabase.from("profiles").select("is_admin").eq("id", sessionUser.id).maybeSingle();
+    setIsAdmin(!!data?.is_admin);
+  };
 
   useEffect(() => {
     if (!supabase) {
@@ -15,15 +25,17 @@ export function AdminAuthProvider({ children }) {
       return;
     }
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setUser(session?.user ?? null);
+      await loadProfile(session?.user ?? null);
       setLoading(false);
     });
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setUser(session?.user ?? null);
+      await loadProfile(session?.user ?? null);
     });
 
     return () => subscription.unsubscribe();
@@ -33,7 +45,7 @@ export function AdminAuthProvider({ children }) {
   const signOut = () => supabase?.auth.signOut();
 
   return (
-    <AdminAuthContext.Provider value={{ user, loading, signIn, signOut, supabaseReady: !!supabase }}>
+    <AdminAuthContext.Provider value={{ user, isAdmin, loading, signIn, signOut, supabaseReady: !!supabase }}>
       {children}
     </AdminAuthContext.Provider>
   );

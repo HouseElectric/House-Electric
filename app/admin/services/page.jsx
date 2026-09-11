@@ -1,15 +1,17 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import toast from "react-hot-toast";
 import AdminGuard from "@/components/admin/AdminGuard";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/lib/supabase";
-import { uploadImage, cloudinaryConfigured } from "@/lib/cloudinary";
+import { uploadImage, imagekitConfigured } from "@/lib/imagekit";
 import {
   AlertBadge,
   AmcBadge,
   ArrowLeftIcon,
   BoltBadge,
+  CheckCircle,
   EditIcon,
   ExternalLinkIcon,
   GearIcon,
@@ -17,6 +19,7 @@ import {
   PlusIcon,
   ReportIcon,
   TrashIcon,
+  WrenchIcon,
 } from "@/components/icons";
 
 const ICON_OPTIONS = [
@@ -34,9 +37,12 @@ const ICON_MAP = Object.fromEntries(ICON_OPTIONS.map((o) => [o.value, o.icon]));
 const EMPTY = {
   title: "",
   slug: "",
+  hero_title_plain: "",
+  hero_title_highlight: "",
   subtitle: "",
   description: "",
   price_label: "",
+  price_cta_label: "",
   icon_key: "bolt",
   image_url: "",
   href: "",
@@ -49,6 +55,19 @@ const EMPTY = {
   secondary_cta_label: "Get a Quote",
   secondary_cta_href: "/contact",
   booking_subtitle: "Fill in your details and our team will confirm your booking shortly.",
+  faqs: [],
+  checklist_eyebrow: "",
+  checklist_heading: "",
+  checklist_subtitle: "",
+  sla_stats: [],
+  advantages_eyebrow: "",
+  advantages_heading: "",
+  advantages_subtitle: "",
+  advantages_items: [],
+  process_eyebrow: "",
+  process_heading: "",
+  process_subtitle: "",
+  process_items: [],
 };
 
 const slugify = (text) =>
@@ -80,6 +99,57 @@ function Field({ label, children }) {
 
 const inputClass =
   "w-full rounded-md border border-line px-3 py-2.5 text-[13.5px] text-ink outline-none focus:border-ink";
+
+// Generic add/edit/remove list editor shared by the SLA Stats, Why Choose Us and
+// Process Steps sections below — each is an optional array of small objects that
+// only renders on the public page once it has at least one item.
+function ListEditor({ items, onChange, fields, addLabel, emptyItem, max }) {
+  const update = (i, key, val) => onChange(items.map((it, idx) => (idx === i ? { ...it, [key]: val } : it)));
+  const remove = (i) => onChange(items.filter((_, idx) => idx !== i));
+  const add = () => onChange([...items, emptyItem]);
+  const atMax = max && items.length >= max;
+
+  return (
+    <div className="space-y-3">
+      {items.map((it, i) => (
+        <div key={i} className="relative space-y-2 rounded-lg border border-line p-3.5 pr-9">
+          <button
+            type="button"
+            onClick={() => remove(i)}
+            aria-label="Remove"
+            className="absolute right-2.5 top-2.5 text-red-400 transition-colors hover:text-red-600"
+          >
+            <TrashIcon className="h-3.5 w-3.5" />
+          </button>
+          {fields.map((f) => (
+            <Field key={f.key} label={f.label}>
+              {f.type === "textarea" ? (
+                <textarea
+                  rows={2}
+                  value={it[f.key] || ""}
+                  onChange={(e) => update(i, f.key, e.target.value)}
+                  className={inputClass}
+                />
+              ) : (
+                <input value={it[f.key] || ""} onChange={(e) => update(i, f.key, e.target.value)} className={inputClass} />
+              )}
+            </Field>
+          ))}
+        </div>
+      ))}
+      {!atMax && (
+        <button
+          type="button"
+          onClick={add}
+          className="flex items-center gap-1.5 text-[12.5px] font-bold text-ink transition-colors hover:underline"
+        >
+          <PlusIcon className="h-3.5 w-3.5" />
+          {addLabel}
+        </button>
+      )}
+    </div>
+  );
+}
 
 export default function AdminServicesPage() {
   const [items, setItems] = useState([]);
@@ -122,9 +192,12 @@ export default function AdminServicesPage() {
     setForm({
       title: item.title,
       slug: item.slug || "",
+      hero_title_plain: item.hero_title_plain || "",
+      hero_title_highlight: item.hero_title_highlight || "",
       subtitle: item.subtitle || "",
       description: item.description || "",
       price_label: item.price_label || "",
+      price_cta_label: item.price_cta_label || "",
       icon_key: item.icon_key,
       image_url: item.image_url || "",
       href: item.href || "",
@@ -137,6 +210,19 @@ export default function AdminServicesPage() {
       secondary_cta_label: item.secondary_cta_label || "Get a Quote",
       secondary_cta_href: item.secondary_cta_href || "/contact",
       booking_subtitle: item.booking_subtitle || "Fill in your details and our team will confirm your booking shortly.",
+      faqs: item.faqs || [],
+      checklist_eyebrow: item.checklist_section?.eyebrow || "",
+      checklist_heading: item.checklist_section?.heading || "",
+      checklist_subtitle: item.checklist_section?.subtitle || "",
+      sla_stats: item.sla_stats || [],
+      advantages_eyebrow: item.advantages_section?.eyebrow || "",
+      advantages_heading: item.advantages_section?.heading || "",
+      advantages_subtitle: item.advantages_section?.subtitle || "",
+      advantages_items: item.advantages_section?.items || [],
+      process_eyebrow: item.process_section?.eyebrow || "",
+      process_heading: item.process_section?.heading || "",
+      process_subtitle: item.process_section?.subtitle || "",
+      process_items: item.process_section?.items || [],
     });
     setEditingId(item.id);
     setSlugLock(true);
@@ -152,7 +238,7 @@ export default function AdminServicesPage() {
       const url = await uploadImage(file, "house-electric/services");
       set("image_url", url);
     } catch (err) {
-      alert(err.message);
+      toast.error(err.message);
     }
     setUploading(false);
   };
@@ -165,9 +251,12 @@ export default function AdminServicesPage() {
     const payload = {
       title: form.title,
       slug: form.slug,
+      hero_title_plain: form.hero_title_plain.trim() || null,
+      hero_title_highlight: form.hero_title_highlight.trim() || null,
       subtitle: form.subtitle,
       description: form.description,
       price_label: form.price_label,
+      price_cta_label: form.price_cta_label.trim() || null,
       icon_key: form.icon_key,
       image_url: form.image_url,
       href: form.href.trim() || `/services/${form.slug}`,
@@ -184,6 +273,31 @@ export default function AdminServicesPage() {
       secondary_cta_href: form.secondary_cta_href.trim() || "/contact",
       booking_subtitle:
         form.booking_subtitle.trim() || "Fill in your details and our team will confirm your booking shortly.",
+      faqs: form.faqs.filter((f) => f.q?.trim() || f.a?.trim()),
+      checklist_section: {
+        eyebrow: form.checklist_eyebrow.trim(),
+        heading: form.checklist_heading.trim(),
+        subtitle: form.checklist_subtitle.trim(),
+      },
+      sla_stats: form.sla_stats.filter((s) => s.value || s.suffix || s.label),
+      advantages_section:
+        form.advantages_items.filter((it) => it.title || it.desc).length > 0
+          ? {
+              eyebrow: form.advantages_eyebrow.trim(),
+              heading: form.advantages_heading.trim(),
+              subtitle: form.advantages_subtitle.trim(),
+              items: form.advantages_items.filter((it) => it.title || it.desc),
+            }
+          : {},
+      process_section:
+        form.process_items.filter((it) => it.title || it.desc).length > 0
+          ? {
+              eyebrow: form.process_eyebrow.trim(),
+              heading: form.process_heading.trim(),
+              subtitle: form.process_subtitle.trim(),
+              items: form.process_items.filter((it) => it.title || it.desc),
+            }
+          : {},
     };
 
     const { error } = editingId
@@ -192,9 +306,10 @@ export default function AdminServicesPage() {
 
     setSaving(false);
     if (error) {
-      alert(error.message);
+      toast.error(error.message);
       return;
     }
+    toast.success(editingId ? "Service updated" : "Service added");
     await fetchItems();
     setView("list");
   };
@@ -202,11 +317,13 @@ export default function AdminServicesPage() {
   const remove = async (id) => {
     if (!confirm("Delete this service? It will disappear from the website (and its page, if auto-generated).")) return;
     await supabase.from("services").delete().eq("id", id);
+    toast.success("Service deleted");
     fetchItems();
   };
 
   const toggleActive = async (item) => {
     await supabase.from("services").update({ active: !item.active }).eq("id", item.id);
+    toast.success(item.active ? "Service hidden" : "Service activated");
     fetchItems();
   };
 
@@ -241,7 +358,7 @@ export default function AdminServicesPage() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="whitespace-nowrap rounded-md bg-yellow px-7 py-3 text-[14px] font-bold text-ink hover:bg-yellow-dark disabled:opacity-60"
+                  className="whitespace-nowrap rounded-md bg-yellow px-7 py-3 text-[14px] font-bold text-ink transition-all hover:-translate-y-0.5 hover:bg-yellow-dark hover:shadow-md disabled:translate-y-0 disabled:opacity-60"
                 >
                   {saving ? "Saving…" : editingId ? "Update Service" : "Create Service"}
                 </button>
@@ -281,7 +398,7 @@ export default function AdminServicesPage() {
                       {uploading ? "Uploading…" : "Click to upload photo"}
                     </button>
                   )}
-                  {!cloudinaryConfigured && <p className="text-[11px] font-bold text-red-500">⚠ Cloudinary not configured</p>}
+                  {!imagekitConfigured && <p className="text-[11px] font-bold text-red-500">⚠ ImageKit not configured</p>}
                 </FormSection>
 
                 <FormSection title="Title & URL">
@@ -312,8 +429,35 @@ export default function AdminServicesPage() {
                   </Field>
                 </FormSection>
 
+                <FormSection
+                  title="Hero Headline"
+                  hint="The large heading on this service's page — separate from the short Title above. Leave both blank to keep this page's existing headline."
+                >
+                  <Field label="Plain Part">
+                    <input
+                      value={form.hero_title_plain}
+                      onChange={(e) => set("hero_title_plain", e.target.value)}
+                      placeholder="e.g. Proactive, Zero-Downtime"
+                      className={inputClass}
+                    />
+                  </Field>
+                  <Field label="Highlighted Part (shown in gold)">
+                    <input
+                      value={form.hero_title_highlight}
+                      onChange={(e) => set("hero_title_highlight", e.target.value)}
+                      placeholder="e.g. Electrical Maintenance"
+                      className={inputClass}
+                    />
+                  </Field>
+                  {(form.hero_title_plain || form.hero_title_highlight) && (
+                    <p className="rounded-lg bg-cream/60 px-3 py-2.5 text-[15px] font-extrabold leading-snug text-ink">
+                      {form.hero_title_plain} <span className="text-yellow">{form.hero_title_highlight}</span>
+                    </p>
+                  )}
+                </FormSection>
+
                 <FormSection title="Icon">
-                  <div className="grid grid-cols-4 gap-2">
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                     {ICON_OPTIONS.map((o) => {
                       const OptIcon = o.icon;
                       const active = form.icon_key === o.value;
@@ -335,7 +479,7 @@ export default function AdminServicesPage() {
                 </FormSection>
 
                 <FormSection title="Display">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <Field label="Price Label">
                       <input
                         value={form.price_label}
@@ -353,6 +497,14 @@ export default function AdminServicesPage() {
                       />
                     </Field>
                   </div>
+                  <Field label="Pricing Card Headline (optional — overrides Price Label above on the pricing card, e.g. 'See the AMC Plans')">
+                    <input
+                      value={form.price_cta_label}
+                      onChange={(e) => set("price_cta_label", e.target.value)}
+                      placeholder="Leave blank to just show the Price Label"
+                      className={inputClass}
+                    />
+                  </Field>
                   <label className="flex items-center gap-2 text-[13px] font-semibold text-ink">
                     <input type="checkbox" checked={form.active} onChange={(e) => set("active", e.target.checked)} />
                     Live on site
@@ -390,6 +542,32 @@ export default function AdminServicesPage() {
                       className={`${inputClass} font-mono`}
                     />
                   </Field>
+
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                    <Field label="Checklist Eyebrow (optional)">
+                      <input
+                        value={form.checklist_eyebrow}
+                        onChange={(e) => set("checklist_eyebrow", e.target.value)}
+                        placeholder="What's included"
+                        className={inputClass}
+                      />
+                    </Field>
+                    <Field label="Checklist Heading (optional)">
+                      <input
+                        value={form.checklist_heading}
+                        onChange={(e) => set("checklist_heading", e.target.value)}
+                        placeholder={`${form.title || "Service"} — What We Cover`}
+                        className={inputClass}
+                      />
+                    </Field>
+                    <Field label="Checklist Subtitle (optional)">
+                      <input
+                        value={form.checklist_subtitle}
+                        onChange={(e) => set("checklist_subtitle", e.target.value)}
+                        className={inputClass}
+                      />
+                    </Field>
+                  </div>
                 </FormSection>
 
                 <FormSection title="Hero Buttons & Booking Text" hint="The eyebrow tag, both hero buttons, and the booking-form subtitle on this service's page.">
@@ -418,6 +596,92 @@ export default function AdminServicesPage() {
                       className={inputClass}
                     />
                   </Field>
+                </FormSection>
+
+                <FormSection
+                  title="SLA Stats Strip"
+                  hint="Up to 4 quick stats shown right under the hero photo (e.g. 30 / Mins / Average Arrival SLA). Leave empty to hide this strip."
+                >
+                  <ListEditor
+                    items={form.sla_stats}
+                    onChange={(v) => set("sla_stats", v)}
+                    fields={[
+                      { key: "value", label: "Value (e.g. 30, 100, 24/7)" },
+                      { key: "suffix", label: "Suffix (e.g.  Mins,  %,  +)" },
+                      { key: "label", label: "Label" },
+                    ]}
+                    emptyItem={{ value: "", suffix: "", label: "" }}
+                    addLabel="Add Stat"
+                    max={4}
+                  />
+                </FormSection>
+
+                <FormSection
+                  title="Why Choose Us Cards"
+                  hint="An optional advantages section further down the page. Leave the cards empty to hide this section."
+                >
+                  <Field label="Eyebrow">
+                    <input value={form.advantages_eyebrow} onChange={(e) => set("advantages_eyebrow", e.target.value)} className={inputClass} />
+                  </Field>
+                  <Field label="Heading">
+                    <input value={form.advantages_heading} onChange={(e) => set("advantages_heading", e.target.value)} className={inputClass} />
+                  </Field>
+                  <Field label="Subtitle">
+                    <textarea rows={2} value={form.advantages_subtitle} onChange={(e) => set("advantages_subtitle", e.target.value)} className={inputClass} />
+                  </Field>
+                  <ListEditor
+                    items={form.advantages_items}
+                    onChange={(v) => set("advantages_items", v)}
+                    fields={[
+                      { key: "title", label: "Card Title" },
+                      { key: "desc", label: "Card Description", type: "textarea" },
+                    ]}
+                    emptyItem={{ title: "", desc: "" }}
+                    addLabel="Add Card"
+                    max={8}
+                  />
+                </FormSection>
+
+                <FormSection
+                  title="Process Steps"
+                  hint="An optional step-by-step workflow section, numbered automatically (01, 02…). Leave empty to hide this section."
+                >
+                  <Field label="Eyebrow">
+                    <input value={form.process_eyebrow} onChange={(e) => set("process_eyebrow", e.target.value)} className={inputClass} />
+                  </Field>
+                  <Field label="Heading">
+                    <input value={form.process_heading} onChange={(e) => set("process_heading", e.target.value)} className={inputClass} />
+                  </Field>
+                  <Field label="Subtitle">
+                    <textarea rows={2} value={form.process_subtitle} onChange={(e) => set("process_subtitle", e.target.value)} className={inputClass} />
+                  </Field>
+                  <ListEditor
+                    items={form.process_items}
+                    onChange={(v) => set("process_items", v)}
+                    fields={[
+                      { key: "title", label: "Step Title" },
+                      { key: "desc", label: "Step Description", type: "textarea" },
+                    ]}
+                    emptyItem={{ title: "", desc: "" }}
+                    addLabel="Add Step"
+                    max={4}
+                  />
+                </FormSection>
+
+                <FormSection
+                  title="FAQs"
+                  hint="Shown in a Frequently Asked Questions section on this service's page."
+                >
+                  <ListEditor
+                    items={form.faqs}
+                    onChange={(v) => set("faqs", v)}
+                    fields={[
+                      { key: "q", label: "Question" },
+                      { key: "a", label: "Answer", type: "textarea" },
+                    ]}
+                    emptyItem={{ q: "", a: "" }}
+                    addLabel="Add Question"
+                  />
                 </FormSection>
 
                 {form.slug && (
@@ -453,16 +717,33 @@ export default function AdminServicesPage() {
           </p>
           <button
             onClick={openNew}
-            className="flex items-center gap-1.5 whitespace-nowrap rounded-md bg-yellow px-6 py-3 text-[14px] font-bold text-ink hover:bg-yellow-dark"
+            className="flex items-center gap-1.5 whitespace-nowrap rounded-md bg-yellow px-6 py-3 text-[14px] font-bold text-ink transition-all hover:-translate-y-0.5 hover:bg-yellow-dark hover:shadow-md"
           >
             <PlusIcon className="h-4 w-4" />
             Add Service
           </button>
         </div>
 
-        <div className="overflow-hidden rounded-2xl border border-line bg-white">
+        <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {[
+            { label: "Total Services", value: items.length, icon: WrenchIcon, cls: "bg-ink text-yellow" },
+            { label: "Live", value: items.filter((i) => i.active).length, icon: CheckCircle, cls: "bg-emerald-50 text-emerald-600" },
+            { label: "Hidden", value: items.filter((i) => !i.active).length, icon: EditIcon, cls: "bg-gray-100 text-gray-500" },
+          ].map((c, i) => (
+            <div key={c.label} style={{ animationDelay: `${i * 0.06}s` }} className="card-hover rounded-2xl border border-line bg-white p-4 opacity-0 animate-fade-up">
+              <div className={`mb-2.5 grid h-9 w-9 place-items-center rounded-lg ${c.cls}`}>
+                <c.icon className="h-4 w-4" />
+              </div>
+              <div className="text-[11.5px] font-semibold text-body">{c.label}</div>
+              <div className="mt-0.5 text-[22px] font-extrabold tabular-nums text-ink">{c.value}</div>
+            </div>
+          ))}
+        </div>
+
+        <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-[0_1px_0_rgba(20,20,20,0.02)]">
           <div className="border-b border-line bg-cream/40 px-5 py-3">
-            <span className="text-[12px] font-bold uppercase tracking-wide text-body">
+            <span className="flex items-center gap-2 text-[12px] font-bold uppercase tracking-wide text-body">
+              <WrenchIcon className="h-3.5 w-3.5 text-yellow-dark" />
               {items.length} Service{items.length === 1 ? "" : "s"}
             </span>
           </div>
@@ -484,16 +765,20 @@ export default function AdminServicesPage() {
                 const Icon = ICON_MAP[item.icon_key] || BoltBadge;
                 const checklistCount = item.checklist_items?.length || 0;
                 return (
-                  <div key={item.id} className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center">
+                  <div key={item.id} className="group flex flex-col gap-4 p-5 transition-colors hover:bg-cream/30 sm:flex-row sm:items-center">
                     <div className="relative h-20 w-28 flex-none overflow-hidden rounded-lg border border-line bg-cream/30">
                       {item.image_url ? (
-                        <img src={item.image_url} alt={item.title} className="h-full w-full object-cover" />
+                        <img
+                          src={item.image_url}
+                          alt={item.title}
+                          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
+                        />
                       ) : (
                         <div className="grid h-full w-full place-items-center text-body/40">
                           <Icon className="h-6 w-6" />
                         </div>
                       )}
-                      <span className="absolute -bottom-1 -left-1 grid h-6 w-6 place-items-center rounded-full border-2 border-white bg-yellow text-ink">
+                      <span className="absolute -bottom-1 -left-1 grid h-6 w-6 place-items-center rounded-full border-2 border-white bg-yellow text-ink shadow-sm transition-transform duration-200 group-hover:scale-110">
                         <Icon className="h-3 w-3" />
                       </span>
                     </div>
@@ -513,8 +798,8 @@ export default function AdminServicesPage() {
                         )}
                         <button
                           onClick={() => toggleActive(item)}
-                          className={`whitespace-nowrap rounded-full px-2.5 py-0.5 text-[11px] font-bold ${
-                            item.active ? "bg-emerald-50 text-emerald-700" : "bg-cream text-body"
+                          className={`whitespace-nowrap rounded-full px-2.5 py-0.5 text-[11px] font-bold transition-colors ${
+                            item.active ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100" : "bg-cream text-body hover:bg-line"
                           }`}
                         >
                           {item.active ? "Live" : "Hidden"}

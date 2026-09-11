@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import AdminGuard from "@/components/admin/AdminGuard";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/lib/supabase";
-import { MapIcon, PlusIcon } from "@/components/icons";
+import { MapIcon, PlusIcon, PinIcon } from "@/components/icons";
 
 export default function AdminServiceAreasPage() {
   const [areas, setAreas] = useState([]);
@@ -31,9 +32,10 @@ export default function AdminServiceAreasPage() {
     const nextOrder = areas.length > 0 ? Math.max(...areas.map((a) => a.display_order)) + 1 : 1;
     const { error } = await supabase.from("service_areas").insert([{ name: newName.trim(), display_order: nextOrder }]);
     setAdding(false);
-    if (error) alert(error.message);
+    if (error) toast.error(error.message);
     else {
       setNewName("");
+      toast.success("Service area added");
       fetchAreas();
     }
   };
@@ -42,6 +44,7 @@ export default function AdminServiceAreasPage() {
     setDeleting(id);
     await supabase.from("service_areas").delete().eq("id", id);
     setAreas((prev) => prev.filter((a) => a.id !== id));
+    toast.success("Service area removed");
     setDeleting(null);
   };
 
@@ -56,29 +59,49 @@ export default function AdminServiceAreasPage() {
           page. Add a new area whenever you expand coverage.
         </p>
 
-        <form onSubmit={addArea} className="mb-6 flex flex-wrap items-end gap-3 rounded-2xl border border-line bg-white p-5">
-          <div className="min-w-[220px] flex-1">
-            <label className="mb-1 block text-[12px] font-semibold text-body">New Area Name</label>
-            <input
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-              placeholder="e.g. Ranital"
-              className="w-full rounded-md border border-line px-3.5 py-2.5 text-[14px] outline-none focus:border-ink"
-            />
+        <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="card-hover rounded-2xl border border-line bg-white p-4 opacity-0 animate-fade-up">
+            <div className="mb-2.5 grid h-9 w-9 place-items-center rounded-lg bg-ink text-yellow">
+              <MapIcon className="h-4 w-4" />
+            </div>
+            <div className="text-[11.5px] font-semibold text-body">Total Areas</div>
+            <div className="mt-0.5 text-[22px] font-extrabold tabular-nums text-ink">{areas.length}</div>
           </div>
-          <button
-            type="submit"
-            disabled={adding}
-            className="flex items-center gap-1.5 whitespace-nowrap rounded-md bg-yellow px-5 py-2.5 text-[13.5px] font-bold text-ink hover:bg-yellow-dark disabled:opacity-60"
-          >
-            <PlusIcon className="h-4 w-4" />
-            {adding ? "Adding…" : "Add Area"}
-          </button>
+        </div>
+
+        <form
+          onSubmit={addArea}
+          className="card-hover group relative mb-6 overflow-hidden rounded-2xl border border-line bg-white p-5"
+        >
+          <span className="absolute inset-x-0 top-0 h-[3px] origin-left scale-x-0 bg-gradient-to-r from-yellow/0 via-yellow to-yellow/0 transition-transform duration-300 ease-out group-hover:scale-x-100" />
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="min-w-[220px] flex-1">
+              <label className="mb-1 block text-[12px] font-semibold text-body">New Area Name</label>
+              <div className="relative">
+                <PinIcon className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-body/40" />
+                <input
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  placeholder="e.g. Ranital"
+                  className="w-full rounded-md border border-line py-2.5 pl-10 pr-3.5 text-[14px] outline-none transition-all focus:border-ink focus:ring-2 focus:ring-yellow/20"
+                />
+              </div>
+            </div>
+            <button
+              type="submit"
+              disabled={adding}
+              className="flex items-center gap-1.5 whitespace-nowrap rounded-md bg-yellow px-5 py-2.5 text-[13.5px] font-bold text-ink transition-all hover:-translate-y-0.5 hover:bg-yellow-dark hover:shadow-md disabled:translate-y-0 disabled:opacity-60"
+            >
+              <PlusIcon className="h-4 w-4" />
+              {adding ? "Adding…" : "Add Area"}
+            </button>
+          </div>
         </form>
 
-        <div className="overflow-hidden rounded-2xl border border-line bg-white">
+        <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-[0_1px_0_rgba(20,20,20,0.02)]">
           <div className="border-b border-line bg-cream/40 px-5 py-3">
-            <span className="text-[12px] font-bold uppercase tracking-wide text-body">
+            <span className="flex items-center gap-2 text-[12px] font-bold uppercase tracking-wide text-body">
+              <MapIcon className="h-3.5 w-3.5 text-yellow-dark" />
               {areas.length} Area{areas.length === 1 ? "" : "s"}
             </span>
           </div>
@@ -92,17 +115,19 @@ export default function AdminServiceAreasPage() {
               </div>
             ) : (
               <div className="flex flex-wrap gap-2.5">
-                {areas.map((a) => (
+                {areas.map((a, i) => (
                   <span
                     key={a.id}
-                    className="flex items-center gap-2 rounded-full border border-line bg-cream/40 py-1.5 pl-3.5 pr-2 text-[13.5px] font-semibold text-ink"
+                    style={{ animationDelay: `${Math.min(i, 12) * 0.03}s` }}
+                    className="group flex items-center gap-2 rounded-full border border-line bg-gradient-to-b from-white to-cream/50 py-1.5 pl-3.5 pr-2 text-[13.5px] font-semibold text-ink opacity-0 shadow-sm animate-fade-up transition-all duration-200 hover:-translate-y-0.5 hover:border-yellow/50 hover:shadow-md"
                   >
+                    <PinIcon className="h-3.5 w-3.5 text-yellow-dark" />
                     {a.name}
                     <button
                       onClick={() => remove(a.id)}
                       disabled={deleting === a.id}
                       aria-label={`Remove ${a.name}`}
-                      className="grid h-5 w-5 place-items-center rounded-full text-body hover:bg-red-100 hover:text-red-500"
+                      className="grid h-5 w-5 place-items-center rounded-full text-body transition-colors hover:bg-red-100 hover:text-red-500"
                     >
                       ×
                     </button>
