@@ -175,7 +175,7 @@ export default function AdminSettingsPage() {
                 <IconField
                   icon={ClockIcon}
                   label="Working Hours"
-                  hint='Shown on the Contact page. Leave blank to hide it — never show hours you don\'t actually keep.'
+                  hint="Shown on the Contact page. Leave blank to hide it — never show hours you don't actually keep."
                 >
                   <input
                     value={form.hours}
