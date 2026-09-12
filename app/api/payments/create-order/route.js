@@ -19,7 +19,7 @@ export async function POST(request) {
     return NextResponse.json({ error: "Online payments are not configured yet." }, { status: 500 });
   }
 
-  const { type, invoiceId, planId } = await request.json().catch(() => ({}));
+  const { type, invoiceId, planId, quotationId } = await request.json().catch(() => ({}));
 
   try {
     if (type === "invoice") {
@@ -36,6 +36,23 @@ export async function POST(request) {
         amountRupees: balance,
         receipt: `inv_${invoice.invoice_number}`,
         notes: { type: "invoice", invoice_id: invoice.id, customer_id: user.id },
+      });
+      return NextResponse.json({ orderId: order.id, amount: order.amount, keyId: process.env.RAZORPAY_KEY_ID });
+    }
+
+    if (type === "quotation") {
+      const { data: quotation } = await supabaseAdmin.from("quotations").select("*").eq("id", quotationId).maybeSingle();
+      if (!quotation || quotation.customer_id !== user.id) {
+        return NextResponse.json({ error: "Quotation not found." }, { status: 404 });
+      }
+      if (quotation.status !== "accepted") {
+        return NextResponse.json({ error: "Please accept the quotation before paying." }, { status: 400 });
+      }
+
+      const order = await createRazorpayOrder({
+        amountRupees: quotation.total,
+        receipt: `qtn_${quotation.quotation_number}`,
+        notes: { type: "quotation", quotation_id: quotation.id, customer_id: user.id },
       });
       return NextResponse.json({ orderId: order.id, amount: order.amount, keyId: process.env.RAZORPAY_KEY_ID });
     }

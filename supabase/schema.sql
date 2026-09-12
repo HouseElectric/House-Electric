@@ -214,3 +214,80 @@ alter table public.amc_plans add column if not exists featured boolean not null 
 
 -- ============ technicians: profile photo ============
 alter table public.technicians add column if not exists photo_url text;
+
+-- ============ service_requests: customer ticket system ============
+-- Ticket numbers use the format HE-<year>-<6-digit-sequence>, e.g. HE-2026-000125.
+create sequence if not exists public.ticket_number_seq;
+
+create or replace function public.next_ticket_number()
+returns text
+language sql
+as $$
+  select 'HE-' || to_char(now(), 'YYYY') || '-' || lpad(nextval('public.ticket_number_seq')::text, 6, '0');
+$$;
+
+create table if not exists public.service_requests (
+  id uuid primary key default gen_random_uuid(),
+  ticket_number text not null default public.next_ticket_number(),
+  customer_id uuid references auth.users (id) on delete set null,
+  service_type text not null,
+  description text,
+  preferred_date date,
+  preferred_time text,
+  location text,
+  photo_url text,
+  photo_urls jsonb not null default '[]'::jsonb,
+  status text not null default 'requested' check (status in ('requested','assigned','scheduled','in_progress','completed','cancelled')),
+  technician_name text,
+  admin_notes text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table public.service_requests enable row level security;
+
+drop policy if exists "Customers can read own requests" on public.service_requests;
+create policy "Customers can read own requests" on public.service_requests
+  for select using (auth.uid() = customer_id or auth.role() = 'service_role');
+
+drop policy if exists "Customers can create own requests" on public.service_requests;
+create policy "Customers can create own requests" on public.service_requests
+  for insert with check (auth.uid() = customer_id);
+
+drop policy if exists "Authenticated full access on requests" on public.service_requests;
+create policy "Authenticated full access on requests" on public.service_requests
+  for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+
+-- ============ notifications: customer-facing event feed ============
+create table if not exists public.notifications (
+  id uuid primary key default gen_random_uuid(),
+  customer_id uuid references auth.users (id) on delete cascade,
+  title text not null,
+  message text,
+  read boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+alter table public.notifications enable row level security;
+
+drop policy if exists "Customers can read own notifications" on public.notifications;
+create policy "Customers can read own notifications" on public.notifications
+  for select using (auth.uid() = customer_id);
+
+drop policy if exists "Customers can update own notifications" on public.notifications;
+create policy "Customers can update own notifications" on public.notifications
+  for update using (auth.uid() = customer_id);
+
+drop policy if exists "Authenticated full access on notifications" on public.notifications;
+create policy "Authenticated full access on notifications" on public.notifications
+  for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+
+-- ============ site_settings: working hours (admin-managed, shown on Contact page) ============
+-- No default value seeded here — the Contact page only shows a "Working Hours" row once an
+-- admin fills it in via /admin/settings, so no hours are ever displayed unless genuinely set.
+
+-- ============ service_areas: optional genuine local detail per area ============
+-- Blank by default. The /electrician-in/[area] page only renders a "local highlight" callout
+-- once an admin has actually written one — avoids thin/duplicate location-page content without
+-- ever fabricating local claims.
+alter table public.service_areas add column if not exists local_note text;

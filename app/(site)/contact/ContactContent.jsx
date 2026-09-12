@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import EnquiryForm from "@/components/EnquiryForm";
 import PageHero from "@/components/PageHero";
 import Reveal from "@/components/Reveal";
-import { MailIcon, PhoneIcon, PinIcon, WhatsAppIcon } from "@/components/icons";
+import { ClockIcon, MailIcon, PhoneIcon, PinIcon, WhatsAppIcon } from "@/components/icons";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 
 const WHATSAPP_MSG = encodeURIComponent(
@@ -83,12 +83,13 @@ const SOCIAL_ICONS = [
   },
 ];
 
-function ContactSidebar({ phone, whatsapp, email, address, city, state, facebook, instagram, linkedin }) {
+function ContactSidebar({ phone, whatsapp, email, address, city, state, hours, facebook, instagram, linkedin }) {
   const rows = [
     { icon: PhoneIcon, label: "Call", value: phone, href: `tel:${phone.replace(/\s+/g, "")}` },
     { icon: WhatsAppIcon, label: "WhatsApp", value: "Chat now", href: `https://wa.me/${whatsapp}?text=${WHATSAPP_MSG}` },
     { icon: MailIcon, label: "Email", value: email, href: `mailto:${email}` },
     { icon: PinIcon, label: "Address", value: address || `${city}, ${state}`, href: "/service-areas", isAddress: true },
+    ...(hours?.trim() ? [{ icon: ClockIcon, label: "Working Hours", value: hours, isAddress: true }] : []),
   ];
 
   return (
@@ -97,12 +98,14 @@ function ContactSidebar({ phone, whatsapp, email, address, city, state, facebook
       <p className="mb-6 text-[13.5px] text-charcoal/70">Prefer to skip the form? Contact us right away.</p>
 
       <div className="space-y-3.5">
-        {rows.map((r) => (
-          <a
+        {rows.map((r) => {
+          const Wrapper = r.href ? "a" : "div";
+          return (
+          <Wrapper
             key={r.label}
-            href={r.href}
-            target={r.href.startsWith("http") ? "_blank" : undefined}
-            rel="noopener noreferrer"
+            {...(r.href
+              ? { href: r.href, target: r.href.startsWith("http") ? "_blank" : undefined, rel: "noopener noreferrer" }
+              : {})}
             className="group flex items-start gap-3.5 rounded-xl border border-line/80 bg-cream/40 p-3.5 transition-all duration-200 hover:border-yellow/60 hover:bg-white hover:shadow-md"
           >
             <span className="grid h-10 w-10 flex-none place-items-center rounded-xl bg-yellow/15 text-yellow-dark transition-colors group-hover:bg-yellow group-hover:text-ink mt-0.5">
@@ -120,8 +123,9 @@ function ContactSidebar({ phone, whatsapp, email, address, city, state, facebook
                 </p>
               )}
             </div>
-          </a>
-        ))}
+          </Wrapper>
+          );
+        })}
       </div>
 
       {(facebook || instagram || linkedin) && (
@@ -178,7 +182,7 @@ function ContactSidebar({ phone, whatsapp, email, address, city, state, facebook
 
 export default function ContactPage() {
   const settings = useSiteSettings();
-  const { phone, whatsapp, email, address, city, state, facebook, instagram, linkedin } = settings;
+  const { phone, whatsapp, email, address, city, state, hours, facebook, instagram, linkedin } = settings;
   const CARDS = getCards(settings);
   return (
     <main>
@@ -210,6 +214,7 @@ export default function ContactPage() {
             address={address}
             city={city}
             state={state}
+            hours={hours}
             facebook={facebook}
             instagram={instagram}
             linkedin={linkedin}

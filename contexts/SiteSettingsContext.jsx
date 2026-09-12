@@ -11,6 +11,7 @@ const DEFAULT_SETTINGS = {
   city: "New Delhi",
   state: "Delhi",
   gstin: "07DDQPK2622Q1ZX",
+  hours: "",
   facebook: "",
   instagram: "",
   linkedin: "",

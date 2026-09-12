@@ -81,6 +81,58 @@ export async function POST(request) {
       return NextResponse.json({ ok: true });
     }
 
+    if (type === "quotation") {
+      const { quotationId } = body;
+      const { data: quotation } = await supabaseAdmin.from("quotations").select("*").eq("id", quotationId).maybeSingle();
+      if (!quotation || quotation.customer_id !== user.id) {
+        return NextResponse.json({ error: "Quotation not found." }, { status: 404 });
+      }
+      if (quotation.status !== "accepted") {
+        return NextResponse.json({ error: "Please accept the quotation before paying." }, { status: 400 });
+      }
+
+      const { data: invoice, error: invoiceErr } = await supabaseAdmin
+        .from("invoices")
+        .insert([
+          {
+            customer_id: quotation.customer_id,
+            customer_name: quotation.customer_name,
+            customer_email: quotation.customer_email,
+            customer_mobile: quotation.customer_mobile,
+            quotation_id: quotation.id,
+            service_request_id: quotation.service_request_id,
+            items: quotation.items,
+            gst_percent: quotation.gst_percent,
+            total_amount: quotation.total,
+            paid_amount: quotation.total,
+            payment_status: "paid",
+            payment_reference: razorpay_payment_id,
+            razorpay_order_id,
+            razorpay_payment_id,
+          },
+        ])
+        .select()
+        .single();
+      if (invoiceErr) throw invoiceErr;
+
+      await supabaseAdmin.from("quotations").update({ status: "paid", updated_at: new Date().toISOString() }).eq("id", quotationId);
+
+      await supabaseAdmin.from("notifications").insert([
+        {
+          customer_id: user.id,
+          title: "Payment successful",
+          message: `Your payment for quotation ${quotation.quotation_number} was received. Thank you!`,
+        },
+        {
+          customer_id: user.id,
+          title: "New invoice generated",
+          message: `Invoice ${invoice.invoice_number} for ₹${Number(invoice.total_amount).toLocaleString("en-IN")} has been generated.`,
+        },
+      ]);
+
+      return NextResponse.json({ ok: true, invoiceId: invoice.id });
+    }
+
     if (type === "amc") {
       const { planId, renewFromId } = body;
       const { data: plan } = await supabaseAdmin.from("amc_plans").select("*").eq("id", planId).maybeSingle();

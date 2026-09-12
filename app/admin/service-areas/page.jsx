@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import AdminGuard from "@/components/admin/AdminGuard";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/lib/supabase";
-import { MapIcon, PlusIcon, PinIcon } from "@/components/icons";
+import { MapIcon, PlusIcon, PinIcon, EditIcon, XIcon, CheckCircle } from "@/components/icons";
 
 export default function AdminServiceAreasPage() {
   const [areas, setAreas] = useState([]);
@@ -13,6 +13,9 @@ export default function AdminServiceAreasPage() {
   const [newName, setNewName] = useState("");
   const [adding, setAdding] = useState(false);
   const [deleting, setDeleting] = useState(null);
+  const [editing, setEditing] = useState(null);
+  const [noteDraft, setNoteDraft] = useState("");
+  const [savingNote, setSavingNote] = useState(false);
 
   const fetchAreas = async () => {
     setLoading(true);
@@ -46,6 +49,25 @@ export default function AdminServiceAreasPage() {
     setAreas((prev) => prev.filter((a) => a.id !== id));
     toast.success("Service area removed");
     setDeleting(null);
+  };
+
+  const openEdit = (area) => {
+    setEditing(area);
+    setNoteDraft(area.local_note || "");
+  };
+
+  const saveNote = async () => {
+    setSavingNote(true);
+    const value = noteDraft.trim() || null;
+    const { error } = await supabase.from("service_areas").update({ local_note: value }).eq("id", editing.id);
+    setSavingNote(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setAreas((prev) => prev.map((a) => (a.id === editing.id ? { ...a, local_note: value } : a)));
+    toast.success("Local note saved");
+    setEditing(null);
   };
 
   return (
@@ -123,6 +145,19 @@ export default function AdminServiceAreasPage() {
                   >
                     <PinIcon className="h-3.5 w-3.5 text-yellow-dark" />
                     {a.name}
+                    {a.local_note?.trim() && (
+                      <span
+                        title="Local note added"
+                        className="h-1.5 w-1.5 flex-none rounded-full bg-emerald-500"
+                      />
+                    )}
+                    <button
+                      onClick={() => openEdit(a)}
+                      aria-label={`Edit local note for ${a.name}`}
+                      className="grid h-5 w-5 place-items-center rounded-full text-body transition-colors hover:bg-yellow/20 hover:text-yellow-dark"
+                    >
+                      <EditIcon className="h-3 w-3" />
+                    </button>
                     <button
                       onClick={() => remove(a.id)}
                       disabled={deleting === a.id}
@@ -137,6 +172,55 @@ export default function AdminServiceAreasPage() {
             )}
           </div>
         </div>
+
+        {editing && (
+          <>
+            <div className="fixed inset-0 z-[190] bg-black/50" onClick={() => setEditing(null)} />
+            <div className="fixed inset-x-4 top-1/2 z-[200] -translate-y-1/2 rounded-2xl border border-line bg-white p-6 shadow-2xl sm:inset-x-auto sm:left-1/2 sm:w-full sm:max-w-md sm:-translate-x-1/2">
+              <div className="mb-4 flex items-center justify-between">
+                <div>
+                  <h3 className="text-[15px] font-extrabold text-ink">Local Note — {editing.name}</h3>
+                  <p className="mt-0.5 text-[12px] text-body">Optional. Shown on the public location page for this area.</p>
+                </div>
+                <button
+                  onClick={() => setEditing(null)}
+                  aria-label="Close"
+                  className="grid h-7 w-7 flex-none place-items-center rounded-full text-body hover:bg-cream"
+                >
+                  <XIcon className="h-4 w-4" />
+                </button>
+              </div>
+
+              <textarea
+                value={noteDraft}
+                onChange={(e) => setNoteDraft(e.target.value)}
+                rows={4}
+                placeholder={`e.g. real landmarks or streets you cover in ${editing.name}, or what kind of jobs come up most often here — genuine detail only, no invented claims.`}
+                className="w-full rounded-xl border border-line bg-white px-3.5 py-3 text-[13.5px] text-ink outline-none transition-all focus:border-ink focus:ring-4 focus:ring-yellow/15"
+              />
+              <p className="mt-2 text-[11.5px] text-body">
+                Leave blank if you don't have genuine local detail for this area yet — the page will simply skip this section.
+              </p>
+
+              <div className="mt-4 flex items-center gap-3">
+                <button
+                  onClick={saveNote}
+                  disabled={savingNote}
+                  className="inline-flex items-center gap-1.5 rounded-md bg-yellow px-5 py-2.5 text-[13.5px] font-bold text-ink transition-all hover:-translate-y-0.5 hover:bg-yellow-dark hover:shadow-md disabled:translate-y-0 disabled:opacity-60"
+                >
+                  <CheckCircle className="h-4 w-4" />
+                  {savingNote ? "Saving…" : "Save Note"}
+                </button>
+                <button
+                  onClick={() => setEditing(null)}
+                  className="rounded-md px-4 py-2.5 text-[13.5px] font-semibold text-body hover:text-ink"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </>
+        )}
       </AdminLayout>
     </AdminGuard>
   );

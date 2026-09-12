@@ -8,12 +8,12 @@ export const DEFAULT_HOME = {
     {
       image: "/hero-electrician.png",
       alt: "House Electric technician working on a distribution board",
-      eyebrow: "Professional electrical services",
-      titleLine1: "Reliable Electrical",
-      titleLine2: "Solutions for a",
-      titleHighlight: "Safer Tomorrow",
+      eyebrow: "Delhi's trusted electrical experts",
+      titleLine1: "Professional Electrical",
+      titleLine2: "Services in",
+      titleHighlight: "Delhi",
       subtitle:
-        "From quick repairs to annual maintenance, House Electric keeps your home, business and workplace powered, safe and worry-free.",
+        "Trusted electrical repair, installation, maintenance & AMC for homes, offices and commercial properties across Delhi — safe, on-time and worry-free.",
       primaryLabel: "Book Electrical Health Check",
       primaryHref: "/services/electrical-health-check",
       secondaryLabel: "Get a Quote",

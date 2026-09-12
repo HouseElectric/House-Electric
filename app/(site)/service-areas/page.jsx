@@ -1,9 +1,17 @@
+import Link from "next/link";
 import CTA from "@/components/CTA";
 import PageHero from "@/components/PageHero";
 import Reveal from "@/components/Reveal";
 import { PinIcon } from "@/components/icons";
 import { supabase } from "@/lib/supabase";
 import { getContactSettings } from "@/lib/getContactSettings";
+
+const slugify = (text) =>
+  text
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/[\s_-]+/g, "-");
 
 export const metadata = {
   title: "Service Areas — House Electric",
@@ -52,9 +60,14 @@ export default async function ServiceAreasPage() {
               <h2 className="mb-5">{city} & Surrounding Areas</h2>
               <ul className="grid grid-cols-2 gap-y-3 sm:grid-cols-3">
                 {areas.map((a) => (
-                  <li key={a} className="flex items-center gap-2 text-[14px] font-medium text-ink-soft">
-                    <PinIcon className="h-3.5 w-3.5 flex-none text-yellow" />
-                    {a}
+                  <li key={a}>
+                    <Link
+                      href={`/electrician-in/${slugify(a)}`}
+                      className="group flex items-center gap-2 text-[14px] font-medium text-ink-soft transition-colors hover:text-yellow-dark"
+                    >
+                      <PinIcon className="h-3.5 w-3.5 flex-none text-yellow" />
+                      <span className="group-hover:underline group-hover:underline-offset-2">{a}</span>
+                    </Link>
                   </li>
                 ))}
               </ul>

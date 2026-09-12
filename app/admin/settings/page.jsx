@@ -14,6 +14,7 @@ import {
   PinIcon,
   ReportIcon,
   BuildingIcon,
+  ClockIcon,
   FacebookIcon,
   InstagramIcon,
   LinkedInIcon,
@@ -28,6 +29,7 @@ const EMPTY = {
   city: "",
   state: "",
   gstin: "",
+  hours: "",
   facebook: "",
   instagram: "",
   linkedin: "",
@@ -169,6 +171,19 @@ export default function AdminSettingsPage() {
                     <input value={form.state} onChange={(e) => set("state", e.target.value)} required className={iconInput} />
                   </IconField>
                 </div>
+
+                <IconField
+                  icon={ClockIcon}
+                  label="Working Hours"
+                  hint='Shown on the Contact page. Leave blank to hide it — never show hours you don\'t actually keep.'
+                >
+                  <input
+                    value={form.hours}
+                    onChange={(e) => set("hours", e.target.value)}
+                    placeholder="Mon – Sat, 9:00 AM – 8:00 PM"
+                    className={iconInput}
+                  />
+                </IconField>
               </FormSection>
 
               <FormSection
@@ -217,6 +232,7 @@ export default function AdminSettingsPage() {
                     { icon: WhatsAppIcon, value: form.whatsapp, empty: "No WhatsApp number set" },
                     { icon: MailIcon, value: form.email, empty: "No email set" },
                     { icon: PinIcon, value: [form.address, form.city, form.state].filter(Boolean).join(", "), empty: "No address set" },
+                    { icon: ClockIcon, value: form.hours, empty: "No working hours set" },
                   ].map((row, i) => (
                     <div key={i} className="flex items-start gap-3">
                       <span

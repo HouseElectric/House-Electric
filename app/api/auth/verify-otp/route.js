@@ -47,6 +47,14 @@ export async function POST(req) {
 
     await supabaseAdmin.from("profiles").update({ name, mobile }).eq("id", created.user.id);
 
+    await supabaseAdmin.from("notifications").insert([
+      {
+        customer_id: created.user.id,
+        title: "Welcome to House Electric",
+        message: `Hi ${name || "there"}, your account is ready. Track service requests, quotations, invoices and your AMC right here.`,
+      },
+    ]);
+
     await supabaseAdmin.from("otp_codes").delete().eq("id", otp.id);
 
     return NextResponse.json({ ok: true });

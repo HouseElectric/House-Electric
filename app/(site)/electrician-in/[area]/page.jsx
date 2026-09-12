@@ -6,7 +6,7 @@ import PageHero from "@/components/PageHero";
 import Reveal from "@/components/Reveal";
 import { supabase } from "@/lib/supabase";
 import { getContactSettings, telHref } from "@/lib/getContactSettings";
-import { AmcBadge, ClockIcon, GearIcon, PinIcon, ReportIcon, SearchIcon, ShieldIcon } from "@/components/icons";
+import { AmcBadge, ClockIcon, GearIcon, LightbulbIcon, PinIcon, ReportIcon, SearchIcon, ShieldIcon } from "@/components/icons";
 
 export const revalidate = 3600;
 
@@ -21,7 +21,10 @@ const slugify = (text) =>
 
 async function getAreas() {
   if (!supabase) return [];
-  const { data } = await supabase.from("service_areas").select("name").order("display_order", { ascending: true });
+  const { data } = await supabase
+    .from("service_areas")
+    .select("name, local_note")
+    .order("display_order", { ascending: true });
   return data ?? [];
 }
 
@@ -121,6 +124,15 @@ export default async function ElectricianInAreaPage({ params }) {
               residential, commercial and corporate jobs in {area.name} with the same safety standards and
               transparent pricing across all of {city}.
             </p>
+
+            {area.local_note?.trim() && (
+              <div className="mt-5 flex items-start gap-3 rounded-2xl border border-yellow/30 bg-yellow/10 p-4">
+                <span className="mt-0.5 grid h-8 w-8 flex-none place-items-center rounded-lg bg-yellow/25 text-yellow-dark">
+                  <LightbulbIcon className="h-4 w-4" />
+                </span>
+                <p className="text-[13.5px] leading-relaxed text-ink">{area.local_note}</p>
+              </div>
+            )}
           </Reveal>
 
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">

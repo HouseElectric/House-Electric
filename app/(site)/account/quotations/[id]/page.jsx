@@ -6,10 +6,11 @@ import toast from "react-hot-toast";
 import { supabase } from "@/lib/supabase";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
+import { startPayment } from "@/lib/payments";
 import DocumentTemplate from "@/components/DocumentTemplate";
 import ResponsiveDocumentWrapper from "@/components/ResponsiveDocumentWrapper";
 import Reveal from "@/components/Reveal";
-import { ArrowLeftIcon, CheckCircle, PrinterIcon, XIcon } from "@/components/icons";
+import { ArrowLeftIcon, CheckCircle, PrinterIcon, WalletIcon, XIcon } from "@/components/icons";
 
 const STATUS_META = {
   draft: { label: "Draft", color: "#64748b" },
@@ -29,6 +30,7 @@ export default function QuotationDetailPage() {
   const [quotation, setQuotation] = useState(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
+  const [paying, setPaying] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -48,6 +50,27 @@ export default function QuotationDetailPage() {
     setQuotation((q) => ({ ...q, status }));
     setUpdating(false);
     toast.success(status === "accepted" ? "Quotation accepted" : "Quotation declined");
+  };
+
+  const handlePay = async () => {
+    setPaying(true);
+    try {
+      const result = await startPayment({
+        type: "quotation",
+        quotationId: id,
+        name: quotation.customer_name,
+        email: quotation.customer_email,
+        contact: quotation.customer_mobile,
+        description: `Payment for quotation ${quotation.quotation_number}`,
+      });
+      setQuotation((q) => ({ ...q, status: "paid" }));
+      toast.success("Payment successful! Invoice generated.");
+      if (result?.invoiceId) router.push(`/account/invoices/${result.invoiceId}`);
+    } catch (err) {
+      toast.error(err.message || "Payment failed.");
+    } finally {
+      setPaying(false);
+    }
   };
 
   if (loading) {
@@ -142,9 +165,29 @@ export default function QuotationDetailPage() {
         </Reveal>
       )}
       {quotation.status === "accepted" && (
+        <Reveal delay={0.1} className="space-y-3 print:hidden">
+          <div className="flex items-center gap-2.5 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-3.5 text-[13.5px] font-semibold text-emerald-700">
+            <CheckCircle className="h-4 w-4 flex-none" />
+            You've accepted this quotation. Pay online to confirm — your invoice will be generated automatically.
+          </div>
+          <button
+            onClick={handlePay}
+            disabled={paying}
+            className="inline-flex items-center gap-2 rounded-2xl bg-yellow px-7 py-3.5 text-sm font-black text-ink shadow-md transition-all hover:bg-yellow-dark hover:scale-[1.02] disabled:opacity-60"
+          >
+            <WalletIcon className="h-4 w-4" />
+            {paying ? "Processing…" : `Pay ₹${Number(quotation.total).toLocaleString("en-IN")} Now`}
+          </button>
+        </Reveal>
+      )}
+      {quotation.status === "paid" && (
         <Reveal delay={0.1} className="flex items-center gap-2.5 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-3.5 text-[13.5px] font-semibold text-emerald-700 print:hidden">
           <CheckCircle className="h-4 w-4 flex-none" />
-          You've accepted this quotation. Our team will follow up to schedule the work and share payment details.
+          Payment received. Check{" "}
+          <button onClick={() => router.push("/account/invoices")} className="underline underline-offset-2 hover:text-emerald-900">
+            My Invoices
+          </button>{" "}
+          for your receipt.
         </Reveal>
       )}
     </div>
