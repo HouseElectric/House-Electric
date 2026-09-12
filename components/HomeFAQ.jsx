@@ -37,7 +37,7 @@ export default function HomeFAQ() {
   return (
     <section className="bg-cream py-16 md:py-[80px]">
       <div className="mx-auto max-w-wrap px-6">
-        <Reveal className="mb-10 max-w-[60ch]">
+        <Reveal className="mx-auto mb-10 max-w-[60ch] text-center">
           <p className="eyebrow">FAQs</p>
           <h2 className="text-[clamp(1.65rem,3.2vw,2.4rem)] font-extrabold">
             Frequently Asked <span className="text-yellow">Questions</span>

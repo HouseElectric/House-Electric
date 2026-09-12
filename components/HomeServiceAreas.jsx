@@ -1,10 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import Reveal from "./Reveal";
 import { supabase } from "@/lib/supabase";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 import { PinIcon } from "./icons";
+
+const slugify = (text) =>
+  text
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/[\s_-]+/g, "-");
 
 export default function HomeServiceAreas() {
   const { city, state } = useSiteSettings();
@@ -47,13 +55,14 @@ export default function HomeServiceAreas() {
         ) : (
           <div className="flex flex-wrap gap-2.5">
             {areas.map((a) => (
-              <span
+              <Link
                 key={a.name}
-                className="flex items-center gap-1.5 rounded-full border border-line bg-white px-4 py-2 text-[13px] font-semibold text-ink shadow-sm"
+                href={`/electrician-in/${slugify(a.name)}`}
+                className="flex items-center gap-1.5 rounded-full border border-line bg-white px-4 py-2 text-[13px] font-semibold text-ink shadow-sm transition-all hover:-translate-y-0.5 hover:border-yellow hover:text-yellow-dark hover:shadow-md"
               >
                 <PinIcon className="h-3.5 w-3.5 text-yellow-dark" />
                 {a.name}
-              </span>
+              </Link>
             ))}
           </div>
         )}

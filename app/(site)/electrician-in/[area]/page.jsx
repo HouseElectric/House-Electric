@@ -8,7 +8,7 @@ import { supabase } from "@/lib/supabase";
 import { getContactSettings, telHref } from "@/lib/getContactSettings";
 import { AmcBadge, ClockIcon, GearIcon, LightbulbIcon, PinIcon, ReportIcon, SearchIcon, ShieldIcon } from "@/components/icons";
 
-export const revalidate = 3600;
+export const revalidate = 60;
 
 const SITE_URL = "https://houseelectric.in";
 
@@ -177,13 +177,15 @@ export default async function ElectricianInAreaPage({ params }) {
 
       <section className="py-14 md:py-20">
         <div className="mx-auto max-w-wrap px-6">
-          <Reveal className="mb-8 max-w-[60ch]">
+          <Reveal className="mx-auto mb-8 max-w-[60ch] text-center">
             <p className="eyebrow">FAQs</p>
             <h2 className="text-[clamp(1.5rem,3vw,2.2rem)] font-extrabold">
               Electrician in {area.name} — FAQs
             </h2>
           </Reveal>
-          <FAQAccordion items={faqs} />
+          <div className="mx-auto max-w-3xl">
+            <FAQAccordion items={faqs} />
+          </div>
         </div>
       </section>
 

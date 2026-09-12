@@ -6,6 +6,8 @@ import { PinIcon } from "@/components/icons";
 import { supabase } from "@/lib/supabase";
 import { getContactSettings } from "@/lib/getContactSettings";
 
+export const revalidate = 60;
+
 const slugify = (text) =>
   text
     .toLowerCase()
