@@ -204,6 +204,11 @@ alter table public.services add column if not exists advantages_section jsonb no
 alter table public.services add column if not exists process_section jsonb not null default '{}'::jsonb;
 alter table public.services add column if not exists checklist_section jsonb not null default '{}'::jsonb;
 
+-- ============ services: optional "types" section (who this service is for) ============
+-- E.g. AMC's Residential / Office / Commercial / Corporate categories, each with a short
+-- list of the property types it covers. Admin-managed and optional like the other sections.
+alter table public.services add column if not exists types_section jsonb not null default '{}'::jsonb;
+
 -- ============ services: optional headline override for the pricing card ============
 -- Shown instead of price_label when set — useful when the real price lives on a
 -- separate plans page (e.g. AMC's "See the AMC Plans") rather than a single figure.

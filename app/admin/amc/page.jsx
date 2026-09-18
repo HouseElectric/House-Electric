@@ -244,6 +244,15 @@ export default function AdminAmcPage() {
           message: `Your AMC ${created.amc_number} (${plan?.name}) is now active until ${subForm.expiry_date}.`,
         },
       ]);
+
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      fetch("/api/amc/notify-activated", {
+        method: "POST",
+        headers: { "content-type": "application/json", Authorization: `Bearer ${session?.access_token}` },
+        body: JSON.stringify({ subscriptionId: created.id }),
+      }).catch((err) => console.error("AMC activation email trigger failed:", err));
     }
     setSavingSub(false);
     toast.success("AMC subscription activated");

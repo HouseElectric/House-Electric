@@ -88,6 +88,15 @@ export default function AdminQuotationsPage() {
           message: `Quotation ${created.quotation_number} for ₹${total.toLocaleString("en-IN")} is ready for your review.`,
         },
       ]);
+
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      fetch("/api/quotations/notify", {
+        method: "POST",
+        headers: { "content-type": "application/json", Authorization: `Bearer ${session?.access_token}` },
+        body: JSON.stringify({ quotationId: created.id }),
+      }).catch((err) => console.error("Quotation email trigger failed:", err));
     }
     setSaving(false);
     toast.success("Quotation sent to customer");

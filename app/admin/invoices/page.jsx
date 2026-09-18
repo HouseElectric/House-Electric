@@ -85,6 +85,15 @@ export default function AdminInvoicesPage() {
           message: `Invoice ${created.invoice_number} for ₹${total.toLocaleString("en-IN")} has been generated.`,
         },
       ]);
+
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      fetch("/api/invoices/notify", {
+        method: "POST",
+        headers: { "content-type": "application/json", Authorization: `Bearer ${session?.access_token}` },
+        body: JSON.stringify({ invoiceId: created.id }),
+      }).catch((err) => console.error("Invoice email trigger failed:", err));
     }
     setSaving(false);
     toast.success("Invoice generated");
@@ -116,6 +125,17 @@ export default function AdminInvoicesPage() {
           message: `Payment status is now "${STATUS_META[paymentForm.payment_status]?.label}".`,
         },
       ]);
+
+      if (paymentForm.payment_status === "paid") {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        fetch("/api/invoices/notify-payment-status", {
+          method: "POST",
+          headers: { "content-type": "application/json", Authorization: `Bearer ${session?.access_token}` },
+          body: JSON.stringify({ invoiceId: selected.id }),
+        }).catch((err) => console.error("Payment status email trigger failed:", err));
+      }
     }
     setSelected(null);
     toast.success("Payment details updated");

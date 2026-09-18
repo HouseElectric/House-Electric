@@ -100,20 +100,17 @@ export default function NewServiceRequestPage() {
         setUploadingPhoto(false);
       }
 
-      const { data, error: insertError } = await supabase
-        .from("service_requests")
-        .insert([{ ...form, photo_url: photo_urls[0] || null, photo_urls, customer_id: user.id }])
-        .select()
-        .single();
-      if (insertError) throw insertError;
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-      await supabase.from("notifications").insert([
-        {
-          customer_id: user.id,
-          title: "Service request received",
-          message: `Your request ${data.ticket_number} has been received. We'll be in touch shortly.`,
-        },
-      ]);
+      const res = await fetch("/api/service-requests", {
+        method: "POST",
+        headers: { "content-type": "application/json", Authorization: `Bearer ${session?.access_token}` },
+        body: JSON.stringify({ ...form, photo_url: photo_urls[0] || null, photo_urls }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to submit request.");
 
       toast.success("Service request submitted");
       router.replace("/account/requests");

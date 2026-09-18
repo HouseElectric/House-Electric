@@ -21,7 +21,23 @@ import {
   ClipboardIcon,
   ShieldIcon,
   StarIcon,
+  PlusIcon,
+  TrashIcon,
 } from "@/components/icons";
+
+const BLANK_SLIDE = {
+  image: "/hero-electrician.png",
+  alt: "House Electric technician at work",
+  eyebrow: "Our services",
+  titleLine1: "Your Headline",
+  titleLine2: "Goes Here",
+  titleHighlight: "Highlight",
+  subtitle: "Write a short, specific subtitle for this slide.",
+  primaryLabel: "Book a Service",
+  primaryHref: "/contact",
+  secondaryLabel: "Get a Quote",
+  secondaryHref: "/contact",
+};
 
 const ICON_OPTIONS = [
   { value: "users", label: "Users", icon: UsersIcon },
@@ -98,6 +114,16 @@ export default function AdminHomePage() {
   // ---------- Hero slide helpers ----------
   const updateSlide = (index, next) =>
     set("heroSlides", data.heroSlides.map((s, i) => (i === index ? next : s)));
+
+  const addSlide = () => set("heroSlides", [...data.heroSlides, { ...BLANK_SLIDE }]);
+
+  const removeSlide = (index) => {
+    if (data.heroSlides.length <= 1) {
+      toast.error("You need at least one hero slide.");
+      return;
+    }
+    set("heroSlides", data.heroSlides.filter((_, i) => i !== index));
+  };
 
   const uploadSlideImage = async (index, file) => {
     if (!file || !file.type.startsWith("image/")) return;
@@ -227,9 +253,39 @@ export default function AdminHomePage() {
         {/* ---------------- HERO ---------------- */}
         {tab === "hero" && (
           <div className="space-y-5">
+            <div className="flex items-center justify-between">
+              <p className="text-[12.5px] text-body">
+                {data.heroSlides.length} slide{data.heroSlides.length === 1 ? "" : "s"} — the homepage hero rotates through
+                all of them automatically. Add one per service you want to feature (e.g. AMC, Health Check, Emergency).
+              </p>
+              <button
+                type="button"
+                onClick={addSlide}
+                className="inline-flex flex-none items-center gap-1.5 whitespace-nowrap rounded-md border border-line bg-white px-4 py-2.5 text-[12.5px] font-bold text-ink transition-all hover:border-ink hover:bg-cream"
+              >
+                <PlusIcon className="h-3.5 w-3.5" />
+                Add Slide
+              </button>
+            </div>
+
             <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
               {data.heroSlides.map((slide, i) => (
-                <FormSection key={i} title={`Slide ${i + 1}`}>
+                <FormSection
+                  key={i}
+                  title={
+                    <div className="flex items-center justify-between">
+                      <span>Slide {i + 1}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeSlide(i)}
+                        aria-label={`Remove slide ${i + 1}`}
+                        className="grid h-6 w-6 place-items-center rounded-md text-body/60 transition-colors hover:bg-red-50 hover:text-red-600"
+                      >
+                        <TrashIcon className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  }
+                >
                   <SlideFields
                     slide={slide}
                     index={i}

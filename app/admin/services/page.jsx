@@ -56,6 +56,10 @@ const EMPTY = {
   secondary_cta_href: "/contact",
   booking_subtitle: "Fill in your details and our team will confirm your booking shortly.",
   faqs: [],
+  types_eyebrow: "",
+  types_heading: "",
+  types_subtitle: "",
+  types_items: [],
   checklist_eyebrow: "",
   checklist_heading: "",
   checklist_subtitle: "",
@@ -211,6 +215,10 @@ export default function AdminServicesPage() {
       secondary_cta_href: item.secondary_cta_href || "/contact",
       booking_subtitle: item.booking_subtitle || "Fill in your details and our team will confirm your booking shortly.",
       faqs: item.faqs || [],
+      types_eyebrow: item.types_section?.eyebrow || "",
+      types_heading: item.types_section?.heading || "",
+      types_subtitle: item.types_section?.subtitle || "",
+      types_items: (item.types_section?.items || []).map((t) => ({ ...t, tags: (t.tags || []).join(", ") })),
       checklist_eyebrow: item.checklist_section?.eyebrow || "",
       checklist_heading: item.checklist_section?.heading || "",
       checklist_subtitle: item.checklist_section?.subtitle || "",
@@ -274,6 +282,24 @@ export default function AdminServicesPage() {
       booking_subtitle:
         form.booking_subtitle.trim() || "Fill in your details and our team will confirm your booking shortly.",
       faqs: form.faqs.filter((f) => f.q?.trim() || f.a?.trim()),
+      types_section:
+        form.types_items.filter((it) => it.title || it.desc).length > 0
+          ? {
+              eyebrow: form.types_eyebrow.trim(),
+              heading: form.types_heading.trim(),
+              subtitle: form.types_subtitle.trim(),
+              items: form.types_items
+                .filter((it) => it.title || it.desc)
+                .map((it) => ({
+                  title: it.title,
+                  desc: it.desc,
+                  tags: (it.tags || "")
+                    .split(",")
+                    .map((s) => s.trim())
+                    .filter(Boolean),
+                })),
+            }
+          : {},
       checklist_section: {
         eyebrow: form.checklist_eyebrow.trim(),
         heading: form.checklist_heading.trim(),
@@ -612,6 +638,33 @@ export default function AdminServicesPage() {
                     ]}
                     emptyItem={{ value: "", suffix: "", label: "" }}
                     addLabel="Add Stat"
+                    max={4}
+                  />
+                </FormSection>
+
+                <FormSection
+                  title="Types / Who It's For"
+                  hint="An optional section listing the categories or property types this service covers (e.g. AMC's Residential / Office / Commercial / Corporate). Leave empty to hide."
+                >
+                  <Field label="Eyebrow">
+                    <input value={form.types_eyebrow} onChange={(e) => set("types_eyebrow", e.target.value)} className={inputClass} />
+                  </Field>
+                  <Field label="Heading">
+                    <input value={form.types_heading} onChange={(e) => set("types_heading", e.target.value)} className={inputClass} />
+                  </Field>
+                  <Field label="Subtitle">
+                    <textarea rows={2} value={form.types_subtitle} onChange={(e) => set("types_subtitle", e.target.value)} className={inputClass} />
+                  </Field>
+                  <ListEditor
+                    items={form.types_items}
+                    onChange={(v) => set("types_items", v)}
+                    fields={[
+                      { key: "title", label: "Type Title (e.g. Residential AMC)" },
+                      { key: "desc", label: "Short Description", type: "textarea" },
+                      { key: "tags", label: "Applies To (comma-separated, e.g. Homes, Apartments, Villas)" },
+                    ]}
+                    emptyItem={{ title: "", desc: "", tags: "" }}
+                    addLabel="Add Type"
                     max={4}
                   />
                 </FormSection>

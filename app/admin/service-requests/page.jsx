@@ -103,6 +103,15 @@ export default function AdminServiceRequestsPage() {
           message: `Your request status is now "${STATUS_META[form.status]?.label ?? form.status}".`,
         },
       ]);
+
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      fetch("/api/service-requests/notify-status", {
+        method: "POST",
+        headers: { "content-type": "application/json", Authorization: `Bearer ${session?.access_token}` },
+        body: JSON.stringify({ requestId: selected.id }),
+      }).catch((err) => console.error("Status email trigger failed:", err));
     }
 
     setSaving(false);

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Arrow, MailIcon, PhoneIcon, PinIcon, WhatsAppIcon, SparklesIcon } from "./icons";
+import { MailIcon, PhoneIcon, PinIcon, WhatsAppIcon, SparklesIcon } from "./icons";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 
 const QUICK_LINKS = [
@@ -47,12 +47,8 @@ const SOCIALS = [
 export default function Footer() {
   const { phone, whatsapp, email, address, gstin, facebook, instagram, linkedin, youtube } = useSiteSettings();
 
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
   return (
-    <footer className="relative overflow-hidden bg-[#07080B] pt-16 text-[#A5A096] border-t border-white/10 print:hidden">
+    <footer className="relative overflow-hidden bg-[#07080B] pt-16 pb-[58px] text-[#A5A096] border-t border-white/10 print:hidden md:pb-0">
       {/* Background Ambient Glows */}
       <div className="glow-blob left-[-5%] top-[-10%] h-[350px] w-[350px] bg-yellow/15 opacity-30 blur-[110px]" />
       <div className="glow-blob right-[-8%] bottom-[-15%] h-[320px] w-[320px] bg-amber-500/10 opacity-25 blur-[100px]" />
@@ -80,7 +76,7 @@ export default function Footer() {
           <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
             <a
               href={`tel:${phone.replace(/\s+/g, "")}`}
-              className="flex-1 md:flex-none inline-flex items-center justify-center gap-2 rounded-xl bg-yellow px-6 py-3.5 text-xs font-extrabold text-ink shadow-lg transition-all hover:bg-yellow-dark hover:-translate-y-0.5 whitespace-nowrap"
+              className="flex-1 md:flex-none inline-flex items-center justify-center gap-2 rounded-xl bg-yellow px-9 py-3.5 text-xs font-extrabold text-ink shadow-lg transition-all hover:bg-yellow-dark hover:-translate-y-0.5 whitespace-nowrap"
             >
               <PhoneIcon className="h-4 w-4 flex-none" />
               <span>Call Now</span>
@@ -297,26 +293,17 @@ export default function Footer() {
             )}
           </span>
 
-          <div className="flex items-center gap-4">
-            <a
-              href="https://www.nexa-solutions.in/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group text-[12px] text-[#8C867D] transition-colors"
-            >
-              Developed by{" "}
-              <span className="font-bold text-yellow transition-colors group-hover:text-yellow-dark">
-                Nexa Solutions
-              </span>
-            </a>
-            <button
-              onClick={scrollToTop}
-              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-bold text-white hover:border-yellow hover:bg-yellow hover:text-ink transition-all"
-            >
-              <span>Back to Top</span>
-              <Arrow className="h-3.5 w-3.5 -rotate-90" />
-            </button>
-          </div>
+          <a
+            href="https://www.nexa-solutions.in/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group text-[12px] text-[#8C867D] transition-colors"
+          >
+            Developed by{" "}
+            <span className="font-bold text-yellow transition-colors group-hover:text-yellow-dark">
+              Nexa Solutions
+            </span>
+          </a>
         </div>
       </div>
     </footer>

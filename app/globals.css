@@ -240,6 +240,31 @@ button.bg-yellow:hover::before {
   }
 }
 
+/* ---------- Hero eyebrow badge looping light sheen ---------- */
+@keyframes hero-badge-sheen {
+
+  0%,
+  15% {
+    left: -60%;
+  }
+
+  55%,
+  100% {
+    left: 160%;
+  }
+}
+
+/* ---------- Hero slide-indicator progress fill (duration set inline per use) ---------- */
+@keyframes hero-dot-fill {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+
 /* ---------- Blog post rich-text content (from the Quill editor) ---------- */
 .prose-content,
 .prose-content * {

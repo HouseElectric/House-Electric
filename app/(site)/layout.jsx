@@ -19,7 +19,7 @@ export default function SiteLayout({ children }) {
     <SiteSettingsProvider>
       <CustomerAuthProvider>
         {!isAccountArea && <Header />}
-        <div className={isAccountArea ? "" : "pb-[58px] md:pb-0"}>{children}</div>
+        {children}
         {!isAccountArea && <Footer />}
         {!isAccountArea && (
           <>

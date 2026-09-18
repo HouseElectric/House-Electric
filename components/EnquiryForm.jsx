@@ -1,10 +1,22 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { CheckCircle } from "./icons";
 import { supabase } from "@/lib/supabase";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
+import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
+
+const SERVICE_TYPE_OPTIONS = [
+  "Electrical Repair",
+  "Electrical Installation",
+  "Electrical Health Check",
+  "Electrical Maintenance",
+  "AMC",
+  "Emergency Service",
+  "Other",
+];
 
 const DB_FIELD = {
   propertyType: "property_type",
@@ -103,9 +115,15 @@ const inputClass =
 export default function EnquiryForm({ variant = "booking", eyebrow, title, subtitle, className = "", id, sidebar }) {
   const config = FIELD_SETS[variant];
   const { phone, whatsapp } = useSiteSettings();
+  const { user, profile } = useCustomerAuth() || {};
+  // Logged-in customers already have their name/mobile/email/address on file — for the
+  // booking form specifically, skip re-asking for it and go straight to a real,
+  // account-linked service request instead of an anonymous enquiry.
+  const isLoggedInBooking = variant === "booking" && !!user;
   const [values, setValues] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [ticketNumber, setTicketNumber] = useState("");
 
   const [submitting, setSubmitting] = useState(false);
 
@@ -122,18 +140,54 @@ export default function EnquiryForm({ variant = "booking", eyebrow, title, subti
     setSubmitting(true);
     setSubmitError("");
 
-    if (supabase) {
-      const payload = { type: variant };
-      config.fields.forEach((f) => {
-        if (values[f.name]) payload[DB_FIELD[f.name] || f.name] = values[f.name];
+    const payload = { type: variant };
+    config.fields.forEach((f) => {
+      if (values[f.name]) payload[DB_FIELD[f.name] || f.name] = values[f.name];
+    });
+
+    try {
+      const res = await fetch("/api/enquiries", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(payload),
       });
-      const { error } = await supabase.from("enquiries").insert([payload]);
-      if (error) {
-        console.error("Failed to save enquiry:", error.message);
-        setSubmitError("Something went wrong saving your enquiry. Please call or WhatsApp us directly.");
-        setSubmitting(false);
-        return;
-      }
+      if (!res.ok) throw new Error();
+    } catch {
+      setSubmitError("Something went wrong saving your enquiry. Please call or WhatsApp us directly.");
+      setSubmitting(false);
+      return;
+    }
+
+    setSubmitting(false);
+    setSubmitted(true);
+  };
+
+  const handleAccountBooking = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setSubmitError("");
+
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const res = await fetch("/api/service-requests", {
+        method: "POST",
+        headers: { "content-type": "application/json", Authorization: `Bearer ${session?.access_token}` },
+        body: JSON.stringify({
+          service_type: values.serviceType,
+          preferred_date: values.date,
+          preferred_time: values.time,
+          description: values.description,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to submit your request.");
+      setTicketNumber(data.request?.ticket_number || "");
+    } catch (err) {
+      setSubmitError(err.message || "Something went wrong submitting your request.");
+      setSubmitting(false);
+      return;
     }
 
     setSubmitting(false);
@@ -164,30 +218,117 @@ export default function EnquiryForm({ variant = "booking", eyebrow, title, subti
             {submitted ? (
               <div className="flex flex-col items-center py-10 text-center">
                 <CheckCircle className="mb-4 h-12 w-12 text-yellow" />
-                <h3 className="mb-2 text-lg font-extrabold text-ink">Thank you!</h3>
+                <h3 className="mb-2 text-lg font-extrabold text-ink">
+                  {isLoggedInBooking ? "Request submitted!" : "Thank you!"}
+                </h3>
                 <p className="max-w-[40ch] text-[15px]">
-                  Your enquiry has been received &mdash; our team will get back to you shortly. You
-                  can also call us directly at{" "}
-                  <a href={`tel:${phone.replace(/\s+/g, "")}`} className="font-bold text-ink">
-                    {phone}
-                  </a>{" "}
-                  or reach out on WhatsApp.
+                  {isLoggedInBooking ? (
+                    <>
+                      Your service request{ticketNumber ? ` (${ticketNumber})` : ""} has been received — our team
+                      will be in touch shortly. Track it anytime from your dashboard.
+                    </>
+                  ) : (
+                    <>
+                      Your enquiry has been received &mdash; our team will get back to you shortly. You
+                      can also call us directly at{" "}
+                      <a href={`tel:${phone.replace(/\s+/g, "")}`} className="font-bold text-ink">
+                        {phone}
+                      </a>{" "}
+                      or reach out on WhatsApp.
+                    </>
+                  )}
                 </p>
-                <a
-                  href={whatsappUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-6 inline-flex items-center gap-2 rounded-md border border-line px-6 py-3 text-[13.5px] font-bold text-ink transition-colors hover:border-ink"
-                >
-                  Chat on WhatsApp
-                </a>
+                {isLoggedInBooking ? (
+                  <Link
+                    href="/account/requests"
+                    className="mt-6 inline-flex items-center gap-2 rounded-md bg-yellow px-6 py-3 text-[13.5px] font-extrabold text-ink transition-all hover:-translate-y-0.5 hover:bg-yellow-dark"
+                  >
+                    View My Requests
+                  </Link>
+                ) : (
+                  <a
+                    href={whatsappUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-6 inline-flex items-center gap-2 rounded-md border border-line px-6 py-3 text-[13.5px] font-bold text-ink transition-colors hover:border-ink"
+                  >
+                    Chat on WhatsApp
+                  </a>
+                )}
                 <button
-                  onClick={() => setSubmitted(false)}
+                  onClick={() => {
+                    setSubmitted(false);
+                    setValues({});
+                  }}
                   className="mt-4 text-[14px] font-bold text-ink underline underline-offset-4"
                 >
-                  Submit another enquiry
+                  Submit another {isLoggedInBooking ? "request" : "enquiry"}
                 </button>
               </div>
+            ) : isLoggedInBooking ? (
+              <form onSubmit={handleAccountBooking} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="sm:col-span-2 rounded-md border border-line/80 bg-cream/50 px-4 py-3 text-[13px] text-ink">
+                  Booking as <span className="font-extrabold">{profile?.name || user.email}</span> — we'll use your
+                  saved contact details. Update them anytime from{" "}
+                  <Link href="/account/profile" className="font-bold underline underline-offset-2">
+                    My Profile
+                  </Link>
+                  .
+                </div>
+                {submitError && (
+                  <div className="sm:col-span-2 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-[13.5px] font-semibold text-red-700">
+                    {submitError}
+                  </div>
+                )}
+                <div className="sm:col-span-2">
+                  <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">
+                    Service Required<span className="text-yellow-dark"> *</span>
+                  </label>
+                  <select
+                    required
+                    value={values.serviceType || ""}
+                    onChange={handleChange("serviceType")}
+                    className={inputClass}
+                  >
+                    <option value="" disabled>
+                      Select service required
+                    </option>
+                    {SERVICE_TYPE_OPTIONS.map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">Preferred Date</label>
+                  <input type="date" value={values.date || ""} onChange={handleChange("date")} className={inputClass} />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">Preferred Time</label>
+                  <input type="time" value={values.time || ""} onChange={handleChange("time")} className={inputClass} />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">Problem / Requirement</label>
+                  <textarea
+                    rows={3}
+                    value={values.description || ""}
+                    onChange={handleChange("description")}
+                    className={inputClass}
+                    placeholder="Briefly describe the issue you're facing…"
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="inline-flex w-full items-center justify-center gap-2.5 rounded-md bg-yellow px-7 py-3.5 text-sm font-extrabold text-ink shadow-[0_10px_25px_-5px_rgba(242,176,30,0.45)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-yellow-dark hover:shadow-[0_15px_30px_-5px_rgba(242,176,30,0.6)] disabled:opacity-60 sm:w-auto sm:px-8"
+                  >
+                    {submitting ? "Submitting…" : config.submitLabel}
+                  </button>
+                </div>
+              </form>
             ) : (
               <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {submitError && (

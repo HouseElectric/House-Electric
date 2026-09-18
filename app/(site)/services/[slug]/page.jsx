@@ -116,6 +116,43 @@ export default async function ServiceDetailPage({ params }) {
         </section>
       )}
 
+      {service.types_section?.items?.length > 0 && (
+        <section className="py-16 md:py-[74px]">
+          <div className="mx-auto max-w-wrap px-6">
+            <Reveal className="mb-12 max-w-[62ch]">
+              {service.types_section.eyebrow && <p className="eyebrow">{service.types_section.eyebrow}</p>}
+              {service.types_section.heading && <h2 className="mb-3">{service.types_section.heading}</h2>}
+              {service.types_section.subtitle && (
+                <p className="text-[15.5px] leading-relaxed text-charcoal/80">{service.types_section.subtitle}</p>
+              )}
+            </Reveal>
+
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {service.types_section.items.map((t, i) => (
+                <Reveal key={i} delay={i * 0.08} y={18}>
+                  <div className="h-full rounded-2xl border border-line/80 bg-white p-7 shadow-sm transition-all duration-300 hover:border-yellow/50 hover:shadow-lg">
+                    <h3 className="mb-2 text-base font-extrabold text-ink">{t.title}</h3>
+                    {t.desc && <p className="mb-4 text-[13.5px] leading-relaxed text-charcoal/80">{t.desc}</p>}
+                    {t.tags?.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5">
+                        {t.tags.map((tag, ti) => (
+                          <span
+                            key={ti}
+                            className="rounded-full border border-yellow/30 bg-yellow/10 px-2.5 py-1 text-[11px] font-semibold text-yellow-dark"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {service.checklist_items?.length > 0 && (
         <section className="py-16 md:py-[74px]">
           <div className="mx-auto max-w-wrap px-6">
