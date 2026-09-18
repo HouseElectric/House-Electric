@@ -291,3 +291,35 @@ create policy "Authenticated full access on notifications" on public.notificatio
 -- once an admin has actually written one — avoids thin/duplicate location-page content without
 -- ever fabricating local claims.
 alter table public.service_areas add column if not exists local_note text;
+
+-- ============ payments: Cashfree gateway (replaces the earlier Razorpay integration) ============
+alter table public.invoices add column if not exists cashfree_order_id text;
+alter table public.invoices add column if not exists cashfree_payment_id text;
+alter table public.invoices drop column if exists razorpay_order_id;
+alter table public.invoices drop column if exists razorpay_payment_id;
+
+alter table public.amc_subscriptions add column if not exists cashfree_order_id text;
+alter table public.amc_subscriptions add column if not exists cashfree_payment_id text;
+alter table public.amc_subscriptions drop column if exists razorpay_order_id;
+alter table public.amc_subscriptions drop column if exists razorpay_payment_id;
+
+-- Lets a customer pay an accepted quotation directly; also the webhook's lookup key.
+alter table public.quotations add column if not exists cashfree_order_id text;
+
+-- AMC subscription rows only exist AFTER a successful payment, so the async webhook needs
+-- somewhere to look up "what should this order_id activate" if the client never confirms.
+create table if not exists public.amc_purchase_intents (
+  id uuid primary key default gen_random_uuid(),
+  order_id text not null unique,
+  customer_id uuid references auth.users (id) on delete cascade,
+  plan_id uuid references public.amc_plans (id) on delete set null,
+  renew_from_id uuid references public.amc_subscriptions (id) on delete set null,
+  consumed boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+alter table public.amc_purchase_intents enable row level security;
+
+drop policy if exists "Admin manages amc purchase intents" on public.amc_purchase_intents;
+create policy "Admin manages amc purchase intents" on public.amc_purchase_intents
+  for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');

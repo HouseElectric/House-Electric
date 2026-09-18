@@ -26,11 +26,11 @@ export default function AdminPaymentsPage() {
       const [{ data: invoices }, { data: subs }] = await Promise.all([
         supabase
           .from("invoices")
-          .select("id, invoice_number, customer_name, total_amount, paid_amount, payment_status, payment_reference, razorpay_payment_id, updated_at, created_at")
+          .select("id, invoice_number, customer_name, total_amount, paid_amount, payment_status, payment_reference, cashfree_payment_id, updated_at, created_at")
           .gt("paid_amount", 0),
         supabase
           .from("amc_subscriptions")
-          .select("id, amc_number, plan_name_snapshot, amount_paid, razorpay_payment_id, created_at, profiles(name, email)")
+          .select("id, amc_number, plan_name_snapshot, amount_paid, cashfree_payment_id, created_at, profiles(name, email)")
           .not("amount_paid", "is", null),
       ]);
 
@@ -41,7 +41,7 @@ export default function AdminPaymentsPage() {
         customer: inv.customer_name,
         amount: inv.paid_amount,
         status: inv.payment_status,
-        paymentRef: inv.razorpay_payment_id || inv.payment_reference,
+        paymentRef: inv.cashfree_payment_id || inv.payment_reference,
         date: inv.updated_at || inv.created_at,
       }));
 
@@ -52,7 +52,7 @@ export default function AdminPaymentsPage() {
         customer: s.profiles?.name || s.profiles?.email,
         amount: s.amount_paid,
         status: "paid",
-        paymentRef: s.razorpay_payment_id,
+        paymentRef: s.cashfree_payment_id,
         date: s.created_at,
       }));
 

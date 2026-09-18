@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
-import { createRazorpayOrder, razorpayConfigured } from "@/lib/razorpay";
+import { createCashfreeOrder, cashfreeConfigured, cashfreeMode } from "@/lib/cashfree";
 
 async function getAuthedUser(request) {
   const token = (request.headers.get("authorization") || "").replace(/^Bearer\s+/i, "");
@@ -11,15 +11,32 @@ async function getAuthedUser(request) {
   return user;
 }
 
+function genOrderId(prefix) {
+  return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function returnUrlFor(request) {
+  const origin = request.headers.get("origin") || new URL(request.url).origin;
+  return `${origin}/account?payment=return`;
+}
+
 export async function POST(request) {
   const user = await getAuthedUser(request);
   if (!user) return NextResponse.json({ error: "Not authorized." }, { status: 401 });
 
-  if (!razorpayConfigured()) {
+  if (!cashfreeConfigured()) {
     return NextResponse.json({ error: "Online payments are not configured yet." }, { status: 500 });
   }
 
-  const { type, invoiceId, planId, quotationId } = await request.json().catch(() => ({}));
+  const { type, invoiceId, planId, quotationId, renewFromId } = await request.json().catch(() => ({}));
+  const returnUrl = returnUrlFor(request);
+  const customer = { id: user.id, email: user.email };
+
+  const { data: profile } = await supabaseAdmin.from("profiles").select("name, mobile").eq("id", user.id).maybeSingle();
+  if (profile) {
+    customer.name = profile.name;
+    customer.phone = profile.mobile;
+  }
 
   try {
     if (type === "invoice") {
@@ -32,12 +49,17 @@ export async function POST(request) {
         return NextResponse.json({ error: "This invoice is already paid." }, { status: 400 });
       }
 
-      const order = await createRazorpayOrder({
+      const orderId = genOrderId(`inv${invoice.invoice_number.replace(/\W/g, "")}`);
+      const order = await createCashfreeOrder({
+        orderId,
         amountRupees: balance,
-        receipt: `inv_${invoice.invoice_number}`,
-        notes: { type: "invoice", invoice_id: invoice.id, customer_id: user.id },
+        customer,
+        returnUrl,
+        notes: `Invoice ${invoice.invoice_number}`,
       });
-      return NextResponse.json({ orderId: order.id, amount: order.amount, keyId: process.env.RAZORPAY_KEY_ID });
+      await supabaseAdmin.from("invoices").update({ cashfree_order_id: orderId }).eq("id", invoiceId);
+
+      return NextResponse.json({ orderId, paymentSessionId: order.payment_session_id, mode: cashfreeMode() });
     }
 
     if (type === "quotation") {
@@ -49,12 +71,17 @@ export async function POST(request) {
         return NextResponse.json({ error: "Please accept the quotation before paying." }, { status: 400 });
       }
 
-      const order = await createRazorpayOrder({
+      const orderId = genOrderId(`qtn${quotation.quotation_number.replace(/\W/g, "")}`);
+      const order = await createCashfreeOrder({
+        orderId,
         amountRupees: quotation.total,
-        receipt: `qtn_${quotation.quotation_number}`,
-        notes: { type: "quotation", quotation_id: quotation.id, customer_id: user.id },
+        customer,
+        returnUrl,
+        notes: `Quotation ${quotation.quotation_number}`,
       });
-      return NextResponse.json({ orderId: order.id, amount: order.amount, keyId: process.env.RAZORPAY_KEY_ID });
+      await supabaseAdmin.from("quotations").update({ cashfree_order_id: orderId }).eq("id", quotationId);
+
+      return NextResponse.json({ orderId, paymentSessionId: order.payment_session_id, mode: cashfreeMode() });
     }
 
     if (type === "amc") {
@@ -63,12 +90,20 @@ export async function POST(request) {
         return NextResponse.json({ error: "This plan is not available for online purchase." }, { status: 400 });
       }
 
-      const order = await createRazorpayOrder({
+      const orderId = genOrderId("amc");
+      const order = await createCashfreeOrder({
+        orderId,
         amountRupees: plan.price,
-        receipt: `amc_${plan.id}_${Date.now()}`,
-        notes: { type: "amc", plan_id: plan.id, customer_id: user.id },
+        customer,
+        returnUrl,
+        notes: `AMC Plan ${plan.name}`,
       });
-      return NextResponse.json({ orderId: order.id, amount: order.amount, keyId: process.env.RAZORPAY_KEY_ID });
+
+      await supabaseAdmin.from("amc_purchase_intents").insert([
+        { order_id: orderId, customer_id: user.id, plan_id: plan.id, renew_from_id: renewFromId || null },
+      ]);
+
+      return NextResponse.json({ orderId, paymentSessionId: order.payment_session_id, mode: cashfreeMode() });
     }
 
     return NextResponse.json({ error: "Invalid payment type." }, { status: 400 });
