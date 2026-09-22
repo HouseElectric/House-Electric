@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import toast from "react-hot-toast";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { uploadImage } from "@/lib/imagekit";
 import {
   UsersIcon,
-  BuildingIcon,
   CheckCircle,
   CameraIcon,
   AlertIcon,
@@ -23,17 +23,9 @@ function initials(name, email) {
 const inputClass =
   "w-full rounded-2xl border border-slate-200/90 bg-white px-4 py-3 text-sm text-ink outline-none transition-all placeholder:text-slate-400 hover:border-slate-300 focus:border-amber-400 focus:ring-4 focus:ring-yellow/15 disabled:bg-slate-50 disabled:text-slate-400 disabled:border-slate-200 disabled:cursor-not-allowed shadow-2xs";
 
-const PROPERTY_TYPES = ["Residential", "Office", "Commercial", "Corporate / Institutional"];
-
 const EMPTY = {
   name: "",
   mobile: "",
-  address: "",
-  city: "",
-  state: "",
-  property_type: "",
-  property_size: "",
-  electrical_setup_notes: "",
 };
 
 export default function MyProfilePage() {
@@ -50,12 +42,6 @@ export default function MyProfilePage() {
       setForm({
         name: profile.name || "",
         mobile: profile.mobile || "",
-        address: profile.address || "",
-        city: profile.city || "",
-        state: profile.state || "",
-        property_type: profile.property_type || "",
-        property_size: profile.property_size || "",
-        electrical_setup_notes: profile.electrical_setup_notes || "",
       });
     }
   }, [profile]);
@@ -109,7 +95,12 @@ export default function MyProfilePage() {
             <h2 className="text-xl sm:text-2xl font-black tracking-tight text-ink">Account Settings & Profile</h2>
           </div>
           <p className="text-xs sm:text-[13px] text-body mt-0.5">
-            Manage your contact information and electrical setup preferences
+            Manage your name and mobile number. Addresses and electrical setup details for each property
+            are managed under{" "}
+            <Link href="/account/properties" className="font-bold text-ink underline underline-offset-2">
+              My Properties
+            </Link>
+            .
           </p>
         </div>
       </div>
@@ -222,26 +213,6 @@ export default function MyProfilePage() {
             <label className="mb-1.5 block text-xs font-extrabold text-ink">Mobile / WhatsApp Contact</label>
             <input value={form.mobile} onChange={set("mobile")} placeholder="+91 98765 43210" className={inputClass} />
           </div>
-          <div>
-            <label className="mb-1.5 block text-xs font-extrabold text-ink">Default Service Address</label>
-            <textarea
-              rows={3}
-              value={form.address}
-              onChange={set("address")}
-              placeholder="Flat/House No., Building, Street, Area..."
-              className={inputClass}
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-3 sm:gap-4">
-            <div>
-              <label className="mb-1.5 block text-xs font-extrabold text-ink">City</label>
-              <input value={form.city} onChange={set("city")} placeholder="City" className={inputClass} />
-            </div>
-            <div>
-              <label className="mb-1.5 block text-xs font-extrabold text-ink">State</label>
-              <input value={form.state} onChange={set("state")} placeholder="State" className={inputClass} />
-            </div>
-          </div>
 
           <div className="pt-2">
             <button
@@ -251,63 +222,6 @@ export default function MyProfilePage() {
             >
               <CheckCircle className="h-4 w-4" />
               <span>{saving ? "Saving Changes…" : "Save Personal Profile"}</span>
-            </button>
-          </div>
-        </form>
-      </div>
-
-      {/* Property Setup Details Card */}
-      <div className="rounded-3xl border border-slate-200/90 bg-white p-5 sm:p-7 md:p-8 shadow-xs space-y-6">
-        <div className="flex items-start gap-3.5 border-b border-line/70 pb-4.5 sm:items-center">
-          <span className="grid h-11 w-11 flex-none place-items-center rounded-2xl bg-amber-50 text-amber-700 font-bold shadow-2xs ring-4 ring-amber-50/50">
-            <BuildingIcon className="h-5 w-5" />
-          </span>
-          <div className="min-w-0">
-            <h3 className="text-base sm:text-[17px] font-black text-ink">Property & Electrical Setup</h3>
-            <p className="text-xs text-body mt-0.5">Helps electricians arrive with the right tools and materials</p>
-          </div>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
-          <div>
-            <label className="mb-1.5 block text-xs font-extrabold text-ink">Property Category</label>
-            <select value={form.property_type} onChange={set("property_type")} className={inputClass}>
-              <option value="">Select property type</option>
-              {PROPERTY_TYPES.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="mb-1.5 block text-xs font-extrabold text-ink">Approximate Area / Size</label>
-            <input
-              value={form.property_size}
-              onChange={set("property_size")}
-              placeholder="e.g. 1,500 sq. ft., 3BHK Apartment, 4-storey commercial office"
-              className={inputClass}
-            />
-          </div>
-          <div>
-            <label className="mb-1.5 block text-xs font-extrabold text-ink">Electrical Notes & Panel Setup</label>
-            <textarea
-              rows={3}
-              value={form.electrical_setup_notes}
-              onChange={set("electrical_setup_notes")}
-              placeholder="e.g. 3-phase meter connection, Havells MCB panel outdoors, inverter wiring setup..."
-              className={inputClass}
-            />
-          </div>
-
-          <div className="pt-2">
-            <button
-              type="submit"
-              disabled={saving}
-              className="inline-flex items-center gap-2 rounded-2xl bg-yellow px-7 py-3 text-xs font-black text-ink shadow-sm transition-all hover:-translate-y-0.5 hover:bg-yellow-dark hover:shadow-md active:scale-[0.99] disabled:translate-y-0 disabled:opacity-60"
-            >
-              <CheckCircle className="h-4 w-4" />
-              <span>{saving ? "Saving Setup…" : "Save Property Details"}</span>
             </button>
           </div>
         </form>

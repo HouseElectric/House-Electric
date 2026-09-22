@@ -32,26 +32,25 @@ const LOGGED_IN_FIELDS = FIELDS.filter((f) => !["name", "mobile", "email"].inclu
 
 export default function HealthCheckBookingForm({ id }) {
   const { phone, whatsapp } = useSiteSettings();
-  const { user, profile } = useCustomerAuth() || {};
+  const { user, profile, defaultProperty } = useCustomerAuth() || {};
   const fields = user ? LOGGED_IN_FIELDS : FIELDS;
-  const [values, setValues] = useState(() => ({
-    property_type: profile?.property_type || "",
-    address: profile?.address || "",
-  }));
+  const [values, setValues] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [requestNumber, setRequestNumber] = useState("");
 
-  // profile loads asynchronously after mount — backfill once it arrives.
+  // defaultProperty loads asynchronously after mount — backfill once it arrives.
   useEffect(() => {
-    if (!profile) return;
+    if (!defaultProperty) return;
     setValues((v) => ({
       ...v,
-      property_type: v.property_type || profile.property_type || "",
-      address: v.address || profile.address || "",
+      property_type: v.property_type || defaultProperty.property_type || "",
+      address:
+        v.address ||
+        [defaultProperty.address, defaultProperty.city].filter(Boolean).join(", "),
     }));
-  }, [profile]);
+  }, [defaultProperty]);
 
   const handleChange = (name) => (e) => setValues((v) => ({ ...v, [name]: e.target.value }));
 
@@ -132,12 +131,16 @@ export default function HealthCheckBookingForm({ id }) {
             <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {user && (
                 <div className="sm:col-span-2 rounded-md border border-line/80 bg-cream/50 px-4 py-3 text-[13px] text-ink">
-                  Booking as <span className="font-extrabold">{profile?.name || user.email}</span> — we&apos;ll use your
-                  saved contact details. Update them anytime from{" "}
+                  Booking as <span className="font-extrabold">{profile?.name || user.email}</span> — we&apos;ll use
+                  your saved contact details from{" "}
                   <Link href="/account/profile" className="font-bold underline underline-offset-2">
                     My Profile
                   </Link>
-                  .
+                  . Property and address prefilled from{" "}
+                  <Link href="/account/properties" className="font-bold underline underline-offset-2">
+                    My Properties
+                  </Link>
+                  {" "}— feel free to edit below.
                 </div>
               )}
               {submitError && (

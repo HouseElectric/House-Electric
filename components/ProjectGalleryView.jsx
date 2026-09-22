@@ -59,7 +59,7 @@ export default function ProjectGalleryView({ project, allProjects = [] }) {
     .slice(0, 3);
 
   const whatsappMessage = encodeURIComponent(
-    `Hello House Electric! I was viewing your project "${project.title}" (${project.category}) on your website and would like a consultation for similar work.`
+    `Hello House Electric! I was viewing your project "${project.title}" on your website and would like a consultation for similar work.`
   );
 
   return (
@@ -255,7 +255,7 @@ export default function ProjectGalleryView({ project, allProjects = [] }) {
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-3.5 flex flex-col justify-end">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-yellow">
-                      {op.category} · {op.images?.length || 1} Photos
+                      {op.images?.length || 1} Photos
                     </span>
                     <b className="text-xs sm:text-sm font-extrabold text-white truncate drop-shadow-xs mt-0.5">
                       {op.title}

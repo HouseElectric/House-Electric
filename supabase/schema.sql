@@ -643,6 +643,8 @@ create table if not exists public.health_checks (
   updated_at timestamptz not null default now()
 );
 
+alter table public.health_checks add column if not exists technician_id uuid references public.technicians (id) on delete set null;
+
 alter table public.health_checks enable row level security;
 
 drop policy if exists "Public can submit health checks" on public.health_checks;
@@ -977,6 +979,7 @@ alter table public.projects add column if not exists location text;
 alter table public.projects add column if not exists description text;
 alter table public.projects add column if not exists status text not null default 'Completed';
 alter table public.projects add column if not exists featured boolean not null default false;
+alter table public.projects add column if not exists display_order integer not null default 0;
 
 -- ============ project_categories: admin-picked cover image per project category ============
 -- Categories themselves are still just the free-text `projects.category` values (matched by

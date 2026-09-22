@@ -11,13 +11,10 @@ import {
   UsersIcon,
   MailIcon,
   PhoneIcon,
-  PinIcon,
   ClockIcon,
   XIcon,
-  BuildingIcon,
   ClipboardIcon,
   HomeIcon,
-  LightbulbIcon,
   ReportIcon,
   WrenchIcon,
   ArrowLeftIcon,
@@ -276,19 +273,11 @@ export default function CustomerDetail({ customerId }) {
             <div className="rounded-xl border border-line bg-white p-4">
               <p className="mb-3 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-body">
                 <UsersIcon className="h-3.5 w-3.5 text-rose-500" />
-                Contact & Property Info
+                Contact Info
               </p>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <DetailRow icon={MailIcon} label="Email" value={profile.email} href={profile.email ? `mailto:${profile.email}` : null} />
                 <DetailRow icon={PhoneIcon} label="Mobile" value={profile.mobile} href={profile.mobile ? `tel:${profile.mobile}` : null} />
-                <DetailRow icon={PinIcon} label="Address" value={profile.address} />
-                <DetailRow icon={BuildingIcon} label="City / State" value={[profile.city, profile.state].filter(Boolean).join(", ") || null} />
-                <DetailRow
-                  icon={ClipboardIcon}
-                  label="Property Type / Size"
-                  value={[profile.property_type, profile.property_size].filter(Boolean).join(" · ") || null}
-                />
-                <DetailRow icon={LightbulbIcon} label="Electrical Setup Notes" value={profile.electrical_setup_notes} />
               </div>
             </div>
 

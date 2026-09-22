@@ -233,7 +233,7 @@ export default function AdminHealthChecksPage() {
                         <Badge status={b.status || "requested"} />
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 text-[12px] text-body">{fmt(b.created_at)}</td>
-                      <td className="px-4 py-3 text-[12px] font-semibold text-ink">See Details →</td>
+                      <td className="px-4 py-3 text-[12px] font-semibold text-ink">See Details</td>
                     </tr>
                   ))}
                 </tbody>

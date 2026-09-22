@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import Reveal from "@/components/Reveal";
+import PhotoThumbnail from "@/components/PhotoThumbnail";
 import { AmcBadge, ArrowLeftIcon, CalendarIcon, CheckCircle, PrinterIcon, UserIcon } from "@/components/icons";
 
 const STATUS_META = {
@@ -139,9 +140,7 @@ export default function HealthReportDetailPage() {
                   )}
                   <div className="mt-2.5 flex flex-wrap items-center gap-3">
                     <span className={`text-[11.5px] font-bold ${priority.cls}`}>{priority.label}</span>
-                    {item.photo_url && (
-                      <img src={item.photo_url} alt={item.category} className="h-16 w-24 rounded-lg border border-line object-cover" />
-                    )}
+                    <PhotoThumbnail src={item.photo_url} alt={item.category} className="h-16 w-24 rounded-lg border border-line object-cover" />
                   </div>
                 </div>
               );

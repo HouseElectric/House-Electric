@@ -16,7 +16,7 @@ const CertificateTemplate = forwardRef(function CertificateTemplate(
   return (
     <div
       ref={ref}
-      className="print:[zoom:0.92]"
+      className="print:[zoom:0.92] print:mx-auto"
       style={{
         position: "relative",
         width: "794px",

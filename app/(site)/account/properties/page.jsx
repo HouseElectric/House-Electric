@@ -30,7 +30,7 @@ function fmtDate(iso) {
 }
 
 export default function MyPropertiesPage() {
-  const { user } = useCustomerAuth();
+  const { user, refreshDefaultProperty } = useCustomerAuth();
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [viewing, setViewing] = useState(null);
@@ -93,6 +93,7 @@ export default function MyPropertiesPage() {
     await supabase.from("properties").delete().eq("id", id);
     toast.success("Property removed");
     fetchProperties();
+    refreshDefaultProperty();
   };
 
   const openView = async (p) => {
@@ -139,6 +140,7 @@ export default function MyPropertiesPage() {
     await supabase.from("properties").update({ is_default: true }).eq("id", id);
     toast.success("Default property updated");
     fetchProperties();
+    refreshDefaultProperty();
   };
 
   return (

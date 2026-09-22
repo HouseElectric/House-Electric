@@ -117,7 +117,7 @@ const inputClass =
 export default function EnquiryForm({ variant = "booking", eyebrow, title, subtitle, className = "", id, sidebar }) {
   const config = FIELD_SETS[variant];
   const { phone, whatsapp } = useSiteSettings();
-  const { user, profile } = useCustomerAuth() || {};
+  const { user, profile, defaultProperty } = useCustomerAuth() || {};
   // Logged-in customers already have their name/mobile/email/address on file — for
   // booking and AMC specifically, skip re-asking for it and go straight to a real,
   // account-linked service request instead of an anonymous enquiry.
@@ -181,6 +181,10 @@ export default function EnquiryForm({ variant = "booking", eyebrow, title, subti
           preferred_date: values.date,
           preferred_time: values.time,
           description: values.description,
+          location: defaultProperty
+            ? [defaultProperty.address, defaultProperty.city, defaultProperty.state].filter(Boolean).join(", ")
+            : "",
+          property_id: defaultProperty?.id || null,
         }),
       });
       const data = await res.json();
@@ -270,13 +274,31 @@ export default function EnquiryForm({ variant = "booking", eyebrow, title, subti
             ) : isLoggedInBooking ? (
               <form onSubmit={handleAccountBooking} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="sm:col-span-2 rounded-md border border-line/80 bg-cream/50 px-4 py-3 text-[13px] text-ink">
-                  Booking as <span className="font-extrabold">{profile?.name || user.email}</span> — we'll use your
-                  saved contact details. Update them anytime from{" "}
-                  <Link href="/account/profile" className="font-bold underline underline-offset-2">
-                    My Profile
+                  Booking as <span className="font-extrabold">{profile?.name || user.email}</span>
+                  {defaultProperty ? (
+                    <>
+                      {" "}
+                      for <span className="font-extrabold">{defaultProperty.label}</span> —{" "}
+                      {[defaultProperty.address, defaultProperty.city].filter(Boolean).join(", ")}.
+                    </>
+                  ) : (
+                    " — we'll use your saved contact details."
+                  )}{" "}
+                  Update anytime from{" "}
+                  <Link href="/account/properties" className="font-bold underline underline-offset-2">
+                    My Properties
                   </Link>
                   .
                 </div>
+                {!defaultProperty && (
+                  <div className="sm:col-span-2 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-[13px] font-semibold text-amber-900">
+                    You haven't added a property yet, so our technician won't have a location to visit.{" "}
+                    <Link href="/account/properties/new" className="font-bold underline underline-offset-2">
+                      Add your property
+                    </Link>{" "}
+                    before booking, or our team will call you to confirm it.
+                  </div>
+                )}
                 {submitError && (
                   <div className="sm:col-span-2 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-[13.5px] font-semibold text-red-700">
                     {submitError}

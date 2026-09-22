@@ -6,9 +6,10 @@ import toast from "react-hot-toast";
 import AdminGuard from "@/components/admin/AdminGuard";
 import AdminLayout from "@/components/admin/AdminLayout";
 import CustomerPicker from "@/components/admin/CustomerPicker";
+import PhotoThumbnail from "@/components/PhotoThumbnail";
 import { supabase } from "@/lib/supabase";
 import { uploadImage } from "@/lib/imagekit";
-import { ArrowLeftIcon, CalendarIcon, ExternalLinkIcon, ReportIcon, UploadIcon, UserIcon } from "@/components/icons";
+import { ArrowLeftIcon, CalendarIcon, ChevronDown, ReportIcon, UploadIcon, UserIcon } from "@/components/icons";
 
 const INSPECTION_CATEGORIES = [
   "Main DB",
@@ -56,6 +57,15 @@ export default function AdminHealthReportPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingIdx, setUploadingIdx] = useState(null);
+  const [expanded, setExpanded] = useState(() => new Set());
+
+  const toggleExpanded = (i) =>
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(i)) next.delete(i);
+      else next.add(i);
+      return next;
+    });
 
   useEffect(() => {
     (async () => {
@@ -71,13 +81,19 @@ export default function AdminHealthReportPage() {
 
       if (existing) {
         setReportId(existing.id);
-        setForm({
-          ...existing,
-          items:
-            Array.isArray(existing.items) && existing.items.length > 0
-              ? existing.items.map((it) => ({ remarks: "", ...it }))
-              : emptyItems(),
-        });
+        const items =
+          Array.isArray(existing.items) && existing.items.length > 0
+            ? existing.items.map((it) => ({ remarks: "", ...it }))
+            : emptyItems();
+        setForm({ ...existing, items });
+        // Auto-open items that already have findings so a returning admin sees them immediately.
+        setExpanded(
+          new Set(
+            items
+              .map((it, i) => (it.status !== "good" || it.observation || it.recommendation || it.remarks ? i : null))
+              .filter((i) => i !== null)
+          )
+        );
       } else if (hc) {
         setForm({
           customer_id: hc.customer_id || "",
@@ -236,17 +252,6 @@ export default function AdminHealthReportPage() {
                   <p className="text-[16px] font-extrabold">Electrical Health Report</p>
                   {form.report_number && <p className="text-[12px] text-white/60">{form.report_number}</p>}
                 </div>
-                {form.status === "published" && reportId && (
-                  <a
-                    href={`/account/health-reports/${reportId}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="ml-auto flex items-center gap-1.5 rounded-md bg-white/15 px-3 py-2 text-[12px] font-bold hover:bg-white/25"
-                  >
-                    <ExternalLinkIcon className="h-3.5 w-3.5" />
-                    View as Customer
-                  </a>
-                )}
               </div>
             </div>
 
@@ -346,95 +351,135 @@ export default function AdminHealthReportPage() {
           </div>
 
           <div className="rounded-2xl border border-line bg-white p-6 shadow-sm">
-            <h3 className="mb-4 text-[14px] font-extrabold text-ink">Inspection Items</h3>
-            <div className="space-y-4">
-              {form.items.map((item, i) => (
-                <div key={item.category} className="rounded-xl border border-line/80 p-4">
-                  <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                    <p className="text-[13.5px] font-extrabold text-ink">{item.category}</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {STATUS_OPTIONS.map((s) => (
-                        <button
-                          key={s.value}
-                          type="button"
-                          onClick={() => setItem(i, "status", s.value)}
-                          className={`rounded-full border px-2.5 py-1 text-[11px] font-bold transition-all ${
-                            item.status === s.value ? s.cls : "border-line text-body hover:border-ink/30"
-                          }`}
-                        >
-                          {s.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h3 className="text-[14px] font-extrabold text-ink">Inspection Items</h3>
+                <p className="text-[11.5px] text-body">
+                  {form.items.filter((it) => it.status !== "good").length} of {form.items.length} flagged for attention
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setExpanded(new Set(form.items.map((_, i) => i)))}
+                  className="rounded-md border border-line px-2.5 py-1 text-[11.5px] font-bold text-body hover:border-ink/40 hover:text-ink"
+                >
+                  Expand All
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setExpanded(new Set())}
+                  className="rounded-md border border-line px-2.5 py-1 text-[11.5px] font-bold text-body hover:border-ink/40 hover:text-ink"
+                >
+                  Collapse All
+                </button>
+              </div>
+            </div>
+            <div className="space-y-2.5">
+              {form.items.map((item, i) => {
+                const isOpen = expanded.has(i);
+                const statusMeta = STATUS_OPTIONS.find((s) => s.value === item.status) ?? STATUS_OPTIONS[0];
+                return (
+                  <div key={item.category} className="rounded-xl border border-line/80 overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => toggleExpanded(i)}
+                      className="flex w-full flex-wrap items-center justify-between gap-2 p-3.5 text-left hover:bg-cream/40"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <ChevronDown className={`h-4 w-4 flex-none text-body/60 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+                        <p className="text-[13.5px] font-extrabold text-ink">{item.category}</p>
+                      </div>
+                      <span className={`rounded-full border px-2.5 py-1 text-[11px] font-bold ${statusMeta.cls}`}>{statusMeta.label}</span>
+                    </button>
 
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    <div>
-                      <label className="mb-1 block text-[11px] font-semibold text-body">Observation</label>
-                      <textarea
-                        rows={2}
-                        value={item.observation}
-                        onChange={(e) => setItem(i, "observation", e.target.value)}
-                        className="w-full rounded-md border border-line px-2.5 py-2 text-[13px] outline-none focus:border-ink"
-                      />
-                    </div>
-                    <div>
-                      <label className="mb-1 block text-[11px] font-semibold text-body">Recommendation</label>
-                      <textarea
-                        rows={2}
-                        value={item.recommendation}
-                        onChange={(e) => setItem(i, "recommendation", e.target.value)}
-                        className="w-full rounded-md border border-line px-2.5 py-2 text-[13px] outline-none focus:border-ink"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="mt-3 flex flex-wrap items-center gap-3">
-                    <div>
-                      <label className="mb-1 block text-[11px] font-semibold text-body">Priority</label>
-                      <select
-                        value={item.priority}
-                        onChange={(e) => setItem(i, "priority", e.target.value)}
-                        className="rounded-md border border-line px-2.5 py-1.5 text-[12.5px] outline-none focus:border-ink"
-                      >
-                        <option value="low">Low</option>
-                        <option value="medium">Medium</option>
-                        <option value="high">High</option>
-                      </select>
-                    </div>
-
-                    <div className="flex-1">
-                      <label className="mb-1 block text-[11px] font-semibold text-body">Photo</label>
-                      {item.photo_url ? (
-                        <div className="flex items-center gap-2">
-                          <img src={item.photo_url} alt="" className="h-12 w-16 rounded-md border border-line object-cover" />
-                          <label className="cursor-pointer text-[11.5px] font-bold text-ink underline underline-offset-2">
-                            Replace
-                            <input type="file" accept="image/*" className="hidden" onChange={(e) => uploadItemPhoto(i, e.target.files[0])} />
-                          </label>
+                    {isOpen && (
+                      <div className="border-t border-line/80 p-4">
+                        <div className="mb-3 flex flex-wrap gap-1.5">
+                          {STATUS_OPTIONS.map((s) => (
+                            <button
+                              key={s.value}
+                              type="button"
+                              onClick={() => setItem(i, "status", s.value)}
+                              className={`rounded-full border px-2.5 py-1 text-[11px] font-bold transition-all ${
+                                item.status === s.value ? s.cls : "border-line text-body hover:border-ink/30"
+                              }`}
+                            >
+                              {s.label}
+                            </button>
+                          ))}
                         </div>
-                      ) : (
-                        <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-dashed border-line px-3 py-1.5 text-[12px] font-semibold text-body hover:border-yellow hover:text-ink">
-                          <UploadIcon className="h-3.5 w-3.5" />
-                          {uploadingIdx === i ? "Uploading…" : "Upload photo"}
-                          <input type="file" accept="image/*" className="hidden" onChange={(e) => uploadItemPhoto(i, e.target.files[0])} />
-                        </label>
-                      )}
-                    </div>
-                  </div>
 
-                  <div className="mt-3">
-                    <label className="mb-1 block text-[11px] font-semibold text-body">Remarks</label>
-                    <textarea
-                      rows={2}
-                      value={item.remarks || ""}
-                      onChange={(e) => setItem(i, "remarks", e.target.value)}
-                      placeholder="Any additional notes for this item (optional)"
-                      className="w-full rounded-md border border-line px-2.5 py-2 text-[13px] outline-none focus:border-ink"
-                    />
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                          <div>
+                            <label className="mb-1 block text-[11px] font-semibold text-body">Observation</label>
+                            <textarea
+                              rows={2}
+                              value={item.observation}
+                              onChange={(e) => setItem(i, "observation", e.target.value)}
+                              className="w-full rounded-md border border-line px-2.5 py-2 text-[13px] outline-none focus:border-ink"
+                            />
+                          </div>
+                          <div>
+                            <label className="mb-1 block text-[11px] font-semibold text-body">Recommendation</label>
+                            <textarea
+                              rows={2}
+                              value={item.recommendation}
+                              onChange={(e) => setItem(i, "recommendation", e.target.value)}
+                              className="w-full rounded-md border border-line px-2.5 py-2 text-[13px] outline-none focus:border-ink"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="mt-3 flex flex-wrap items-center gap-3">
+                          <div>
+                            <label className="mb-1 block text-[11px] font-semibold text-body">Priority</label>
+                            <select
+                              value={item.priority}
+                              onChange={(e) => setItem(i, "priority", e.target.value)}
+                              className="rounded-md border border-line px-2.5 py-1.5 text-[12.5px] outline-none focus:border-ink"
+                            >
+                              <option value="low">Low</option>
+                              <option value="medium">Medium</option>
+                              <option value="high">High</option>
+                            </select>
+                          </div>
+
+                          <div className="flex-1">
+                            <label className="mb-1 block text-[11px] font-semibold text-body">Photo</label>
+                            {item.photo_url ? (
+                              <div className="flex items-center gap-2">
+                                <PhotoThumbnail src={item.photo_url} alt={item.category} className="h-12 w-16 rounded-md border border-line object-cover" />
+                                <label className="cursor-pointer text-[11.5px] font-bold text-ink underline underline-offset-2">
+                                  Replace
+                                  <input type="file" accept="image/*" className="hidden" onChange={(e) => uploadItemPhoto(i, e.target.files[0])} />
+                                </label>
+                              </div>
+                            ) : (
+                              <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-dashed border-line px-3 py-1.5 text-[12px] font-semibold text-body hover:border-yellow hover:text-ink">
+                                <UploadIcon className="h-3.5 w-3.5" />
+                                {uploadingIdx === i ? "Uploading…" : "Upload photo"}
+                                <input type="file" accept="image/*" className="hidden" onChange={(e) => uploadItemPhoto(i, e.target.files[0])} />
+                              </label>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="mt-3">
+                          <label className="mb-1 block text-[11px] font-semibold text-body">Remarks</label>
+                          <textarea
+                            rows={2}
+                            value={item.remarks || ""}
+                            onChange={(e) => setItem(i, "remarks", e.target.value)}
+                            placeholder="Any additional notes for this item (optional)"
+                            className="w-full rounded-md border border-line px-2.5 py-2 text-[13px] outline-none focus:border-ink"
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 

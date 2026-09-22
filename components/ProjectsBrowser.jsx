@@ -1,83 +1,20 @@
 "use client";
 
-import { useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  ArrowRightIcon,
-  BuildingIcon,
-  CameraIcon,
-  CheckCircle,
-  HomeIcon,
-  PinIcon,
-  SparklesIcon,
-  WrenchIcon,
-} from "@/components/icons";
+import { ArrowRightIcon, CameraIcon, CheckCircle, PinIcon } from "@/components/icons";
 
 export default function ProjectsBrowser({ initialProjects = [] }) {
-  const [activeCategory, setActiveCategory] = useState("All");
-
-  // Dynamically derive categories from actual database projects — ZERO hardcoding!
-  const categories = useMemo(() => {
-    const cats = new Set(
-      initialProjects.map((p) => p.category?.trim()).filter(Boolean)
-    );
-    return ["All", ...Array.from(cats)];
-  }, [initialProjects]);
-
-  const filteredProjects = useMemo(() => {
-    if (activeCategory === "All") return initialProjects;
-    return initialProjects.filter(
-      (p) => p.category?.toLowerCase() === activeCategory.toLowerCase()
-    );
-  }, [initialProjects, activeCategory]);
-
   return (
     <div className="space-y-10 sm:space-y-12">
-      {/* Category Filter Pills (Derived 100% from DB) */}
-      {categories.length > 1 && (
-        <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-2.5">
-          {categories.map((cat) => {
-            const isActive = activeCategory === cat;
-            return (
-              <button
-                key={cat}
-                type="button"
-                onClick={() => setActiveCategory(cat)}
-                className={`group inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 sm:px-5 sm:py-2.5 text-xs sm:text-[13px] font-black transition-all duration-200 ${
-                  isActive
-                    ? "bg-yellow text-ink shadow-md shadow-yellow/20 scale-[1.03]"
-                    : "bg-white border border-slate-200/90 text-slate-700 shadow-2xs hover:border-ink hover:text-ink hover:bg-slate-50"
-                }`}
-              >
-                <span>{cat === "All" ? "All Projects" : cat}</span>
-                <span
-                  className={`rounded-full px-2 py-0.5 text-[10px] font-mono font-bold transition-colors ${
-                    isActive
-                      ? "bg-black/15 text-ink"
-                      : "bg-slate-100 text-slate-500 group-hover:bg-slate-200"
-                  }`}
-                >
-                  {cat === "All"
-                    ? initialProjects.length
-                    : initialProjects.filter(
-                        (p) => p.category?.toLowerCase() === cat.toLowerCase()
-                      ).length}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      )}
-
       {/* Project Folders Grid */}
       <motion.div
         layout
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7"
       >
         <AnimatePresence mode="popLayout">
-          {filteredProjects.map((p, index) => {
+          {initialProjects.map((p, index) => {
             const cover = p.cover_image || p.images[0]?.url || "";
             const isLocal = cover.startsWith("/");
             const photoCount = p.images?.length || 1;
@@ -121,20 +58,8 @@ export default function ProjectsBrowser({ initialProjects = [] }) {
                     {/* Dark Vignette Gradient Overlay */}
                     <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10 transition-opacity duration-300 group-hover:opacity-95" />
 
-                    {/* Top Badges Bar: Category + Folder Photo Counter */}
-                    <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2">
-                      <span className="inline-flex items-center gap-1.5 rounded-full border border-white/40 bg-white/95 px-3 py-1 text-[11px] font-black text-ink shadow-sm backdrop-blur-md">
-                        {p.category === "Commercial" ? (
-                          <BuildingIcon className="h-3.5 w-3.5 text-amber-600" />
-                        ) : p.category === "Residential" ? (
-                          <HomeIcon className="h-3.5 w-3.5 text-emerald-600" />
-                        ) : (
-                          <WrenchIcon className="h-3.5 w-3.5 text-amber-600" />
-                        )}
-                        <span>{p.category}</span>
-                      </span>
-
-                      {/* Photo Album Folder Pill */}
+                    {/* Photo Album Folder Pill */}
+                    <div className="absolute top-3 right-3">
                       <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300/80 bg-amber-500/90 px-3 py-1 text-[11px] font-black text-white shadow-md backdrop-blur-md">
                         <CameraIcon className="h-3.5 w-3.5" />
                         <span>{photoCount} {photoCount === 1 ? "Photo" : "Photos"}</span>
@@ -143,7 +68,7 @@ export default function ProjectsBrowser({ initialProjects = [] }) {
 
                     {/* Bottom Info Overlay */}
                     <div className="absolute bottom-0 inset-x-0 p-5 sm:p-6 flex flex-col justify-end">
-                      {/* Status Chip (like Utopia Decors) */}
+                      {/* Status / Phase Chip */}
                       <div className="mb-2">
                         <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300/40 bg-white/15 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-widest text-amber-200 backdrop-blur-xs">
                           <CheckCircle className="h-3 w-3 text-amber-300" />
@@ -177,22 +102,9 @@ export default function ProjectsBrowser({ initialProjects = [] }) {
         </AnimatePresence>
       </motion.div>
 
-      {filteredProjects.length === 0 && (
+      {initialProjects.length === 0 && (
         <div className="rounded-3xl border border-slate-200/90 bg-white p-12 text-center shadow-xs">
-          <p className="text-base font-extrabold text-ink">
-            {initialProjects.length === 0
-              ? "No project albums published yet."
-              : "No projects found in this category."}
-          </p>
-          {activeCategory !== "All" && (
-            <button
-              type="button"
-              onClick={() => setActiveCategory("All")}
-              className="mt-3 text-xs font-black text-amber-700 underline underline-offset-4 hover:text-amber-900"
-            >
-              Show all projects
-            </button>
-          )}
+          <p className="text-base font-extrabold text-ink">No project albums published yet.</p>
         </div>
       )}
     </div>

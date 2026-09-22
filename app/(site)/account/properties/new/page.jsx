@@ -36,7 +36,7 @@ const EMPTY_FORM = {
 };
 
 function PropertyFormInner() {
-  const { user } = useCustomerAuth();
+  const { user, refreshDefaultProperty } = useCustomerAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const editId = searchParams.get("edit") || searchParams.get("id");
@@ -161,6 +161,7 @@ function PropertyFormInner() {
         toast.success("Property added successfully!");
       }
 
+      await refreshDefaultProperty();
       router.push("/account/properties");
     } catch (err) {
       console.error(err);

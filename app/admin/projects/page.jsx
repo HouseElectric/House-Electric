@@ -1,8 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import AdminGuard from "@/components/admin/AdminGuard";
 import AdminLayout from "@/components/admin/AdminLayout";
@@ -10,7 +8,6 @@ import { supabase } from "@/lib/supabase";
 import { uploadImage } from "@/lib/imagekit";
 import {
   CameraIcon,
-  ClipboardIcon,
   EditIcon,
   ImageIcon,
   PinIcon,
@@ -22,77 +19,15 @@ import {
   XIcon,
 } from "@/components/icons";
 
-const PRESET_CATEGORIES = [
-  "Residential",
-  "Commercial",
-  "Installation",
-  "Maintenance",
-  "Health Check",
-  "Repair",
-  "AMC",
-  "Corporate",
-];
-
-function CategoryPicker({ value, onChange, options }) {
-  const [custom, setCustom] = useState(value !== "" && !options.includes(value));
-
-  if (custom) {
-    return (
-      <div className="flex items-center gap-2">
-        <input
-          autoFocus
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder="Enter custom category name"
-          className="w-full rounded-xl border border-line bg-white px-3.5 py-2.5 text-xs sm:text-sm text-ink outline-none transition-all focus:border-ink focus:ring-2 focus:ring-yellow/20 shadow-2xs"
-        />
-        <button
-          type="button"
-          onClick={() => {
-            setCustom(false);
-            onChange(options[0] || "General");
-          }}
-          className="whitespace-nowrap rounded-xl border border-slate-200 px-3 py-2.5 text-xs font-bold text-body transition-colors hover:text-ink hover:bg-slate-50"
-        >
-          Cancel
-        </button>
-      </div>
-    );
-  }
-
-  return (
-    <select
-      value={value}
-      onChange={(e) => {
-        if (e.target.value === "__custom__") {
-          setCustom(true);
-          onChange("");
-        } else {
-          onChange(e.target.value);
-        }
-      }}
-      className="w-full rounded-xl border border-line bg-white px-3.5 py-2.5 text-xs sm:text-sm text-ink outline-none transition-all focus:border-ink focus:ring-2 focus:ring-yellow/20 shadow-2xs cursor-pointer font-bold"
-    >
-      {options.map((c) => (
-        <option key={c} value={c}>
-          {c}
-        </option>
-      ))}
-      <option value="__custom__">+ Create new category…</option>
-    </select>
-  );
-}
-
-function AdminProjectsPageInner() {
-  const searchParams = useSearchParams();
-  const categoryFromUrl = searchParams.get("category") || "";
+export default function AdminProjectsPage() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // New Project State
   const [title, setTitle] = useState("");
-  const [category, setCategory] = useState(categoryFromUrl || "Commercial");
   const [location, setLocation] = useState("");
+  const [status, setStatus] = useState("");
+  const [displayOrder, setDisplayOrder] = useState(0);
   const [description, setDescription] = useState("");
   const [newImages, setNewImages] = useState([]); // [{ url, caption }]
   const [coverUrl, setCoverUrl] = useState("");
@@ -109,16 +44,23 @@ function AdminProjectsPageInner() {
   const [savingEdit, setSavingEdit] = useState(false);
   const editFileInputRef = useRef(null);
 
-  // Names of categories created via /admin/project-categories with no photos yet — merged into
-  // the category picker below so a brand-new category is selectable immediately. Category
-  // creation and cover photos are managed entirely on that separate page now.
-  const [managedCategoryNames, setManagedCategoryNames] = useState([]);
+  // Lock body scroll while the edit modal is open so the page behind it can't
+  // scroll independently — otherwise its own scrollbar stays visible and the
+  // backdrop no longer looks like it covers the full viewport.
+  useEffect(() => {
+    if (!editing) return;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [editing]);
 
   const fetchItems = async () => {
     setLoading(true);
     const { data } = await supabase
       .from("projects")
       .select("*")
+      .order("display_order", { ascending: true })
       .order("created_at", { ascending: false });
 
     // Normalize images array for each project
@@ -142,23 +84,9 @@ function AdminProjectsPageInner() {
     setLoading(false);
   };
 
-  const fetchManagedCategoryNames = async () => {
-    const { data } = await supabase.from("project_categories").select("name");
-    setManagedCategoryNames((data ?? []).map((c) => c.name));
-  };
-
   useEffect(() => {
     fetchItems();
-    fetchManagedCategoryNames();
   }, []);
-
-  // Every category that exists, whether or not it has any project albums yet — categories are
-  // created and covered from /admin/project-categories; this just makes a freshly-created,
-  // still-empty category selectable here immediately.
-  const categoryOptions = useMemo(() => {
-    const used = items.map((p) => p.category?.trim()).filter(Boolean);
-    return Array.from(new Set([...PRESET_CATEGORIES, ...managedCategoryNames, ...used]));
-  }, [items, managedCategoryNames]);
 
   // Handle uploading multiple photos for the NEW project
   const handleNewFiles = async (filesList) => {
@@ -216,12 +144,12 @@ function AdminProjectsPageInner() {
       const { error } = await supabase.from("projects").insert([
         {
           title: title.trim(),
-          category: category.trim() || "General",
           location: location.trim(),
+          status: status.trim() || "Completed",
+          display_order: Number(displayOrder) || 0,
           description: description.trim(),
           image_url: selectedCover,
           images: newImages,
-          status: "Completed",
           featured,
         },
       ]);
@@ -231,6 +159,8 @@ function AdminProjectsPageInner() {
       toast.success("Project album created successfully!");
       setTitle("");
       setLocation("");
+      setStatus("");
+      setDisplayOrder(0);
       setDescription("");
       setNewImages([]);
       setCoverUrl("");
@@ -260,8 +190,9 @@ function AdminProjectsPageInner() {
     setEditing({
       id: item.id,
       title: item.title,
-      category: item.category || "General",
       location: item.location || "",
+      status: item.status || "",
+      display_order: item.display_order ?? 0,
       description: item.description || "",
       image_url: item.image_url || item.images[0]?.url || "",
       images: Array.isArray(item.images) ? [...item.images] : [],
@@ -342,8 +273,9 @@ function AdminProjectsPageInner() {
         .from("projects")
         .update({
           title: editing.title.trim(),
-          category: editing.category.trim() || "General",
           location: editing.location.trim(),
+          status: editing.status.trim() || "Completed",
+          display_order: Number(editing.display_order) || 0,
           description: editing.description.trim(),
           image_url: editing.image_url || editing.images[0]?.url || "",
           images: editing.images,
@@ -382,10 +314,7 @@ function AdminProjectsPageInner() {
     () => items.reduce((acc, p) => acc + (p.images?.length || 1), 0),
     [items]
   );
-  const totalCategoriesCount = useMemo(
-    () => new Set(items.map((p) => p.category?.trim()).filter(Boolean)).size,
-    [items]
-  );
+  const totalFeaturedCount = useMemo(() => items.filter((p) => p.featured).length, [items]);
 
   return (
     <AdminGuard>
@@ -408,7 +337,7 @@ function AdminProjectsPageInner() {
           </div>
 
           {/* Stat Cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="rounded-2xl border border-line bg-white p-4 shadow-2xs">
               <span className="text-[11px] font-bold uppercase tracking-wider text-muted">
                 Total Projects
@@ -427,18 +356,10 @@ function AdminProjectsPageInner() {
 
             <div className="rounded-2xl border border-line bg-white p-4 shadow-2xs">
               <span className="text-[11px] font-bold uppercase tracking-wider text-muted">
-                Categories
+                Featured
               </span>
-              <p className="mt-1.5 text-2xl font-black text-ink">{totalCategoriesCount}</p>
-              <span className="text-[10.5px] text-slate-500">Unique work categories</span>
-            </div>
-
-            <div className="rounded-2xl border border-line bg-white p-4 shadow-2xs">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-muted">
-                Storage Service
-              </span>
-              <p className="mt-1.5 text-base sm:text-lg font-black text-emerald-700">ImageKit Cloud</p>
-              <span className="text-[10.5px] text-slate-500">CDN optimized high-res</span>
+              <p className="mt-1.5 text-2xl font-black text-ink">{totalFeaturedCount}</p>
+              <span className="text-[10.5px] text-slate-500">Shown on the home page</span>
             </div>
           </div>
 
@@ -450,26 +371,19 @@ function AdminProjectsPageInner() {
                   <PlusIcon className="h-5 w-5" />
                 </span>
                 <div>
-                  <h3 className="text-lg font-black text-ink">Add Project Photos</h3>
+                  <h3 className="text-lg font-black text-ink">Add Project</h3>
                   <p className="text-xs text-muted">
-                    Pick a category, add project details, upload photos, and click &quot;Set as Cover&quot; to choose
+                    Add project details, upload photos, and click &quot;Set as Cover&quot; to choose
                     the album cover photo.
                   </p>
                 </div>
               </div>
-              <Link
-                href="/admin/project-categories"
-                className="inline-flex flex-none items-center gap-1.5 rounded-xl border border-slate-200 px-4 py-2.5 text-xs font-black text-ink shadow-2xs transition-colors hover:border-ink hover:bg-slate-50"
-              >
-                <ClipboardIcon className="h-3.5 w-3.5" />
-                Manage Categories
-              </Link>
             </div>
 
             <form onSubmit={handleCreateProject} className="space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Project Title */}
-                <div className="space-y-1.5 sm:col-span-2">
+                <div className="space-y-1.5">
                   <label className="text-xs font-black text-ink">
                     Project Title <span className="text-red-500">*</span>
                   </label>
@@ -483,25 +397,14 @@ function AdminProjectsPageInner() {
                   />
                 </div>
 
-                {/* Category Picker */}
+                {/* Site Location */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-black text-ink">
-                    Category <span className="text-red-500">*</span>
-                  </label>
-                  <CategoryPicker
-                    value={category}
-                    onChange={setCategory}
-                    options={categoryOptions}
-                  />
-                </div>
-
-                {/* Location */}
-                <div className="space-y-1.5 sm:col-span-1">
-                  <label className="text-xs font-black text-ink">
-                    Location / Area (Optional)
+                    Site Location <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
+                    required
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
                     placeholder="e.g. Civil Lines, New Delhi"
@@ -509,13 +412,34 @@ function AdminProjectsPageInner() {
                   />
                 </div>
 
-                {/* Description */}
-                <div className="space-y-1.5 sm:col-span-2">
-                  <label className="text-xs font-black text-ink">
-                    Project Scope &amp; Description (Optional)
-                  </label>
+                {/* Status / Phase */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-black text-ink">Status / Phase</label>
                   <input
                     type="text"
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value)}
+                    placeholder="Foundation stage / Interior fit-out"
+                    className="w-full rounded-2xl border border-line px-4 py-3 text-xs sm:text-sm outline-none transition-all focus:border-ink focus:ring-2 focus:ring-yellow/20"
+                  />
+                </div>
+
+                {/* Position */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-black text-ink">Position</label>
+                  <input
+                    type="number"
+                    value={displayOrder}
+                    onChange={(e) => setDisplayOrder(e.target.value)}
+                    className="w-full rounded-2xl border border-line px-4 py-3 text-xs sm:text-sm outline-none transition-all focus:border-ink focus:ring-2 focus:ring-yellow/20"
+                  />
+                </div>
+
+                {/* Description */}
+                <div className="space-y-1.5 sm:col-span-2">
+                  <label className="text-xs font-black text-ink">Description / Notes</label>
+                  <textarea
+                    rows={3}
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Brief description of the electrical work, panels, or safety checks conducted..."
@@ -524,7 +448,7 @@ function AdminProjectsPageInner() {
                 </div>
 
                 {/* Featured on Home Page */}
-                <label className="sm:col-span-3 flex items-center gap-2.5 rounded-2xl border border-line px-4 py-3 cursor-pointer hover:border-ink transition-colors w-fit">
+                <label className="sm:col-span-2 flex items-center gap-2.5 rounded-2xl border border-line px-4 py-3 cursor-pointer hover:border-ink transition-colors w-fit">
                   <input
                     type="checkbox"
                     checked={featured}
@@ -598,13 +522,13 @@ function AdminProjectsPageInner() {
                             </span>
                           )}
 
-                          {/* Action Overlay */}
-                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5 p-2">
+                          {/* Action Bar — always visible, no hover needed */}
+                          <div className="absolute inset-x-0 bottom-0 flex items-center gap-1 bg-black/70 p-1.5">
                             {!isCover && (
                               <button
                                 type="button"
                                 onClick={() => setCoverUrl(img.url)}
-                                className="w-full rounded-md bg-white/90 py-1 text-[10px] font-black text-ink hover:bg-white shadow-sm"
+                                className="flex-1 rounded-md bg-white/90 py-1 text-[10px] font-black text-ink hover:bg-white shadow-sm"
                               >
                                 Set as Cover
                               </button>
@@ -688,14 +612,21 @@ function AdminProjectsPageInner() {
                         )}
 
                         {/* Top Badges */}
-                        <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between">
-                          <span className="rounded-full bg-white/95 px-2.5 py-0.5 text-[10.5px] font-black text-ink shadow-sm backdrop-blur-xs">
-                            {p.category}
+                        <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between gap-1.5">
+                          <span className="truncate rounded-full bg-white/95 px-2.5 py-0.5 text-[10.5px] font-black text-ink shadow-sm backdrop-blur-xs">
+                            {p.status || "Completed"}
                           </span>
-                          <span className="rounded-full bg-amber-500 text-white px-2.5 py-0.5 text-[10.5px] font-black shadow-sm flex items-center gap-1">
-                            <CameraIcon className="h-3 w-3" />
-                            <span>{photoCount} Photos</span>
-                          </span>
+                          <div className="flex flex-none items-center gap-1.5">
+                            {p.featured && (
+                              <span className="rounded-full bg-ink text-white px-2 py-0.5 text-[10.5px] font-black shadow-sm flex items-center gap-1">
+                                <StarIcon className="h-3 w-3 fill-yellow text-yellow" />
+                              </span>
+                            )}
+                            <span className="rounded-full bg-amber-500 text-white px-2.5 py-0.5 text-[10.5px] font-black shadow-sm flex items-center gap-1">
+                              <CameraIcon className="h-3 w-3" />
+                              <span>{photoCount} Photos</span>
+                            </span>
+                          </div>
                         </div>
                       </div>
 
@@ -743,10 +674,11 @@ function AdminProjectsPageInner() {
 
           {/* EDIT / MANAGE PHOTOS MODAL */}
           {editing && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs overflow-y-auto">
-              <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-2xl space-y-6">
+            <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs lg:left-64">
+              <div className="relative w-full max-w-2xl max-h-[85vh] overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl">
+                <div className="max-h-[85vh] overflow-y-auto">
                 {/* Header */}
-                <div className="flex items-center justify-between border-b border-line/70 pb-4">
+                <div className="sticky top-0 z-10 flex items-center justify-between rounded-t-3xl border-b border-line/70 bg-white/95 px-6 py-4 backdrop-blur-sm sm:px-8">
                   <div>
                     <span className="text-[10px] font-mono font-black uppercase text-amber-700">
                       Manage Album &amp; Photos
@@ -756,13 +688,13 @@ function AdminProjectsPageInner() {
                   <button
                     type="button"
                     onClick={() => setEditing(null)}
-                    className="grid h-8 w-8 place-items-center rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    className="grid h-8 w-8 flex-none place-items-center rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200"
                   >
                     <XIcon className="h-4 w-4" />
                   </button>
                 </div>
 
-                <form onSubmit={handleSaveEdit} className="space-y-5">
+                <form onSubmit={handleSaveEdit} className="space-y-5 p-6 sm:p-8">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5 sm:col-span-2">
                       <label className="text-xs font-black text-ink">Project Title</label>
@@ -776,16 +708,7 @@ function AdminProjectsPageInner() {
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-xs font-black text-ink">Category</label>
-                      <CategoryPicker
-                        value={editing.category}
-                        onChange={(cat) => setEditing((c) => ({ ...c, category: cat }))}
-                        options={categoryOptions}
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-black text-ink">Location</label>
+                      <label className="text-xs font-black text-ink">Site Location</label>
                       <input
                         type="text"
                         value={editing.location}
@@ -794,10 +717,31 @@ function AdminProjectsPageInner() {
                       />
                     </div>
 
-                    <div className="space-y-1.5 sm:col-span-2">
-                      <label className="text-xs font-black text-ink">Description</label>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-black text-ink">Status / Phase</label>
                       <input
                         type="text"
+                        value={editing.status}
+                        onChange={(e) => setEditing((c) => ({ ...c, status: e.target.value }))}
+                        placeholder="Foundation stage / Interior fit-out"
+                        className="w-full rounded-xl border border-line px-3.5 py-2.5 text-xs sm:text-sm outline-none focus:border-ink"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-black text-ink">Position</label>
+                      <input
+                        type="number"
+                        value={editing.display_order}
+                        onChange={(e) => setEditing((c) => ({ ...c, display_order: e.target.value }))}
+                        className="w-full rounded-xl border border-line px-3.5 py-2.5 text-xs sm:text-sm outline-none focus:border-ink"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5 sm:col-span-2">
+                      <label className="text-xs font-black text-ink">Description / Notes</label>
+                      <textarea
+                        rows={3}
                         value={editing.description}
                         onChange={(e) => setEditing((c) => ({ ...c, description: e.target.value }))}
                         className="w-full rounded-xl border border-line px-3.5 py-2.5 text-xs sm:text-sm outline-none focus:border-ink"
@@ -877,15 +821,15 @@ function AdminProjectsPageInner() {
                               </span>
                             )}
 
-                            {/* Action Overlay */}
-                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1 p-1.5">
+                            {/* Action Bar — always visible, no hover needed */}
+                            <div className="absolute inset-x-0 bottom-0 flex items-center gap-1 bg-black/70 p-1.5">
                               {!isCover && (
                                 <button
                                   type="button"
                                   onClick={() =>
                                     setEditing((c) => ({ ...c, image_url: img.url }))
                                   }
-                                  className="w-full rounded bg-white py-1 text-[10px] font-black text-ink hover:bg-slate-100 shadow-sm"
+                                  className="flex-1 rounded bg-white py-1 text-[10px] font-black text-ink hover:bg-slate-100 shadow-sm"
                                 >
                                   Set as Cover
                                 </button>
@@ -923,19 +867,12 @@ function AdminProjectsPageInner() {
                     </button>
                   </div>
                 </form>
+                </div>
               </div>
             </div>
           )}
         </div>
       </AdminLayout>
     </AdminGuard>
-  );
-}
-
-export default function AdminProjectsPage() {
-  return (
-    <Suspense fallback={null}>
-      <AdminProjectsPageInner />
-    </Suspense>
   );
 }

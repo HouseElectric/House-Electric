@@ -21,14 +21,19 @@ const fmt = (iso) =>
 export default function HealthCheckDetail({ bookingId }) {
   const router = useRouter();
   const [booking, setBooking] = useState(null);
+  const [technicians, setTechnicians] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!supabase || !bookingId) return;
     (async () => {
       setLoading(true);
-      const { data } = await supabase.from("health_checks").select("*").eq("id", bookingId).single();
+      const [{ data }, { data: techs }] = await Promise.all([
+        supabase.from("health_checks").select("*").eq("id", bookingId).single(),
+        supabase.from("technicians").select("id, name, phone, photo_url").eq("active", true).order("name"),
+      ]);
       setBooking(data ?? null);
+      setTechnicians(techs ?? []);
       setLoading(false);
     })();
   }, [bookingId]);
@@ -123,13 +128,23 @@ export default function HealthCheckDetail({ bookingId }) {
             </div>
 
             <div>
-              <label className="mb-1.5 block text-[11.5px] font-bold uppercase tracking-wide text-body">Assigned Engineer</label>
-              <input
-                defaultValue={booking.engineer_name || ""}
-                onBlur={(e) => updateField(booking.id, { engineer_name: e.target.value })}
-                placeholder="Engineer name"
+              <label className="mb-1.5 block text-[11.5px] font-bold uppercase tracking-wide text-body">Assigned Technician</label>
+              <select
+                value={booking.technician_id || ""}
+                onChange={(e) => {
+                  const id = e.target.value;
+                  const t = technicians.find((tc) => tc.id === id);
+                  updateField(booking.id, { technician_id: id || null, engineer_name: t?.name || "" });
+                }}
                 className="w-full rounded-md border border-line px-3 py-2.5 text-[13.5px] text-ink outline-none focus:border-ink"
-              />
+              >
+                <option value="">Unassigned</option>
+                {technicians.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <Link

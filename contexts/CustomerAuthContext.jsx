@@ -8,6 +8,7 @@ const CustomerAuthContext = createContext(null);
 export function CustomerAuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
+  const [defaultProperty, setDefaultProperty] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const loadProfile = async (sessionUser) => {
@@ -19,6 +20,22 @@ export function CustomerAuthProvider({ children }) {
     setProfile(data ?? null);
   };
 
+  // The customer's default property is the single source of truth for "their address" —
+  // used to pre-fill/auto-attach a location on bookings instead of a separate profile address.
+  const loadDefaultProperty = async (sessionUser) => {
+    if (!sessionUser) {
+      setDefaultProperty(null);
+      return;
+    }
+    const { data } = await supabase
+      .from("properties")
+      .select("*")
+      .eq("customer_id", sessionUser.id)
+      .eq("is_default", true)
+      .maybeSingle();
+    setDefaultProperty(data ?? null);
+  };
+
   useEffect(() => {
     if (!supabase) {
       setLoading(false);
@@ -27,7 +44,7 @@ export function CustomerAuthProvider({ children }) {
 
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       setUser(session?.user ?? null);
-      await loadProfile(session?.user ?? null);
+      await Promise.all([loadProfile(session?.user ?? null), loadDefaultProperty(session?.user ?? null)]);
       setLoading(false);
     });
 
@@ -35,7 +52,7 @@ export function CustomerAuthProvider({ children }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setUser(session?.user ?? null);
-      await loadProfile(session?.user ?? null);
+      await Promise.all([loadProfile(session?.user ?? null), loadDefaultProperty(session?.user ?? null)]);
     });
 
     return () => subscription.unsubscribe();
@@ -50,6 +67,7 @@ export function CustomerAuthProvider({ children }) {
   const signOut = () => supabase?.auth.signOut();
 
   const refreshProfile = () => loadProfile(user);
+  const refreshDefaultProperty = () => loadDefaultProperty(user);
 
   const updateProfile = async (fields) => {
     if (!user) return;
@@ -60,7 +78,18 @@ export function CustomerAuthProvider({ children }) {
 
   return (
     <CustomerAuthContext.Provider
-      value={{ user, profile, loading, signIn, signOut, refreshProfile, updateProfile, supabaseReady: !!supabase }}
+      value={{
+        user,
+        profile,
+        defaultProperty,
+        loading,
+        signIn,
+        signOut,
+        refreshProfile,
+        refreshDefaultProperty,
+        updateProfile,
+        supabaseReady: !!supabase,
+      }}
     >
       {children}
     </CustomerAuthContext.Provider>

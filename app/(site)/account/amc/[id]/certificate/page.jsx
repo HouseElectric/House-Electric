@@ -42,7 +42,7 @@ export default function AmcCertificatePage() {
   const fmt = (d) => (d ? new Date(d).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "—");
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 print:space-y-0">
       <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
         <button
           onClick={() => router.push("/account/amc")}
@@ -61,7 +61,7 @@ export default function AmcCertificatePage() {
       </div>
 
       <Reveal y={12}>
-        <div className="rounded-2xl border border-line/80 bg-slate-100/60 p-4 shadow-sm print:block print:rounded-none print:border-0 print:bg-transparent print:p-0 print:shadow-none">
+        <div className="rounded-2xl border border-line/80 bg-slate-100/60 p-4 shadow-sm print:flex print:h-screen print:items-center print:justify-center print:overflow-hidden print:rounded-none print:border-0 print:bg-transparent print:p-0 print:shadow-none">
           <ResponsiveDocumentWrapper>
             <CertificateTemplate
               amcNumber={sub.amc_number}

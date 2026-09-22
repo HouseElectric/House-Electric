@@ -20,6 +20,7 @@ export default function HomeProjects() {
         .from("projects")
         .select("*")
         .eq("featured", true)
+        .order("display_order", { ascending: true })
         .order("created_at", { ascending: false })
         .limit(6);
       setProjects(data ?? []);
@@ -74,11 +75,6 @@ export default function HomeProjects() {
                   )}
                   <div className="absolute inset-0 flex items-end bg-gradient-to-t from-black/70 via-black/20 to-transparent p-3.5 opacity-90 transition-opacity duration-300 group-hover:opacity-100">
                     <div>
-                      {p.category && (
-                        <span className="mb-1 inline-block rounded-full bg-yellow/90 px-2 py-0.5 text-[9.5px] font-black uppercase tracking-wide text-ink">
-                          {p.category}
-                        </span>
-                      )}
                       {p.title && <span className="block text-[12.5px] font-bold text-white drop-shadow-sm">{p.title}</span>}
                     </div>
                   </div>

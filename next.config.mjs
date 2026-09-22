@@ -17,6 +17,14 @@ const nextConfig = {
         destination: "/amc/plans",
         permanent: true,
       },
+      // Same duplication for Health Check: the generic services template's booking form
+      // posted to /api/service-requests (service_requests table), not the dedicated
+      // /health-check flow (health_checks table + report/certificate pipeline).
+      {
+        source: "/services/electrical-health-check",
+        destination: "/health-check",
+        permanent: true,
+      },
     ];
   },
   images: {

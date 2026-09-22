@@ -710,7 +710,7 @@ function NewServiceRequestForm() {
                   required
                   value={form.location}
                   onChange={set("location")}
-                  placeholder={profile?.address || "Where should the electrician visit? (Flat, Building, Street)"}
+                  placeholder="Where should the electrician visit? (Flat, Building, Street)"
                   className={inputClass}
                 />
               </Field>

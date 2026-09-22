@@ -224,11 +224,11 @@ export default function AdminCustomersPage() {
                             )}
                           </td>
                           <td className="whitespace-nowrap px-4 py-3 text-[12px] text-body">{fmtDate(c.created_at)}</td>
-                          <td className="whitespace-nowrap px-4 py-3">
+                          <td className="whitespace-nowrap px-4 py-3 text-center">
                             <Link
                               href={`/admin/customers/${c.id}`}
                               onClick={(e) => e.stopPropagation()}
-                              className="flex items-center gap-1.5 rounded-full border border-line px-3 py-1.5 text-[12px] font-bold text-ink transition-colors hover:border-ink/40 hover:bg-cream"
+                              className="inline-flex items-center gap-1.5 rounded-full border border-line px-3 py-1.5 text-[12px] font-bold text-ink transition-colors hover:border-ink/40 hover:bg-cream"
                             >
                               <EyeIcon className="h-3.5 w-3.5" />
                               Details

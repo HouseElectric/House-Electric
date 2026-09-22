@@ -50,14 +50,14 @@ function ProgressStepper({ status }) {
                     ? "bg-white text-ink shadow-sm"
                     : current
                     ? "bg-white text-ink shadow-md ring-4 ring-white/25"
-                    : "bg-white/15 text-white/50"
+                    : "bg-white/25 text-white/85"
                 }`}
               >
                 {done ? <CheckCircle className="h-3.5 w-3.5" /> : i + 1}
               </span>
               <span
                 className={`hidden whitespace-nowrap text-[9px] font-bold uppercase tracking-wide sm:block ${
-                  current ? "text-white" : done ? "text-white/65" : "text-white/35"
+                  current ? "text-white" : done ? "text-white/75" : "text-white/60"
                 }`}
               >
                 {step.label}
