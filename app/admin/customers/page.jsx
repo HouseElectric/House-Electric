@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import AdminGuard from "@/components/admin/AdminGuard";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/lib/supabase";
@@ -14,44 +16,36 @@ import {
   ClockIcon,
   XIcon,
   EyeIcon,
-  BuildingIcon,
-  ClipboardIcon,
-  LightbulbIcon,
+  SparklesIcon,
 } from "@/components/icons";
+
+function CountUp({ value }) {
+  const [display, setDisplay] = useState(0);
+  useEffect(() => {
+    if (typeof value !== "number") return;
+    let frame;
+    const duration = 700;
+    const start = performance.now();
+    const tick = (now) => {
+      const progress = Math.min((now - start) / duration, 1);
+      setDisplay(Math.round(value * (1 - Math.pow(1 - progress, 3))));
+      if (progress < 1) frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [value]);
+  return typeof value === "number" ? display : value;
+}
 
 function fmtDate(iso) {
   return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
 
-function DetailRow({ icon: Icon, label, value, href }) {
-  return (
-    <div className="flex items-start gap-3">
-      <span className="mt-0.5 grid h-8 w-8 flex-none place-items-center rounded-lg bg-cream text-ink">
-        <Icon className="h-3.5 w-3.5" />
-      </span>
-      <div className="min-w-0">
-        <p className="text-[10.5px] font-bold uppercase tracking-wide text-body">{label}</p>
-        {value ? (
-          href ? (
-            <a href={href} className="text-[13px] font-semibold text-ink hover:underline break-words">
-              {value}
-            </a>
-          ) : (
-            <p className="text-[13px] font-semibold text-ink break-words">{value}</p>
-          )
-        ) : (
-          <p className="text-[13px] text-body/50">—</p>
-        )}
-      </div>
-    </div>
-  );
-}
-
 export default function AdminCustomersPage() {
+  const router = useRouter();
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [selected, setSelected] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -59,6 +53,7 @@ export default function AdminCustomersPage() {
         .from("profiles")
         .select("*")
         .eq("is_admin", false)
+        .eq("is_technician", false)
         .order("created_at", { ascending: false });
       setCustomers(data ?? []);
       setLoading(false);
@@ -81,27 +76,47 @@ export default function AdminCustomersPage() {
   }, [customers]);
 
   const SUMMARY_CARDS = [
-    { label: "Total Customers", value: stats.total, icon: UsersIcon, cls: "bg-ink text-yellow" },
-    { label: "New This Month", value: stats.newThisMonth, icon: ClockIcon, cls: "bg-emerald-50 text-emerald-600" },
-    { label: "Mobile on File", value: stats.withMobile, icon: PhoneIcon, cls: "bg-blue-50 text-blue-600" },
-    { label: "Address on File", value: stats.withAddress, icon: PinIcon, cls: "bg-amber-50 text-amber-600" },
+    { label: "Total Customers", value: stats.total, icon: UsersIcon, cls: "bg-ink text-yellow", glow: "bg-yellow", accent: "from-yellow to-amber-500" },
+    { label: "New This Month", value: stats.newThisMonth, icon: ClockIcon, cls: "bg-emerald-50 text-emerald-600", glow: "bg-emerald-400", accent: "from-emerald-400 to-teal-500" },
+    { label: "Mobile on File", value: stats.withMobile, icon: PhoneIcon, cls: "bg-blue-50 text-blue-600", glow: "bg-blue-400", accent: "from-blue-400 to-indigo-500" },
+    { label: "Address on File", value: stats.withAddress, icon: PinIcon, cls: "bg-amber-50 text-amber-600", glow: "bg-amber-400", accent: "from-amber-400 to-orange-500" },
   ];
 
   return (
     <AdminGuard>
       <AdminLayout title="Customers">
-        <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="relative mb-6 overflow-hidden rounded-2xl bg-ink px-6 py-7 sm:px-8 sm:py-8">
+          <span className="glow-blob -right-14 -top-20 h-56 w-56 bg-yellow/25" />
+          <span className="glow-blob -bottom-24 -left-10 h-48 w-48 bg-yellow/10" style={{ animationDelay: "2.2s" }} />
+          <div className="relative z-10">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-yellow/30 bg-yellow/10 px-3 py-1 text-[10.5px] font-bold uppercase tracking-wider text-yellow">
+              <SparklesIcon className="h-3 w-3" /> Customers
+            </span>
+            <h2 className="mt-3 text-[21px] font-extrabold text-white sm:text-[25px]">Customers</h2>
+            <p className="mt-1.5 max-w-[56ch] text-[13.5px] text-white/55">Every registered customer, their properties, requests and payment history.</p>
+          </div>
+        </div>
+
+        <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {SUMMARY_CARDS.map((c, i) => (
             <div
               key={c.label}
               style={{ animationDelay: `${i * 0.06}s` }}
-              className="card-hover rounded-2xl border border-line bg-white p-4 opacity-0 animate-fade-up"
+              className="card-hover group relative isolate overflow-hidden rounded-2xl border border-line bg-white p-4 opacity-0 animate-fade-up"
             >
-              <div className={`mb-2.5 grid h-9 w-9 place-items-center rounded-lg ${c.cls}`}>
-                <c.icon className="h-4 w-4" />
+              <span className={`absolute inset-x-0 top-0 h-[3px] origin-left scale-x-0 bg-gradient-to-r ${c.accent} transition-transform duration-300 ease-out group-hover:scale-x-100`} />
+              <span className={`pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-100 ${c.glow}`} />
+              <div className="relative flex items-start justify-between gap-2.5">
+                <div className="min-w-0">
+                  <p className="text-[11.5px] font-semibold text-body">{c.label}</p>
+                  <b className="mt-1 block text-[17px] font-black leading-none tabular-nums text-ink sm:text-[24px]">
+                    <CountUp value={c.value} />
+                  </b>
+                </div>
+                <span className={`grid h-9 w-9 flex-none place-items-center rounded-xl shadow-sm ring-4 ring-white transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 ${c.cls}`}>
+                  <c.icon className="h-4 w-4" />
+                </span>
               </div>
-              <div className="text-[11.5px] font-semibold text-body">{c.label}</div>
-              <div className="mt-0.5 text-[22px] font-extrabold tabular-nums text-ink">{c.value}</div>
             </div>
           ))}
         </div>
@@ -125,7 +140,7 @@ export default function AdminCustomersPage() {
           )}
         </div>
 
-        <div className={`grid grid-cols-1 gap-5 ${selected ? "lg:grid-cols-[1fr_360px]" : ""}`}>
+        <div>
           <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-[0_1px_0_rgba(20,20,20,0.02)]">
             <div className="flex items-center justify-between border-b border-line bg-cream/40 px-5 py-3">
               <span className="flex items-center gap-2 text-[12px] font-bold uppercase tracking-wide text-body">
@@ -159,8 +174,8 @@ export default function AdminCustomersPage() {
                       return (
                         <tr
                           key={c.id}
-                          onClick={() => setSelected(c)}
-                          className={`group cursor-pointer border-t border-line transition-colors hover:bg-cream/30 ${selected?.id === c.id ? "bg-cream/60" : ""}`}
+                          onClick={() => router.push(`/admin/customers/${c.id}`)}
+                          className="group cursor-pointer border-t border-line transition-colors hover:bg-cream/30"
                         >
                           <td className="whitespace-nowrap px-4 py-3">
                             <div className="flex items-center gap-2.5">
@@ -210,16 +225,14 @@ export default function AdminCustomersPage() {
                           </td>
                           <td className="whitespace-nowrap px-4 py-3 text-[12px] text-body">{fmtDate(c.created_at)}</td>
                           <td className="whitespace-nowrap px-4 py-3">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelected(c);
-                              }}
+                            <Link
+                              href={`/admin/customers/${c.id}`}
+                              onClick={(e) => e.stopPropagation()}
                               className="flex items-center gap-1.5 rounded-full border border-line px-3 py-1.5 text-[12px] font-bold text-ink transition-colors hover:border-ink/40 hover:bg-cream"
                             >
                               <EyeIcon className="h-3.5 w-3.5" />
                               Details
-                            </button>
+                            </Link>
                           </td>
                         </tr>
                       );
@@ -229,52 +242,6 @@ export default function AdminCustomersPage() {
               </div>
             )}
           </div>
-
-          {selected && (
-            <>
-              <div className="fixed inset-0 z-[190] bg-black/50 lg:hidden" onClick={() => setSelected(null)} />
-              <div className="fixed inset-x-4 top-1/2 z-[200] max-h-[85vh] -translate-y-1/2 overflow-y-auto rounded-2xl border border-line bg-white shadow-2xl lg:sticky lg:inset-x-auto lg:top-[76px] lg:z-auto lg:h-fit lg:max-h-none lg:translate-y-0 lg:overflow-visible lg:shadow-none">
-              <div className="relative overflow-hidden bg-gradient-to-br from-ink to-[#2a2a2a] p-5 text-white">
-                <span className="glow-blob -right-8 -top-10 h-32 w-32 bg-yellow/20" />
-                <div className="relative flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    {selected.avatar_url ? (
-                      <img src={selected.avatar_url} alt="" className="h-12 w-12 flex-none rounded-full border border-white/20 object-cover" />
-                    ) : (
-                      <span
-                        className={`grid h-12 w-12 flex-none place-items-center rounded-full bg-gradient-to-br text-[15px] font-extrabold text-white ring-2 ring-white/20 ${avatarGradient(
-                          selected.name || selected.email || "—"
-                        )}`}
-                      >
-                        {(selected.name || selected.email || "—").charAt(0).toUpperCase()}
-                      </span>
-                    )}
-                    <div className="min-w-0">
-                      <p className="truncate text-[15px] font-extrabold">{selected.name || "Unnamed"}</p>
-                      <p className="text-[11.5px] text-white/50">Joined {fmtDate(selected.created_at)}</p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setSelected(null)}
-                    aria-label="Close"
-                    className="grid h-8 w-8 flex-none place-items-center rounded-full text-white/60 transition-colors hover:bg-white/10 hover:text-white"
-                  >
-                    <XIcon className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-
-              <div className="space-y-4 p-5">
-                <DetailRow icon={MailIcon} label="Email" value={selected.email} href={selected.email ? `mailto:${selected.email}` : null} />
-                <DetailRow icon={PhoneIcon} label="Mobile" value={selected.mobile} href={selected.mobile ? `tel:${selected.mobile}` : null} />
-                <DetailRow icon={PinIcon} label="Address" value={selected.address} />
-                <DetailRow icon={BuildingIcon} label="City / State" value={[selected.city, selected.state].filter(Boolean).join(", ") || null} />
-                <DetailRow icon={ClipboardIcon} label="Property Type / Size" value={[selected.property_type, selected.property_size].filter(Boolean).join(" · ") || null} />
-                <DetailRow icon={LightbulbIcon} label="Electrical Setup Notes" value={selected.electrical_setup_notes} />
-              </div>
-              </div>
-            </>
-          )}
         </div>
       </AdminLayout>
     </AdminGuard>

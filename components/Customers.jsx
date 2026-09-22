@@ -17,7 +17,7 @@ export default function Customers() {
   const spaces = customers.spaces.map((s, i) => ({ ...s, ...SPACE_META[i] }));
 
   return (
-    <section className="pb-16 md:pb-[74px]" id="spaces">
+    <section className="py-16 md:py-[74px]" id="spaces">
       <div className="mx-auto max-w-wrap px-6">
         <Reveal>
           <p className="eyebrow">{customers.eyebrow}</p>

@@ -19,6 +19,7 @@ import {
   InstagramIcon,
   LinkedInIcon,
   YoutubeIcon,
+  SparklesIcon,
 } from "@/components/icons";
 
 const EMPTY = {
@@ -34,7 +35,34 @@ const EMPTY = {
   instagram: "",
   linkedin: "",
   youtube: "",
+  notify_new_service_requests: true,
+  notify_new_enquiries: true,
+  notify_new_health_checks: true,
 };
+
+const NOTIFICATION_TOGGLES = [
+  { key: "notify_new_service_requests", label: "New Service Requests", hint: "A customer raises a new service request (from the portal, or logged manually by admin)." },
+  { key: "notify_new_enquiries", label: "New Enquiries / Leads", hint: "Someone submits a contact, booking or corporate enquiry form." },
+  { key: "notify_new_health_checks", label: "New Health Check Bookings", hint: "Someone books an Electrical Health Check." },
+];
+
+function ToggleField({ label, hint, checked, onChange }) {
+  return (
+    <label className="flex cursor-pointer items-start justify-between gap-4 py-2.5">
+      <div>
+        <p className="text-[13.5px] font-bold text-ink">{label}</p>
+        {hint && <p className="mt-0.5 text-[11.5px] leading-relaxed text-body">{hint}</p>}
+      </div>
+      <span className="relative mt-0.5 inline-flex h-6 w-11 flex-none items-center rounded-full transition-colors" style={{ background: checked ? "#F2B01E" : "#E2E0DA" }}>
+        <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="peer absolute inset-0 h-full w-full cursor-pointer opacity-0" />
+        <span
+          className="pointer-events-none inline-block h-[18px] w-[18px] transform rounded-full bg-white shadow-sm transition-transform"
+          style={{ transform: checked ? "translateX(22px)" : "translateX(3px)" }}
+        />
+      </span>
+    </label>
+  );
+}
 
 const iconInput = `${inputClass} pl-10`;
 
@@ -94,11 +122,21 @@ export default function AdminSettingsPage() {
   return (
     <AdminGuard>
       <AdminLayout title="Contact Settings">
-        <p className="mb-6 max-w-[65ch] text-[13.5px] text-body">
-          This phone number, WhatsApp number, email and address are used everywhere across the
-          website — header, footer, floating call/WhatsApp buttons, sticky mobile bar, contact
-          page and all enquiry forms. Update it once here and it updates everywhere.
-        </p>
+        <div className="relative mb-6 overflow-hidden rounded-2xl bg-ink px-6 py-7 sm:px-8 sm:py-8">
+          <span className="glow-blob -right-14 -top-20 h-56 w-56 bg-yellow/25" />
+          <span className="glow-blob -bottom-24 -left-10 h-48 w-48 bg-yellow/10" style={{ animationDelay: "2.2s" }} />
+          <div className="relative z-10">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-yellow/30 bg-yellow/10 px-3 py-1 text-[10.5px] font-bold uppercase tracking-wider text-yellow">
+              <SparklesIcon className="h-3 w-3" /> Settings
+            </span>
+            <h2 className="mt-3 text-[21px] font-extrabold text-white sm:text-[25px]">Contact Settings</h2>
+            <p className="mt-1.5 max-w-[62ch] text-[13.5px] text-white/55">
+              This phone number, WhatsApp number, email and address are used everywhere across the
+              website — header, footer, floating call/WhatsApp buttons, sticky mobile bar, contact
+              page and all enquiry forms. Update it once here and it updates everywhere.
+            </p>
+          </div>
+        </div>
 
         {loading ? (
           <div className="rounded-2xl border border-line bg-white p-12 text-center text-[13.5px] text-body">
@@ -184,6 +222,17 @@ export default function AdminSettingsPage() {
                     className={iconInput}
                   />
                 </IconField>
+              </FormSection>
+
+              <FormSection
+                title="Admin Email Notifications"
+                hint="Control which new-activity emails land in your inbox. Turning one off doesn't stop the customer's own confirmation email — only the admin alert."
+              >
+                <div className="divide-y divide-line/70">
+                  {NOTIFICATION_TOGGLES.map((t) => (
+                    <ToggleField key={t.key} label={t.label} hint={t.hint} checked={form[t.key] !== false} onChange={(v) => set(t.key, v)} />
+                  ))}
+                </div>
               </FormSection>
 
               <FormSection

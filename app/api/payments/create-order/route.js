@@ -28,7 +28,7 @@ export async function POST(request) {
     return NextResponse.json({ error: "Online payments are not configured yet." }, { status: 500 });
   }
 
-  const { type, invoiceId, planId, quotationId, renewFromId } = await request.json().catch(() => ({}));
+  const { type, invoiceId, planId, quotationId, renewFromId, propertyId } = await request.json().catch(() => ({}));
   const returnUrl = returnUrlFor(request);
   const customer = { id: user.id, email: user.email };
 
@@ -90,6 +90,12 @@ export async function POST(request) {
         return NextResponse.json({ error: "This plan is not available for online purchase." }, { status: 400 });
       }
 
+      let validPropertyId = null;
+      if (propertyId) {
+        const { data: property } = await supabaseAdmin.from("properties").select("id").eq("id", propertyId).eq("customer_id", user.id).maybeSingle();
+        validPropertyId = property?.id || null;
+      }
+
       const orderId = genOrderId("amc");
       const order = await createCashfreeOrder({
         orderId,
@@ -100,7 +106,7 @@ export async function POST(request) {
       });
 
       await supabaseAdmin.from("amc_purchase_intents").insert([
-        { order_id: orderId, customer_id: user.id, plan_id: plan.id, renew_from_id: renewFromId || null },
+        { order_id: orderId, customer_id: user.id, plan_id: plan.id, renew_from_id: renewFromId || null, property_id: validPropertyId },
       ]);
 
       return NextResponse.json({ orderId, paymentSessionId: order.payment_session_id, mode: cashfreeMode() });

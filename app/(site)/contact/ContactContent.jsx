@@ -101,29 +101,29 @@ function ContactSidebar({ phone, whatsapp, email, address, city, state, hours, f
         {rows.map((r) => {
           const Wrapper = r.href ? "a" : "div";
           return (
-          <Wrapper
-            key={r.label}
-            {...(r.href
-              ? { href: r.href, target: r.href.startsWith("http") ? "_blank" : undefined, rel: "noopener noreferrer" }
-              : {})}
-            className="group flex items-start gap-3.5 rounded-xl border border-line/80 bg-cream/40 p-3.5 transition-all duration-200 hover:border-yellow/60 hover:bg-white hover:shadow-md"
-          >
-            <span className="grid h-10 w-10 flex-none place-items-center rounded-xl bg-yellow/15 text-yellow-dark transition-colors group-hover:bg-yellow group-hover:text-ink mt-0.5">
-              <r.icon className="h-[18px] w-[18px]" />
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-bold uppercase tracking-wide text-charcoal/60">{r.label}</p>
-              {r.isAddress ? (
-                <p className="text-[13px] font-bold leading-snug text-ink group-hover:text-yellow-dark transition-colors break-words">
-                  {r.value}
-                </p>
-              ) : (
-                <p className="truncate text-[14px] font-extrabold text-ink group-hover:text-yellow-dark transition-colors">
-                  {r.value}
-                </p>
-              )}
-            </div>
-          </Wrapper>
+            <Wrapper
+              key={r.label}
+              {...(r.href
+                ? { href: r.href, target: r.href.startsWith("http") ? "_blank" : undefined, rel: "noopener noreferrer" }
+                : {})}
+              className="group flex items-start gap-3.5 rounded-xl border border-line/80 bg-cream/40 p-3.5 transition-all duration-200 hover:border-yellow/60 hover:bg-white hover:shadow-md"
+            >
+              <span className="grid h-10 w-10 flex-none place-items-center rounded-xl bg-yellow/15 text-yellow-dark transition-colors group-hover:bg-yellow group-hover:text-ink mt-0.5">
+                <r.icon className="h-[18px] w-[18px]" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] font-bold uppercase tracking-wide text-charcoal/60">{r.label}</p>
+                {r.isAddress ? (
+                  <p className="text-[13px] font-bold leading-snug text-ink group-hover:text-yellow-dark transition-colors break-words">
+                    {r.value}
+                  </p>
+                ) : (
+                  <p className="truncate text-[14px] font-extrabold text-ink group-hover:text-yellow-dark transition-colors">
+                    {r.value}
+                  </p>
+                )}
+              </div>
+            </Wrapper>
           );
         })}
       </div>

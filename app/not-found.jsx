@@ -6,6 +6,55 @@ import { motion } from "framer-motion";
 import { HomeIcon, PhoneIcon, BoltBadge, WrenchIcon } from "@/components/icons";
 import { SiteSettingsProvider, useSiteSettings } from "@/contexts/SiteSettingsContext";
 
+// A bulb dangling from a slack wire, swaying gently — lit ones flicker like the
+// bolt badge below; the "broken" one is dark with a cracked, disconnected wire end
+// to visually back up the "circuit tripped" copy.
+function HangingBulb({ className = "", swayDelay = 0, lit = true, wireLength = 140 }) {
+  return (
+    <motion.div
+      animate={{ rotate: [-4, 4, -4] }}
+      transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: swayDelay }}
+      style={{ transformOrigin: "top center" }}
+      className={`pointer-events-none absolute z-0 ${className}`}
+    >
+      <svg width="64" height={wireLength + 60} viewBox={`0 0 64 ${wireLength + 60}`} fill="none">
+        <path
+          d={`M32 0 C 20 ${wireLength * 0.35}, 44 ${wireLength * 0.65}, 32 ${wireLength}`}
+          stroke="#ffffff28"
+          strokeWidth="2"
+        />
+        {lit ? (
+          <g transform={`translate(0 ${wireLength})`}>
+            <motion.circle
+              cx="32"
+              cy="26"
+              r="22"
+              fill="#F2B01E"
+              animate={{ opacity: [0.15, 0.35, 0.15] }}
+              transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
+              style={{ filter: "blur(10px)" }}
+            />
+            <motion.g
+              animate={{ opacity: [1, 0.4, 1, 1, 0.6, 1] }}
+              transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut", times: [0, 0.1, 0.15, 0.6, 0.68, 1] }}
+            >
+              <rect x="26" y="2" width="12" height="8" rx="2" fill="#6b6b70" />
+              <circle cx="32" cy="26" r="16" fill="#FFE9B8" stroke="#F2B01E" strokeWidth="1.5" />
+              <path d="M27 20 L32 30 L37 20" stroke="#C8860A" strokeWidth="1.4" strokeLinecap="round" fill="none" />
+            </motion.g>
+          </g>
+        ) : (
+          <g transform={`translate(0 ${wireLength})`}>
+            <rect x="26" y="2" width="12" height="8" rx="2" fill="#4a4a4f" />
+            <circle cx="32" cy="26" r="16" fill="#2b2b2f" stroke="#55555a" strokeWidth="1.5" />
+            <path d="M24 18 L34 22 L26 26 L38 32" stroke="#55555a" strokeWidth="1.4" strokeLinecap="round" fill="none" />
+          </g>
+        )}
+      </svg>
+    </motion.div>
+  );
+}
+
 // Root-level not-found.jsx sits outside app/(site)/layout.jsx, so it isn't already
 // wrapped by SiteSettingsProvider — wrap it here so the phone number below still
 // comes from live Contact Settings instead of being hardcoded.
@@ -48,6 +97,11 @@ export default function NotFound() {
         className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#ffffff06_1px,transparent_1px),linear-gradient(to_bottom,#ffffff06_1px,transparent_1px)] bg-[size:3rem_3rem]"
         aria-hidden="true"
       />
+
+      {/* Dangling bulbs — one lit, one dark with a frayed wire end, echoing "tripped circuit" */}
+      <HangingBulb className="left-[8%] top-0 hidden sm:block" wireLength={130} lit />
+      <HangingBulb className="right-[10%] top-0 hidden md:block" wireLength={170} swayDelay={1.2} lit={false} />
+      <HangingBulb className="right-[22%] top-0 hidden lg:block" wireLength={90} swayDelay={0.6} lit />
 
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
         <Link href="/" className="relative z-10 mb-10 inline-flex items-center">

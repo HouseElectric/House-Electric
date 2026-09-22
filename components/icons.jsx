@@ -54,6 +54,11 @@ import {
   User,
   Download,
   Wallet,
+  TrendingUp,
+  BarChart3,
+  Percent,
+  RefreshCw,
+  Ruler,
 } from "lucide-react";
 
 export const Arrow = ArrowRight;
@@ -111,6 +116,11 @@ export const ClipboardIcon = ClipboardList;
 export const UserIcon = User;
 export const DownloadIcon = Download;
 export const WalletIcon = Wallet;
+export const TrendingUpIcon = TrendingUp;
+export const BarChartIcon = BarChart3;
+export const PercentIcon = Percent;
+export const RefreshIcon = RefreshCw;
+export const RulerIcon = Ruler;
 
 // Brand marks — kept as hand-drawn SVG since lucide-react has no logo/brand icon set.
 export const WhatsAppIcon = (props) => (

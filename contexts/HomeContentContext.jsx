@@ -147,6 +147,58 @@ export const DEFAULT_HOME = {
       },
     ],
   },
+  amc: {
+    badgeLabel: "Electrical AMC",
+    titlePlain: "Stop Reacting to Breakdowns.",
+    titleHighlight: "Prevent Them.",
+    subtitle:
+      "An Annual Maintenance Contract keeps your electrical system inspected, documented and safe all year — with priority service whenever you need us, instead of waiting until something breaks.",
+    buttonLabel: "Explore AMC Plans",
+    points: [
+      { label: "Preventive Inspections" },
+      { label: "Scheduled Maintenance Reports" },
+      { label: "Priority Support" },
+    ],
+    segments: [{ label: "Residential" }, { label: "Commercial" }, { label: "Corporate" }],
+  },
+  emergency: {
+    badgeLabel: "Emergency Electrical Service",
+    titlePlain: "Electrical Fault Right Now?",
+    titleHighlight: "Call Us Immediately.",
+    subtitle: "Electrical faults can be dangerous — don't wait. If you're facing any of these, get in touch straight away.",
+    problems: ["Power Failure", "MCB Tripping", "Short Circuit", "Electrical Sparking", "Burning Smell", "Wiring Fault", "DB / Panel Issues"],
+  },
+  faqs: {
+    eyebrow: "FAQs",
+    titlePlain: "Frequently Asked",
+    titleHighlight: "Questions",
+    items: [
+      {
+        q: "How can I book an electrician?",
+        a: "Call us, message us on WhatsApp, or fill out the booking form on our Contact page. You can also create an account to track your request from start to finish.",
+      },
+      {
+        q: "Do you provide emergency electrical services?",
+        a: "Yes — for urgent issues like power failure, MCB tripping, sparking or a burning smell, call or WhatsApp us directly for priority attention.",
+      },
+      {
+        q: "What is included in Electrical AMC?",
+        a: "Our AMC plans cover scheduled preventive inspections, DB/panel checks, safety testing and priority support — with visit reports after every scheduled visit.",
+      },
+      {
+        q: "Which areas do you cover?",
+        a: "We currently serve our city and the surrounding localities — see our Service Areas page for the full list.",
+      },
+      {
+        q: "Do you provide commercial electrical maintenance?",
+        a: "Yes. We handle residential, commercial and corporate properties — from apartments and independent houses to offices, shops and factories.",
+      },
+      {
+        q: "Can I book through WhatsApp?",
+        a: "Yes — tap the WhatsApp button on any page, tell us what you need, and we'll take it from there.",
+      },
+    ],
+  },
 };
 
 export function deepMerge(base, override) {

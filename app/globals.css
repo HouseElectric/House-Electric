@@ -67,7 +67,15 @@ html {
 
 body {
   color: #45454b;
+  font-weight: 600;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Hides Edge's built-in password reveal/clear icon so it doesn't double up with our
+   own custom show/hide-password eye button on login, register and reset-password forms. */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
 }
 
 /* Establishes a positioning context for the footer's absolutely-positioned diagonal SVG

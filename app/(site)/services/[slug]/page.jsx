@@ -5,9 +5,10 @@ import EnquiryForm from "@/components/EnquiryForm";
 import FAQAccordion from "@/components/FAQAccordion";
 import PageHero from "@/components/PageHero";
 import Reveal from "@/components/Reveal";
-import { ArrowRightIcon } from "@/components/icons";
+import { AlertIcon, ArrowRightIcon, CheckCircle, ShieldIcon, XIcon } from "@/components/icons";
 import { supabase } from "@/lib/supabase";
 import { getContactSettings, telHref, waHref } from "@/lib/getContactSettings";
+import { matchCategoryMeta } from "@/lib/amcCategoryMeta";
 
 export const revalidate = 60;
 
@@ -58,7 +59,12 @@ export default async function ServiceDetailPage({ params }) {
   const pricingLink = primaryCta.href && !primaryCta.href.startsWith("#") ? primaryCta.href : null;
   const pricingHeadline = service.price_cta_label?.trim() || service.price_label;
 
-  const faqs = service.faqs?.length > 0 ? service.faqs : [];
+  // An admin can hide an otherwise-populated section without deleting its content
+  // (e.g. drafted FAQs not ready to publish yet) — see hidden_sections on the services table.
+  const hidden = service.hidden_sections || [];
+  const isVisible = (key) => !hidden.includes(key);
+
+  const faqs = isVisible("faqs") && service.faqs?.length > 0 ? service.faqs : [];
   const faqJsonLd =
     faqs.length > 0
       ? {
@@ -98,7 +104,71 @@ export default async function ServiceDetailPage({ params }) {
         imageAlt={service.title}
       />
 
-      {service.sla_stats?.length > 0 && (
+      {isVisible("problem") && (service.problem_section?.without_items?.length > 0 || service.problem_section?.with_items?.length > 0) && (
+        <section className="py-16 md:py-[74px]">
+          <div className="mx-auto max-w-wrap px-6">
+            <Reveal className="mx-auto mb-12 max-w-[62ch] text-center">
+              {service.problem_section.eyebrow && <p className="eyebrow mx-auto">{service.problem_section.eyebrow}</p>}
+              {service.problem_section.heading && <h2 className="mb-3">{service.problem_section.heading}</h2>}
+              {service.problem_section.subtitle && (
+                <p className="text-[15.5px] leading-relaxed text-charcoal/80">{service.problem_section.subtitle}</p>
+              )}
+            </Reveal>
+
+            <div className="relative grid grid-cols-1 gap-6 md:grid-cols-2">
+              <Reveal delay={0.05}>
+                <div className="group relative h-full overflow-hidden rounded-3xl border border-red-200/80 bg-gradient-to-br from-red-50/70 via-white to-white p-7 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl">
+                  <span className="absolute inset-x-0 top-0 h-[4px] bg-gradient-to-r from-red-500 to-rose-600" />
+                  <div className="mb-5 flex items-center gap-3">
+                    <span className="grid h-11 w-11 flex-none place-items-center rounded-2xl bg-gradient-to-br from-red-500 to-rose-600 text-white shadow-sm transition-transform duration-300 group-hover:scale-110">
+                      <XIcon className="h-5 w-5" />
+                    </span>
+                    <span className="text-[13px] font-extrabold uppercase tracking-wide text-red-700">Without Us</span>
+                  </div>
+                  <ul className="space-y-3.5 text-[14px] text-ink-soft">
+                    {(service.problem_section.without_items || []).map((step) => (
+                      <li key={step} className="flex items-start gap-3">
+                        <span className="mt-0.5 grid h-6 w-6 flex-none place-items-center rounded-full bg-red-100 text-red-600">
+                          <XIcon className="h-3.5 w-3.5" />
+                        </span>
+                        {step}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </Reveal>
+
+              <span className="pointer-events-none absolute left-1/2 top-1/2 z-[1] hidden h-12 w-12 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border-4 border-white bg-ink text-yellow shadow-lg md:grid">
+                <ArrowRightIcon className="h-4 w-4" />
+              </span>
+
+              <Reveal delay={0.1}>
+                <div className="group relative h-full overflow-hidden rounded-3xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50/70 via-white to-white p-7 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl">
+                  <span className="absolute inset-x-0 top-0 h-[4px] bg-gradient-to-r from-emerald-500 to-teal-600" />
+                  <div className="mb-5 flex items-center gap-3">
+                    <span className="grid h-11 w-11 flex-none place-items-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-sm transition-transform duration-300 group-hover:scale-110">
+                      <CheckCircle className="h-5 w-5" />
+                    </span>
+                    <span className="text-[13px] font-extrabold uppercase tracking-wide text-emerald-700">With House Electric</span>
+                  </div>
+                  <ul className="space-y-3.5 text-[14px] text-ink">
+                    {(service.problem_section.with_items || []).map((step) => (
+                      <li key={step} className="flex items-start gap-3">
+                        <span className="mt-0.5 grid h-6 w-6 flex-none place-items-center rounded-full bg-emerald-100 text-emerald-600">
+                          <CheckCircle className="h-3.5 w-3.5" />
+                        </span>
+                        {step}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </Reveal>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {isVisible("stats") && service.sla_stats?.length > 0 && (
         <section className="border-y border-line/80 bg-white py-7 shadow-sm">
           <div className="mx-auto max-w-wrap px-6">
             <div className="grid grid-cols-2 gap-6 md:grid-cols-4 md:gap-8">
@@ -116,7 +186,7 @@ export default async function ServiceDetailPage({ params }) {
         </section>
       )}
 
-      {service.types_section?.items?.length > 0 && (
+      {isVisible("types") && service.types_section?.items?.length > 0 && (
         <section className="py-16 md:py-[74px]">
           <div className="mx-auto max-w-wrap px-6">
             <Reveal className="mb-12 max-w-[62ch]">
@@ -128,32 +198,39 @@ export default async function ServiceDetailPage({ params }) {
             </Reveal>
 
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {service.types_section.items.map((t, i) => (
-                <Reveal key={i} delay={i * 0.08} y={18}>
-                  <div className="h-full rounded-2xl border border-line/80 bg-white p-7 shadow-sm transition-all duration-300 hover:border-yellow/50 hover:shadow-lg">
-                    <h3 className="mb-2 text-base font-extrabold text-ink">{t.title}</h3>
-                    {t.desc && <p className="mb-4 text-[13.5px] leading-relaxed text-charcoal/80">{t.desc}</p>}
-                    {t.tags?.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5">
-                        {t.tags.map((tag, ti) => (
-                          <span
-                            key={ti}
-                            className="rounded-full border border-yellow/30 bg-yellow/10 px-2.5 py-1 text-[11px] font-semibold text-yellow-dark"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </Reveal>
-              ))}
+              {service.types_section.items.map((t, i) => {
+                const meta = matchCategoryMeta(t.title);
+                const Icon = meta.icon;
+                return (
+                  <Reveal key={i} delay={i * 0.08} y={18}>
+                    <div className="group relative h-full overflow-hidden rounded-3xl border border-line/80 bg-white p-7 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-yellow/50 hover:shadow-xl">
+                      <span className={`absolute inset-x-0 top-0 h-[4px] bg-gradient-to-r ${meta.accent}`} />
+                      <span
+                        className={`mb-4 grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br text-white shadow-sm transition-transform duration-300 group-hover:scale-110 ${meta.accent}`}
+                      >
+                        <Icon className="h-[18px] w-[18px]" />
+                      </span>
+                      <h3 className="mb-2 text-base font-extrabold text-ink">{t.title}</h3>
+                      {t.desc && <p className="mb-4 text-[13.5px] leading-relaxed text-charcoal/80">{t.desc}</p>}
+                      {t.tags?.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5">
+                          {t.tags.map((tag, ti) => (
+                            <span key={ti} className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${meta.tint}`}>
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </Reveal>
+                );
+              })}
             </div>
           </div>
         </section>
       )}
 
-      {service.checklist_items?.length > 0 && (
+      {isVisible("checklist") && service.checklist_items?.length > 0 && (
         <section className="py-16 md:py-[74px]">
           <div className="mx-auto max-w-wrap px-6">
             <Reveal className="mb-10 max-w-[62ch]">
@@ -203,7 +280,40 @@ export default async function ServiceDetailPage({ params }) {
         </section>
       )}
 
-      {service.advantages_section?.items?.length > 0 && (
+      {isVisible("exclusions") && service.exclusions_section?.items?.length > 0 && (
+        <section className="py-16 md:py-[74px]">
+          <div className="mx-auto max-w-wrap px-6">
+            <Reveal className="mb-10 max-w-[64ch]">
+              {service.exclusions_section.eyebrow && <p className="eyebrow">{service.exclusions_section.eyebrow}</p>}
+              {service.exclusions_section.heading && <h2 className="mb-3">{service.exclusions_section.heading}</h2>}
+              {service.exclusions_section.subtitle && (
+                <p className="text-[15.5px] leading-relaxed text-charcoal/80">{service.exclusions_section.subtitle}</p>
+              )}
+            </Reveal>
+
+            <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
+              {service.exclusions_section.items.map((item) => (
+                <div
+                  key={item}
+                  className="flex items-center gap-3 rounded-xl border border-amber-200/70 bg-amber-50/50 px-5 py-3.5"
+                >
+                  <span className="grid h-7 w-7 flex-none place-items-center rounded-full bg-amber-100 text-amber-700">
+                    <AlertIcon className="h-3.5 w-3.5" />
+                  </span>
+                  <span className="text-[13.5px] font-bold text-ink">{item}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-8 rounded-2xl border border-line/80 bg-cream p-6 text-[13.5px] leading-relaxed text-ink-soft">
+              <b className="text-ink">What we quote is what you pay.</b> Materials, new points, rewiring or major
+              repairs are always quoted upfront and carried out only after you approve — never automatically billed.
+            </div>
+          </div>
+        </section>
+      )}
+
+      {isVisible("advantages") && service.advantages_section?.items?.length > 0 && (
         <section className="bg-cream py-16 md:py-[74px]">
           <div className="mx-auto max-w-wrap px-6">
             <Reveal className="mb-12 max-w-[62ch]">
@@ -233,7 +343,7 @@ export default async function ServiceDetailPage({ params }) {
         </section>
       )}
 
-      {service.process_section?.items?.length > 0 && (
+      {isVisible("process") && service.process_section?.items?.length > 0 && (
         <section className="py-16 md:py-[74px]">
           <div className="mx-auto max-w-wrap px-6">
             <Reveal className="mb-12 max-w-[62ch]">
@@ -253,6 +363,37 @@ export default async function ServiceDetailPage({ params }) {
                     </span>
                     <h3 className="mb-2 text-base font-extrabold text-ink">{step.title}</h3>
                     <p className="text-[13.5px] leading-relaxed text-charcoal/80">{step.desc}</p>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {isVisible("why_he") && service.why_house_electric_section?.items?.length > 0 && (
+        <section className="bg-cream py-16 md:py-[74px]">
+          <div className="mx-auto max-w-wrap px-6">
+            <Reveal className="mb-12 max-w-[62ch]">
+              {service.why_house_electric_section.eyebrow && <p className="eyebrow">{service.why_house_electric_section.eyebrow}</p>}
+              {service.why_house_electric_section.heading && <h2 className="mb-3">{service.why_house_electric_section.heading}</h2>}
+              {service.why_house_electric_section.subtitle && (
+                <p className="text-[15.5px] leading-relaxed text-charcoal/80">{service.why_house_electric_section.subtitle}</p>
+              )}
+            </Reveal>
+
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+              {service.why_house_electric_section.items.map((item, i) => (
+                <Reveal key={item.title} delay={i * 0.08} y={18}>
+                  <div className="group relative overflow-hidden rounded-3xl border border-line/80 bg-white p-7 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-blue-300/60 hover:shadow-xl">
+                    <span className="absolute inset-x-0 top-0 h-[4px] bg-gradient-to-r from-blue-500 to-indigo-600" />
+                    <div className="mb-3 flex items-center gap-3">
+                      <span className="grid h-10 w-10 flex-none place-items-center rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-sm transition-transform duration-300 group-hover:scale-110">
+                        <ShieldIcon className="h-[18px] w-[18px]" />
+                      </span>
+                      <h3 className="text-base font-extrabold text-ink">{item.title}</h3>
+                    </div>
+                    <p className="pl-[52px] text-[14.5px] leading-relaxed text-charcoal/80">{item.desc}</p>
                   </div>
                 </Reveal>
               ))}

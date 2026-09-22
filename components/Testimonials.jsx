@@ -130,18 +130,23 @@ export default function Testimonials() {
   if (loading || total === 0) return null;
 
   return (
-    <section className="pb-16 md:pb-[74px]" id="testimonials">
-      <div className="mx-auto max-w-wrap px-4 sm:px-6">
+    <section className="relative overflow-hidden py-16 md:py-[74px]" id="testimonials">
+      <div className="glow-blob left-[-8%] top-[10%] h-[300px] w-[300px] bg-yellow/10 opacity-40" />
+      <div className="glow-blob right-[-6%] bottom-[5%] h-[280px] w-[280px] bg-amber-400/10 opacity-30" />
+
+      <div className="relative z-[1] mx-auto max-w-wrap px-4 sm:px-6">
         <div className="mb-8 flex flex-wrap items-end justify-between gap-5">
           <Reveal>
             <p className="eyebrow">Reviews</p>
-            <h2 className="text-[clamp(1.6rem,3vw,2.35rem)] font-extrabold">What Our Customers Say</h2>
+            <h2 className="text-[clamp(1.6rem,3vw,2.35rem)] font-extrabold">
+              What Our <span className="relative inline-block text-yellow-dark">Customers<span className="absolute -bottom-0.5 left-0 h-[3px] w-full rounded-full bg-yellow/60" /></span> Say
+            </h2>
             <p className="mt-2 text-[15px] leading-relaxed text-ink-soft">Real people. Real experiences.</p>
           </Reveal>
 
           <div className="flex items-center gap-4">
             {googleMeta.rating && (
-              <div className="hidden items-center gap-3 rounded-2xl border border-line bg-white px-4 py-2.5 shadow-sm sm:flex">
+              <div className="hidden items-center gap-3 rounded-2xl border border-line bg-white px-4 py-2.5 shadow-[0_8px_20px_-10px_rgba(20,20,20,0.2)] transition-transform duration-300 hover:-translate-y-0.5 sm:flex">
                 <GoogleLogo className="h-7 w-7 flex-none" />
                 <div>
                   <div className="flex items-center gap-1.5">
@@ -160,7 +165,7 @@ export default function Testimonials() {
                 <button
                   onClick={() => go(-1)}
                   aria-label="Previous testimonial"
-                  className="grid h-10 w-10 place-items-center rounded-full border border-line bg-white shadow-sm transition-all hover:bg-yellow hover:border-yellow active:scale-95"
+                  className="grid h-10 w-10 place-items-center rounded-full border border-line bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-yellow hover:bg-yellow hover:shadow-[0_8px_18px_-6px_rgba(242,176,30,0.6)] active:scale-95"
                 >
                   <svg viewBox="0 0 24 24" fill="none" stroke="#141414" strokeWidth="2.4" className="h-4 w-4">
                     <path d="M19 12H5M11 6l-6 6 6 6" />
@@ -169,7 +174,7 @@ export default function Testimonials() {
                 <button
                   onClick={() => go(1)}
                   aria-label="Next testimonial"
-                  className="grid h-10 w-10 place-items-center rounded-full border border-line bg-white shadow-sm transition-all hover:bg-yellow hover:border-yellow active:scale-95"
+                  className="grid h-10 w-10 place-items-center rounded-full border border-line bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-yellow hover:bg-yellow hover:shadow-[0_8px_18px_-6px_rgba(242,176,30,0.6)] active:scale-95"
                 >
                   <svg viewBox="0 0 24 24" fill="none" stroke="#141414" strokeWidth="2.4" className="h-4 w-4">
                     <path d="M5 12h14M13 6l6 6-6 6" />
@@ -190,23 +195,32 @@ export default function Testimonials() {
           <div
             ref={scrollRef}
             onScroll={handleScroll}
-            className="flex gap-4 overflow-x-auto snap-x snap-mandatory scroll-smooth p-2 pb-6 md:gap-6 scrollbar-none [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="flex gap-4 overflow-x-auto snap-x snap-mandatory scroll-smooth scroll-px-2 p-2 pb-6 md:gap-6 scrollbar-none [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
             {reviews.map((r, i) => (
               <motion.article
                 key={r.id}
-                whileHover={{ y: -5 }}
-                className={`flex w-[85vw] max-w-[340px] shrink-0 snap-start flex-col rounded-2xl border border-line/80 bg-white p-6 shadow-sm transition-all duration-300 hover:border-yellow/50 hover:shadow-xl md:w-[calc((100%-3rem)/3)] md:max-w-none md:p-7 ${
+                whileHover={{ y: -6 }}
+                className={`group relative flex w-[85vw] max-w-[340px] shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-line/80 bg-white p-6 shadow-sm transition-all duration-300 hover:border-yellow/50 hover:shadow-[0_24px_45px_-20px_rgba(20,20,20,0.25)] md:w-[calc((100%-3rem)/3)] md:max-w-none md:p-7 ${
                   i >= currentIndex && i < currentIndex + step ? "ring-2 ring-yellow/40" : ""
                 }`}
               >
+                <span className="pointer-events-none absolute inset-x-0 top-0 h-[3px] scale-x-0 bg-gradient-to-r from-yellow/0 via-yellow to-yellow/0 transition-transform duration-500 group-hover:scale-x-100" />
+                <svg viewBox="0 0 32 32" className="pointer-events-none absolute -right-1 -top-1 h-16 w-16 text-yellow/[0.08]" fill="currentColor">
+                  <path d="M9.5 18.5c-2.2 0-4-1.8-4-4 0-4.5 3-8 7-9.5l.9 1.8c-2.8 1.3-4.4 3.3-4.8 5.5.3-.1.6-.1 1-.1 2.2 0 4 1.8 4 4s-1.9 4.3-4.1 4.3zm13 0c-2.2 0-4-1.8-4-4 0-4.5 3-8 7-9.5l.9 1.8c-2.8 1.3-4.4 3.3-4.8 5.5.3-.1.6-.1 1-.1 2.2 0 4 1.8 4 4s-1.9 4.3-4.1 4.3z" />
+                </svg>
+
                 <div className="mb-3 flex items-start justify-between gap-3">
                   <div className="flex min-w-0 items-center gap-3">
                     {r.avatar_url ? (
-                      <img src={r.avatar_url} alt={r.name} className="h-10 w-10 flex-none rounded-full object-cover" />
+                      <img
+                        src={r.avatar_url}
+                        alt={r.name}
+                        className="h-11 w-11 flex-none rounded-full object-cover ring-2 ring-white shadow-md"
+                      />
                     ) : (
                       <span
-                        className="grid h-10 w-10 flex-none place-items-center rounded-full text-[13px] font-extrabold text-white"
+                        className="grid h-11 w-11 flex-none place-items-center rounded-full text-[13px] font-extrabold text-white ring-2 ring-white shadow-md"
                         style={{ background: avatarColor(r.name) }}
                       >
                         {initials(r.name)}
@@ -217,10 +231,10 @@ export default function Testimonials() {
                       {r.role && <span className="block truncate text-[11.5px] text-body">{r.role}</span>}
                     </div>
                   </div>
-                  <GoogleLogo className="h-5 w-5 flex-none opacity-80" />
+                  <GoogleLogo className="h-5 w-5 flex-none opacity-80 transition-transform duration-300 group-hover:scale-110" />
                 </div>
                 <StarRow rating={r.rating} />
-                <p className="mt-3 min-h-[72px] flex-1 text-[13.5px] leading-relaxed text-ink-soft">{r.text}</p>
+                <p className="relative mt-3 min-h-[72px] flex-1 text-[13.5px] leading-relaxed text-ink-soft">{r.text}</p>
               </motion.article>
             ))}
           </div>
@@ -233,7 +247,7 @@ export default function Testimonials() {
                   onClick={() => scrollToCard(isDesktop ? i * 3 : i)}
                   aria-label={`Go to testimonial slide ${i + 1}`}
                   className={`h-2.5 rounded-full transition-all duration-300 ${
-                    i === activeDotIndex ? "w-8 bg-yellow shadow-sm" : "w-2.5 bg-line hover:bg-yellow/50"
+                    i === activeDotIndex ? "w-8 bg-yellow shadow-[0_2px_10px_-2px_rgba(242,176,30,0.8)]" : "w-2.5 bg-line hover:bg-yellow/50"
                   }`}
                 />
               ))}
@@ -247,10 +261,13 @@ export default function Testimonials() {
               href={googleMeta.profileUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2.5 rounded-md border border-line bg-white px-6 py-3.5 text-[13.5px] font-extrabold text-ink shadow-sm transition-all hover:-translate-y-0.5 hover:border-ink"
+              className="group inline-flex items-center gap-2.5 rounded-md border border-line bg-white px-6 py-3.5 text-[13.5px] font-extrabold text-ink shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-yellow hover:shadow-[0_14px_30px_-14px_rgba(242,176,30,0.6)]"
             >
               <GoogleLogo className="h-5 w-5 flex-none" />
               View All Reviews on Google
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1">
+                <path d="M5 12h14M13 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
             </a>
           </Reveal>
         )}

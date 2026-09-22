@@ -38,8 +38,8 @@ export default function ResponsiveDocumentWrapper({ children }) {
 
   return (
     <div
+      className="flex w-full justify-center print:!h-auto"
       ref={outerRef}
-      className="w-full print:!h-auto"
       style={{ height: scaledHeight ? `${scaledHeight}px` : undefined }}
     >
       <div

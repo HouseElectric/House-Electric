@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import Reveal from "./Reveal";
 import { supabase } from "@/lib/supabase";
 import { ImageIcon } from "./icons";
@@ -15,7 +16,12 @@ export default function HomeProjects() {
       return;
     }
     (async () => {
-      const { data } = await supabase.from("projects").select("*").order("created_at", { ascending: false }).limit(6);
+      const { data } = await supabase
+        .from("projects")
+        .select("*")
+        .eq("featured", true)
+        .order("created_at", { ascending: false })
+        .limit(6);
       setProjects(data ?? []);
       setLoading(false);
     })();
@@ -51,7 +57,10 @@ export default function HomeProjects() {
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
             {projects.map((p, i) => (
               <Reveal key={p.id} delay={(i % 4) * 0.06}>
-                <div className="group relative aspect-square overflow-hidden rounded-2xl border border-line/80 bg-cream shadow-sm">
+                <Link
+                  href={`/projects/${p.slug || p.id}`}
+                  className="group relative block aspect-square overflow-hidden rounded-2xl border border-line/80 bg-cream shadow-sm transition-all hover:-translate-y-1 hover:border-amber-400 hover:shadow-md"
+                >
                   {p.image_url ? (
                     <img
                       src={p.image_url}
@@ -63,15 +72,17 @@ export default function HomeProjects() {
                       <ImageIcon className="h-8 w-8" />
                     </div>
                   )}
-                  <div className="absolute inset-0 flex items-end bg-gradient-to-t from-black/60 via-black/0 to-black/0 p-3 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                  <div className="absolute inset-0 flex items-end bg-gradient-to-t from-black/70 via-black/20 to-transparent p-3.5 opacity-90 transition-opacity duration-300 group-hover:opacity-100">
                     <div>
                       {p.category && (
-                        <span className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-yellow">{p.category}</span>
+                        <span className="mb-1 inline-block rounded-full bg-yellow/90 px-2 py-0.5 text-[9.5px] font-black uppercase tracking-wide text-ink">
+                          {p.category}
+                        </span>
                       )}
-                      {p.title && <span className="block text-[12.5px] font-bold text-white">{p.title}</span>}
+                      {p.title && <span className="block text-[12.5px] font-bold text-white drop-shadow-sm">{p.title}</span>}
                     </div>
                   </div>
-                </div>
+                </Link>
               </Reveal>
             ))}
           </div>

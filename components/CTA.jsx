@@ -10,7 +10,7 @@ import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 export default function CTA() {
   const { phone, email } = useSiteSettings();
   return (
-    <section className="pb-16 md:pb-[74px]" id="contact">
+    <section className="py-16 md:py-[74px]" id="contact">
       <div className="mx-auto max-w-wrap px-6">
         <Reveal>
           <div className="relative overflow-hidden rounded-2xl md:rounded-3xl bg-[#0B0B0E] p-8 md:p-12 shadow-2xl border border-white/10">

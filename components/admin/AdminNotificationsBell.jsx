@@ -31,7 +31,7 @@ export default function AdminNotificationsBell() {
         .limit(8),
       supabase
         .from("service_requests")
-        .select("id, ticket_number, service_type, status, created_at")
+        .select("id, ticket_number, service_type, status, admin_seen, created_at")
         .order("created_at", { ascending: false })
         .limit(8),
     ]);
@@ -39,6 +39,8 @@ export default function AdminNotificationsBell() {
     const merged = [
       ...(enquiries ?? []).map((e) => ({
         id: `enq-${e.id}`,
+        rowId: e.id,
+        table: "enquiries",
         icon: InboxIcon,
         title: e.name || e.contact_person || "New enquiry",
         subtitle: TYPE_LABELS[e.type] ?? e.type,
@@ -48,10 +50,12 @@ export default function AdminNotificationsBell() {
       })),
       ...(requests ?? []).map((r) => ({
         id: `req-${r.id}`,
+        rowId: r.id,
+        table: "service_requests",
         icon: WrenchIcon,
         title: r.ticket_number,
         subtitle: r.service_type || "Service request",
-        unread: r.status === "requested",
+        unread: !r.admin_seen,
         created_at: r.created_at,
         href: "/admin/service-requests",
       })),
@@ -94,6 +98,16 @@ export default function AdminNotificationsBell() {
   }, []);
 
   const unreadCount = items.filter((i) => i.unread).length;
+
+  const markOneSeen = useCallback(async (item) => {
+    if (!item.unread) return;
+    setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, unread: false } : i)));
+    if (item.table === "enquiries") {
+      await supabase.from("enquiries").update({ read: true }).eq("id", item.rowId);
+    } else if (item.table === "service_requests") {
+      await supabase.from("service_requests").update({ admin_seen: true }).eq("id", item.rowId);
+    }
+  }, []);
 
   const toggleOpen = () => {
     setOpen((v) => !v);
@@ -145,7 +159,10 @@ export default function AdminNotificationsBell() {
                       <Link
                         key={i.id}
                         href={i.href}
-                        onClick={() => setOpen(false)}
+                        onClick={() => {
+                          markOneSeen(i);
+                          setOpen(false);
+                        }}
                         className="flex items-start gap-3 px-4 py-3 transition-colors hover:bg-cream/40"
                       >
                         <span

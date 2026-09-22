@@ -17,12 +17,12 @@ export default function LegalPageLayout({ eyebrow = "Legal", title, lastUpdated,
                     <a
                       key={s.id}
                       href={`#${s.id}`}
-                      className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-semibold text-ink-soft transition-colors hover:bg-white hover:text-ink"
+                      className="flex items-start gap-2.5 rounded-lg px-3 py-2 text-[13px] font-semibold leading-snug text-ink-soft transition-colors hover:bg-white hover:text-ink"
                     >
-                      <span className="grid h-5 w-5 flex-none place-items-center rounded-md bg-yellow/15 text-[10px] font-extrabold text-yellow-dark">
+                      <span className="mt-[1px] grid h-5 w-5 flex-none place-items-center rounded-md bg-yellow/15 text-[10px] font-extrabold text-yellow-dark">
                         {i + 1}
                       </span>
-                      <span className="truncate">{s.title}</span>
+                      <span>{s.title}</span>
                     </a>
                   ))}
                 </nav>

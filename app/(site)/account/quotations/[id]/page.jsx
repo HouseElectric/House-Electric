@@ -10,7 +10,10 @@ import { startPayment } from "@/lib/payments";
 import DocumentTemplate from "@/components/DocumentTemplate";
 import ResponsiveDocumentWrapper from "@/components/ResponsiveDocumentWrapper";
 import Reveal from "@/components/Reveal";
-import { ArrowLeftIcon, CheckCircle, PrinterIcon, WalletIcon, XIcon } from "@/components/icons";
+import { AmcBadge, ArrowLeftIcon, CheckCircle, ClockIcon, PrinterIcon, UsersIcon, WalletIcon, XIcon } from "@/components/icons";
+import TermsCheckbox from "@/components/TermsCheckbox";
+
+const VISIT_FREQUENCY_LABELS = { monthly: "Monthly", quarterly: "Quarterly", half_yearly: "Half-Yearly", yearly: "Yearly" };
 
 const STATUS_META = {
   draft: { label: "Draft", color: "#64748b" },
@@ -31,6 +34,7 @@ export default function QuotationDetailPage() {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [paying, setPaying] = useState(false);
+  const [agreed, setAgreed] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -64,8 +68,13 @@ export default function QuotationDetailPage() {
         description: `Payment for quotation ${quotation.quotation_number}`,
       });
       setQuotation((q) => ({ ...q, status: "paid" }));
-      toast.success("Payment successful! Invoice generated.");
-      if (result?.invoiceId) router.push(`/account/invoices/${result.invoiceId}`);
+      if (result?.amcSubscriptionId) {
+        toast.success("Payment successful! Your Corporate AMC is now active.");
+        router.push("/account/amc");
+      } else {
+        toast.success("Payment successful! Invoice generated.");
+        if (result?.invoiceId) router.push(`/account/invoices/${result.invoiceId}`);
+      }
     } catch (err) {
       toast.error(err.message || "Payment failed.");
     } finally {
@@ -107,15 +116,100 @@ export default function QuotationDetailPage() {
           <span className="sm:hidden">Back</span>
           <span className="hidden sm:inline">Back to Quotations</span>
         </button>
-        <button
-          onClick={() => window.print()}
-          className="inline-flex flex-none items-center gap-2 whitespace-nowrap rounded-xl border border-line bg-white px-4 py-2.5 text-xs font-black text-ink shadow-2xs transition-all hover:border-ink"
-        >
-          <PrinterIcon className="h-4 w-4 flex-none" />
-          <span className="sm:hidden">Print</span>
-          <span className="hidden sm:inline">Print / Save as PDF</span>
-        </button>
+
+        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+          {canRespond && (
+            <>
+              <button
+                onClick={() => respond("accepted")}
+                disabled={updating}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-yellow px-4 py-2 text-xs font-black text-ink shadow-sm transition-all hover:bg-yellow-dark hover:shadow-md active:scale-[0.99] disabled:opacity-60"
+              >
+                <CheckCircle className="h-3.5 w-3.5" />
+                <span>Accept Quotation</span>
+              </button>
+              <button
+                onClick={() => respond("rejected")}
+                disabled={updating}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 transition-all hover:border-red-300 hover:bg-red-50 hover:text-red-600 disabled:opacity-60 shadow-2xs"
+              >
+                <XIcon className="h-3.5 w-3.5" />
+                <span>Decline</span>
+              </button>
+            </>
+          )}
+
+          {quotation.status === "accepted" && (
+            <button
+              onClick={handlePay}
+              disabled={paying || (quotation.quotation_type === "corporate_amc" && !agreed)}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-yellow px-4 py-2 text-xs font-black text-ink shadow-sm transition-all hover:bg-yellow-dark hover:shadow-md active:scale-[0.99] disabled:opacity-60"
+            >
+              <WalletIcon className="h-3.5 w-3.5" />
+              <span>{paying ? "Processing…" : `Pay ₹${Number(quotation.total).toLocaleString("en-IN")} Now`}</span>
+            </button>
+          )}
+
+          <button
+            onClick={() => window.print()}
+            className="inline-flex flex-none items-center gap-2 whitespace-nowrap rounded-xl border border-line bg-white px-3.5 sm:px-4 py-2 text-xs font-black text-ink shadow-2xs transition-all hover:border-ink"
+          >
+            <PrinterIcon className="h-4 w-4 flex-none" />
+            <span className="sm:hidden">Print</span>
+            <span className="hidden sm:inline">Print / Save as PDF</span>
+          </button>
+        </div>
       </div>
+
+      {quotation.quotation_type === "corporate_amc" && (
+        <Reveal className="overflow-hidden rounded-3xl border border-line/80 bg-white p-6 shadow-sm print:hidden sm:p-7">
+          <p className="mb-4 flex items-center gap-1.5 text-[13px] font-extrabold text-ink">
+            <AmcBadge className="h-4 w-4 text-yellow-dark" />
+            Corporate AMC Scope
+          </p>
+          {quotation.scope_of_work && (
+            <ul className="mb-4 space-y-1.5">
+              {quotation.scope_of_work.split("\n").filter(Boolean).map((line) => (
+                <li key={line} className="flex items-start gap-2 text-[13.5px] text-ink-soft">
+                  <CheckCircle className="mt-0.5 h-3.5 w-3.5 flex-none text-emerald-600" />
+                  {line}
+                </li>
+              ))}
+            </ul>
+          )}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {quotation.visit_frequency && (
+              <div className="flex items-center gap-2.5 rounded-xl border border-line bg-slate-50 px-3.5 py-2.5 text-[12.5px] font-semibold text-body">
+                <ClockIcon className="h-4 w-4 text-muted" />
+                Visits: {VISIT_FREQUENCY_LABELS[quotation.visit_frequency] || quotation.visit_frequency}
+              </div>
+            )}
+            {quotation.amc_duration_months && (
+              <div className="flex items-center gap-2.5 rounded-xl border border-line bg-slate-50 px-3.5 py-2.5 text-[12.5px] font-semibold text-body">
+                <ClockIcon className="h-4 w-4 text-muted" />
+                Duration: {quotation.amc_duration_months} months
+              </div>
+            )}
+            {quotation.response_time_sla && (
+              <div className="flex items-center gap-2.5 rounded-xl border border-line bg-slate-50 px-3.5 py-2.5 text-[12.5px] font-semibold text-body">
+                <ClockIcon className="h-4 w-4 text-muted" />
+                SLA: {quotation.response_time_sla}
+              </div>
+            )}
+            {quotation.manpower && (
+              <div className="flex items-center gap-2.5 rounded-xl border border-line bg-slate-50 px-3.5 py-2.5 text-[12.5px] font-semibold text-body">
+                <UsersIcon className="h-4 w-4 text-muted" />
+                Manpower: {quotation.manpower}
+              </div>
+            )}
+          </div>
+          {quotation.exclusions && (
+            <p className="mt-4 text-[12.5px] text-body">
+              <b className="font-bold text-ink">Exclusions:</b> {quotation.exclusions}
+            </p>
+          )}
+        </Reveal>
+      )}
 
       <Reveal y={12}>
         <div className="rounded-2xl border border-line/80 bg-slate-100/60 p-4 shadow-sm print:block print:rounded-none print:border-0 print:bg-transparent print:p-0 print:shadow-none">
@@ -170,9 +264,10 @@ export default function QuotationDetailPage() {
             <CheckCircle className="h-4 w-4 flex-none" />
             You've accepted this quotation. Pay online to confirm — your invoice will be generated automatically.
           </div>
+          {quotation.quotation_type === "corporate_amc" && <TermsCheckbox checked={agreed} onChange={setAgreed} />}
           <button
             onClick={handlePay}
-            disabled={paying}
+            disabled={paying || (quotation.quotation_type === "corporate_amc" && !agreed)}
             className="inline-flex items-center gap-2 rounded-2xl bg-yellow px-7 py-3.5 text-sm font-black text-ink shadow-md transition-all hover:bg-yellow-dark hover:scale-[1.02] disabled:opacity-60"
           >
             <WalletIcon className="h-4 w-4" />

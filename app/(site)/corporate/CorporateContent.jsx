@@ -3,294 +3,342 @@
 import { motion } from "framer-motion";
 import ChecklistGrid from "@/components/ChecklistGrid";
 import EnquiryForm from "@/components/EnquiryForm";
+import FAQAccordion from "@/components/FAQAccordion";
 import PageHero from "@/components/PageHero";
 import Reveal from "@/components/Reveal";
+import { AlertIcon, ArrowRightIcon, BuildingIcon, CheckCircle, ShieldIcon, XIcon } from "@/components/icons";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 
-const ITEMS = [
-  "Preventive Routine Audits",
-  "24/7 SLA Breakdown Support",
-  "HT/LT Switchgear & Panels",
-  "Energy Efficiency & Harmonic Audits",
-  "Statutory Safety & Fire Compliance",
-  "APFC Panel & Load Calibration",
-  "Workstation Fit-Out & UPS Lines",
-  "Multi-Site Portfolio Care",
-];
+const FALLBACK = {
+  hero_eyebrow: "Corporate & Commercial Solutions",
+  hero_title_plain: "Enterprise Electrical Engineering for",
+  hero_title_highlight: "Offices & Facilities",
+  subtitle:
+    "A dedicated single point of contact for corporate offices, commercial towers, industrial sites, and facility managers.",
+  primary_cta_label: "Request Site Assessment",
+  secondary_cta_label: "Call Direct SLA Hotline",
+  image_url: "/customer-corporate.png",
+};
 
-const SECTORS = [
-  {
-    icon: (
-      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0V11m0 0h4m-4 0v4m0 0h4m-4 0v4" />
-      </svg>
-    ),
-    title: "IT Parks & Corporate Offices",
-    desc: "Zero-downtime server room electricals, workplace LED array calibration, floor DB distribution, and automated UPS crossover lines.",
-    tags: ["UPS Power Backup", "Workstation Cabling", "Smart Energy"],
-  },
-  {
-    icon: (
-      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-      </svg>
-    ),
-    title: "Commercial Malls & Retail Hubs",
-    desc: "High footfall load management, architectural decorative lighting, main distribution board overhaul, and fire alarm synchronization.",
-    tags: ["High Footfall Load", "Facade Lighting", "Safety Cutoffs"],
-  },
-  {
-    icon: (
-      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-      </svg>
-    ),
-    title: "Factories & Industrial Plants",
-    desc: "Heavy machinery power lines, APFC panel power factor optimization (0.99 target), high-tension sub-station upkeep, and factory act safety certification.",
-    tags: ["APFC Panel Overhaul", "HT Line Care", "Factory Act Safety"],
-  },
-  {
-    icon: (
-      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-      </svg>
-    ),
-    title: "Facility Management & Real Estate",
-    desc: "White-label vendor support, dedicated Account Manager, unified monthly billing, consolidated health reports, and guaranteed SLA response across all sites.",
-    tags: ["Dedicated SLA", "Unified Billing", "Single Contact"],
-  },
-];
-
-const STEPS = [
-  {
-    step: "01",
-    title: "Site Audit & Thermography Scan",
-    desc: "Free comprehensive inspection of your HT/LT panels, earth pits, transformers, and load distribution with infrared thermal imaging.",
-  },
-  {
-    step: "02",
-    title: "Customized SLA & Rate Agreement",
-    desc: "Tailored contract terms with guaranteed emergency response times, transparent parts pricing, and predefined SLA parameters.",
-  },
-  {
-    step: "03",
-    title: "Dedicated Account Manager & 24/7 Ops",
-    desc: "Immediate assignment of a Senior Electrical Engineer, digital maintenance logs, and monthly executive health summaries.",
-  },
-];
-
-const PILLARS = [
-  {
-    title: "Single Point of Accountable Contact",
-    desc: "No dealing with unverified local technicians. Your dedicated Senior Engineer manages all visits, audits, and emergencies.",
-  },
-  {
-    title: "Guaranteed 30-Min Emergency SLA",
-    desc: "Rapid dispatch emergency team with guaranteed on-site response time to eliminate business downtime.",
-  },
-  {
-    title: "Transparent Digital Audit Reports",
-    desc: "Thermography thermal scans, earth resistance logs, and asset health status delivered after every visit.",
-  },
-  {
-    title: "Certified & PPE-Compliant Engineers",
-    desc: "Industrial-grade safety gear, licensed master electricians, and comprehensive liability insurance cover.",
-  },
-];
-
-export default function CorporatePage() {
+export default function CorporateContent({ service }) {
   const { phone } = useSiteSettings();
+  const s = { ...FALLBACK, ...(service || {}) };
+  const hidden = service?.hidden_sections || [];
+  const isVisible = (key) => !hidden.includes(key);
+
   return (
     <main>
       <PageHero
-        eyebrow="Corporate & Commercial Solutions"
+        eyebrow={s.hero_eyebrow}
         title={
           <>
-            Enterprise Electrical Engineering for{" "}
-            <span className="text-yellow font-extrabold">Offices & Facilities</span>
+            {s.hero_title_plain} <span className="text-yellow font-extrabold">{s.hero_title_highlight}</span>
           </>
         }
-        subtitle="A dedicated single point of contact for corporate offices, commercial towers, industrial sites, and facility managers — guaranteeing 99.9% uptime and rapid 24/7 SLA breakdown response."
-        primaryCta={{ label: "Request Corporate Quotation", href: "#quote" }}
-        secondaryCta={{ label: "Call Direct SLA Hotline", href: `tel:${phone.replace(/\s+/g, "")}` }}
-        image="/customer-corporate.png"
+        subtitle={s.subtitle}
+        primaryCta={{ label: s.primary_cta_label, href: "#quote" }}
+        secondaryCta={{ label: s.secondary_cta_label, href: `tel:${phone.replace(/\s+/g, "")}` }}
+        image={s.image_url}
         imageAlt="Corporate office building electrical infrastructure"
       />
 
-      {/* Stats SLA Metric Bar */}
-      <section className="border-y border-line/80 bg-white py-8 shadow-sm">
-        <div className="mx-auto max-w-wrap px-6">
-          <div className="grid grid-cols-2 gap-6 md:grid-cols-4 md:gap-8">
-            <div className="text-center md:text-left">
-              <span className="block text-2xl font-black text-ink md:text-3xl">
-                99.9<span className="text-yellow">%</span>
+      {/* Without Us / With Us */}
+      {isVisible("problem") && (service?.problem_section?.without_items?.length > 0 || service?.problem_section?.with_items?.length > 0) && (
+        <section className="py-16 md:py-[74px]">
+          <div className="mx-auto max-w-wrap px-6">
+            <Reveal className="mx-auto mb-12 max-w-[62ch] text-center">
+              {service.problem_section.eyebrow && <p className="eyebrow mx-auto">{service.problem_section.eyebrow}</p>}
+              {service.problem_section.heading && <h2 className="mb-3">{service.problem_section.heading}</h2>}
+              {service.problem_section.subtitle && (
+                <p className="text-[15.5px] leading-relaxed text-charcoal/80">{service.problem_section.subtitle}</p>
+              )}
+            </Reveal>
+
+            <div className="relative grid grid-cols-1 gap-6 md:grid-cols-2">
+              <Reveal delay={0.05}>
+                <div className="group relative h-full overflow-hidden rounded-3xl border border-red-200/80 bg-gradient-to-br from-red-50/70 via-white to-white p-7 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl">
+                  <span className="absolute inset-x-0 top-0 h-[4px] bg-gradient-to-r from-red-500 to-rose-600" />
+                  <div className="mb-5 flex items-center gap-3">
+                    <span className="grid h-11 w-11 flex-none place-items-center rounded-2xl bg-gradient-to-br from-red-500 to-rose-600 text-white shadow-sm transition-transform duration-300 group-hover:scale-110">
+                      <XIcon className="h-5 w-5" />
+                    </span>
+                    <span className="text-[13px] font-extrabold uppercase tracking-wide text-red-700">Without Us</span>
+                  </div>
+                  <ul className="space-y-3.5 text-[14px] text-ink-soft">
+                    {(service.problem_section.without_items || []).map((step) => (
+                      <li key={step} className="flex items-start gap-3">
+                        <span className="mt-0.5 grid h-6 w-6 flex-none place-items-center rounded-full bg-red-100 text-red-600">
+                          <XIcon className="h-3.5 w-3.5" />
+                        </span>
+                        {step}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </Reveal>
+
+              <span className="pointer-events-none absolute left-1/2 top-1/2 z-[1] hidden h-12 w-12 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border-4 border-white bg-ink text-yellow shadow-lg md:grid">
+                <ArrowRightIcon className="h-4 w-4" />
               </span>
-              <span className="text-xs font-bold uppercase tracking-wider text-charcoal/70">
-                Uptime Commitment
-              </span>
-            </div>
-            <div className="text-center md:text-left">
-              <span className="block text-2xl font-black text-ink md:text-3xl">
-                30<span className="text-yellow"> Mins</span>
-              </span>
-              <span className="text-xs font-bold uppercase tracking-wider text-charcoal/70">
-                Emergency SLA Response
-              </span>
-            </div>
-            <div className="text-center md:text-left">
-              <span className="block text-2xl font-black text-ink md:text-3xl">
-                500<span className="text-yellow">+</span>
-              </span>
-              <span className="text-xs font-bold uppercase tracking-wider text-charcoal/70">
-                Corporate Sites Managed
-              </span>
-            </div>
-            <div className="text-center md:text-left">
-              <span className="block text-2xl font-black text-ink md:text-3xl">
-                100<span className="text-yellow">%</span>
-              </span>
-              <span className="text-xs font-bold uppercase tracking-wider text-charcoal/70">
-                ISO & Safety Compliant
-              </span>
+
+              <Reveal delay={0.1}>
+                <div className="group relative h-full overflow-hidden rounded-3xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50/70 via-white to-white p-7 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl">
+                  <span className="absolute inset-x-0 top-0 h-[4px] bg-gradient-to-r from-emerald-500 to-teal-600" />
+                  <div className="mb-5 flex items-center gap-3">
+                    <span className="grid h-11 w-11 flex-none place-items-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-sm transition-transform duration-300 group-hover:scale-110">
+                      <CheckCircle className="h-5 w-5" />
+                    </span>
+                    <span className="text-[13px] font-extrabold uppercase tracking-wide text-emerald-700">With House Electric</span>
+                  </div>
+                  <ul className="space-y-3.5 text-[14px] text-ink">
+                    {(service.problem_section.with_items || []).map((step) => (
+                      <li key={step} className="flex items-start gap-3">
+                        <span className="mt-0.5 grid h-6 w-6 flex-none place-items-center rounded-full bg-emerald-100 text-emerald-600">
+                          <CheckCircle className="h-3.5 w-3.5" />
+                        </span>
+                        {step}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </Reveal>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
+
+      {/* Stats SLA Metric Bar */}
+      {isVisible("stats") && service?.sla_stats?.length > 0 && (
+        <section className="border-y border-line/80 bg-white py-8 shadow-sm">
+          <div className="mx-auto max-w-wrap px-6">
+            <div className="grid grid-cols-2 gap-6 md:grid-cols-4 md:gap-8">
+              {service.sla_stats.map((stat, i) => (
+                <div key={i} className="text-center md:text-left">
+                  <span className="block text-2xl font-black text-ink md:text-3xl">
+                    {stat.value}
+                    <span className="text-yellow">{stat.suffix}</span>
+                  </span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-charcoal/70">{stat.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Core Capabilities Checklist */}
-      <section className="py-16 md:py-[74px]">
-        <div className="mx-auto max-w-wrap px-6">
-          <Reveal className="mb-10 max-w-[65ch]">
-            <p className="eyebrow">OUR CORPORATE CAPABILITIES</p>
-            <h2 className="mb-3">End-to-End Electrical Solutions Built for Business Leaders</h2>
-            <p className="text-[15.5px] leading-relaxed text-charcoal/80">
-              From preventive routine thermography to high-capacity transformer overhauls, we manage every facet of corporate power with safety and precision.
-            </p>
-          </Reveal>
-          <ChecklistGrid items={ITEMS} columns={4} />
-        </div>
-      </section>
+      {isVisible("checklist") && service?.checklist_items?.length > 0 && (
+        <section className="py-16 md:py-[74px]">
+          <div className="mx-auto max-w-wrap px-6">
+            <Reveal className="mb-10 max-w-[65ch]">
+              <p className="eyebrow">{service.checklist_section?.eyebrow || "Our Capabilities"}</p>
+              <h2 className="mb-3">{service.checklist_section?.heading || "End-to-End Electrical Solutions"}</h2>
+              {service.checklist_section?.subtitle && (
+                <p className="text-[15.5px] leading-relaxed text-charcoal/80">{service.checklist_section.subtitle}</p>
+              )}
+            </Reveal>
+            <ChecklistGrid items={service.checklist_items} columns={4} />
+          </div>
+        </section>
+      )}
+
+      {/* What's Chargeable Separately */}
+      {isVisible("exclusions") && service?.exclusions_section?.items?.length > 0 && (
+        <section className="py-16 md:py-[74px]">
+          <div className="mx-auto max-w-wrap px-6">
+            <Reveal className="mb-10 max-w-[64ch]">
+              {service.exclusions_section.eyebrow && <p className="eyebrow">{service.exclusions_section.eyebrow}</p>}
+              {service.exclusions_section.heading && <h2 className="mb-3">{service.exclusions_section.heading}</h2>}
+              {service.exclusions_section.subtitle && (
+                <p className="text-[15.5px] leading-relaxed text-charcoal/80">{service.exclusions_section.subtitle}</p>
+              )}
+            </Reveal>
+
+            <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
+              {service.exclusions_section.items.map((item) => (
+                <div
+                  key={item}
+                  className="flex items-center gap-3 rounded-xl border border-amber-200/70 bg-amber-50/50 px-5 py-3.5"
+                >
+                  <span className="grid h-7 w-7 flex-none place-items-center rounded-full bg-amber-100 text-amber-700">
+                    <AlertIcon className="h-3.5 w-3.5" />
+                  </span>
+                  <span className="text-[13.5px] font-bold text-ink">{item}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Industry Sector Cards */}
-      <section className="bg-cream py-16 md:py-[74px]">
-        <div className="mx-auto max-w-wrap px-6">
-          <Reveal className="mb-12 max-w-[62ch]">
-            <p className="eyebrow">SECTOR SPECIALIZATION</p>
-            <h2 className="mb-3">Tailored Engineering for Your Infrastructure</h2>
-            <p className="text-[15.5px] leading-relaxed text-charcoal/80">
-              Every facility has distinct operational demands. We customize electrical protocols for specialized commercial environments.
-            </p>
-          </Reveal>
+      {isVisible("types") && service?.types_section?.items?.length > 0 && (
+        <section className="bg-cream py-16 md:py-[74px]">
+          <div className="mx-auto max-w-wrap px-6">
+            <Reveal className="mb-12 max-w-[62ch]">
+              {service.types_section.eyebrow && <p className="eyebrow">{service.types_section.eyebrow}</p>}
+              {service.types_section.heading && <h2 className="mb-3">{service.types_section.heading}</h2>}
+              {service.types_section.subtitle && (
+                <p className="text-[15.5px] leading-relaxed text-charcoal/80">{service.types_section.subtitle}</p>
+              )}
+            </Reveal>
 
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2">
-            {SECTORS.map((sector, i) => (
-              <motion.div
-                key={sector.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.3 }}
-                transition={{ duration: 0.4, delay: i * 0.08 }}
-                whileHover={{ y: -4 }}
-                className="group relative flex flex-col justify-between rounded-2xl border border-line/80 bg-white p-7 shadow-sm transition-all duration-300 hover:border-yellow/60 hover:shadow-xl"
-              >
-                <div>
-                  <div className="mb-5 flex items-center gap-4">
-                    <span className="flex h-12 w-12 flex-none items-center justify-center rounded-xl bg-yellow/15 text-yellow-dark ring-1 ring-yellow/30 transition-colors group-hover:bg-yellow group-hover:text-ink">
-                      {sector.icon}
-                    </span>
-                    <h3 className="text-lg font-extrabold text-ink transition-colors group-hover:text-yellow-dark">
-                      {sector.title}
-                    </h3>
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2">
+              {service.types_section.items.map((sector, i) => (
+                <motion.div
+                  key={sector.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.3 }}
+                  transition={{ duration: 0.4, delay: i * 0.08 }}
+                  whileHover={{ y: -4 }}
+                  className="group relative flex flex-col justify-between rounded-2xl border border-line/80 bg-white p-7 shadow-sm transition-all duration-300 hover:border-yellow/60 hover:shadow-xl"
+                >
+                  <div>
+                    <div className="mb-5 flex items-center gap-4">
+                      <span className="flex h-12 w-12 flex-none items-center justify-center rounded-xl bg-yellow/15 text-yellow-dark ring-1 ring-yellow/30 transition-colors group-hover:bg-yellow group-hover:text-ink">
+                        <BuildingIcon className="h-6 w-6" />
+                      </span>
+                      <h3 className="text-lg font-extrabold text-ink transition-colors group-hover:text-yellow-dark">{sector.title}</h3>
+                    </div>
+                    <p className="mb-6 text-[14.5px] leading-relaxed text-charcoal/80">{sector.desc}</p>
                   </div>
-                  <p className="mb-6 text-[14.5px] leading-relaxed text-charcoal/80">
-                    {sector.desc}
-                  </p>
-                </div>
 
-                <div className="flex flex-wrap gap-2 pt-2 border-t border-line/50">
-                  {sector.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="rounded-md bg-cream px-3 py-1 text-xs font-semibold text-ink/80"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </motion.div>
-            ))}
+                  {sector.tags?.length > 0 && (
+                    <div className="flex flex-wrap gap-2 border-t border-line/50 pt-2">
+                      {sector.tags.map((tag) => (
+                        <span key={tag} className="rounded-md bg-cream px-3 py-1 text-xs font-semibold text-ink/80">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </motion.div>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* The Corporate Partnership Framework */}
-      <section className="py-16 md:py-[74px]">
-        <div className="mx-auto max-w-wrap px-6">
-          <Reveal className="mb-12 max-w-[62ch]">
-            <p className="eyebrow">WORKFLOW & ONBOARDING</p>
-            <h2 className="mb-3">How We Onboard & Maintain Corporate Accounts</h2>
-            <p className="text-[15.5px] leading-relaxed text-charcoal/80">
-              A transparent, structured workflow designed to integrate seamlessly with your existing facility management processes.
-            </p>
-          </Reveal>
+      {isVisible("process") && service?.process_section?.items?.length > 0 && (
+        <section className="py-16 md:py-[74px]">
+          <div className="mx-auto max-w-wrap px-6">
+            <Reveal className="mb-12 max-w-[62ch]">
+              {service.process_section.eyebrow && <p className="eyebrow">{service.process_section.eyebrow}</p>}
+              {service.process_section.heading && <h2 className="mb-3">{service.process_section.heading}</h2>}
+              {service.process_section.subtitle && (
+                <p className="text-[15.5px] leading-relaxed text-charcoal/80">{service.process_section.subtitle}</p>
+              )}
+            </Reveal>
 
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-            {STEPS.map((s, i) => (
-              <motion.div
-                key={s.step}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.3 }}
-                transition={{ duration: 0.4, delay: i * 0.1 }}
-                className="relative rounded-2xl border border-line/80 bg-white p-7 shadow-sm transition-all duration-300 hover:border-yellow/50 hover:shadow-lg"
-              >
-                <span className="mb-4 inline-block font-mono text-3xl font-black text-yellow">
-                  {s.step}
-                </span>
-                <h3 className="mb-2 text-base font-extrabold text-ink">{s.title}</h3>
-                <p className="text-[14px] leading-relaxed text-charcoal/80">{s.desc}</p>
-              </motion.div>
-            ))}
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+              {service.process_section.items.map((step, i) => (
+                <motion.div
+                  key={step.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.3 }}
+                  transition={{ duration: 0.4, delay: i * 0.1 }}
+                  className="relative rounded-2xl border border-line/80 bg-white p-7 shadow-sm transition-all duration-300 hover:border-yellow/50 hover:shadow-lg"
+                >
+                  <span className="mb-4 inline-block font-mono text-3xl font-black text-yellow">{String(i + 1).padStart(2, "0")}</span>
+                  <h3 className="mb-2 text-base font-extrabold text-ink">{step.title}</h3>
+                  <p className="text-[14px] leading-relaxed text-charcoal/80">{step.desc}</p>
+                </motion.div>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Why Facility Managers Partner With Us */}
-      <section className="bg-cream py-16 md:py-[74px]">
-        <div className="mx-auto max-w-wrap px-6">
-          <Reveal className="mb-12 max-w-[62ch]">
-            <p className="eyebrow">EXECUTIVE ADVANTAGES</p>
-            <h2 className="mb-3">Why Top Enterprises Trust House Electric</h2>
-            <p className="text-[15.5px] leading-relaxed text-charcoal/80">
-              We eliminate electrical downtime, compliance risks, and vendor management friction for commercial properties.
-            </p>
-          </Reveal>
+      {isVisible("advantages") && service?.advantages_section?.items?.length > 0 && (
+        <section className="bg-cream py-16 md:py-[74px]">
+          <div className="mx-auto max-w-wrap px-6">
+            <Reveal className="mb-12 max-w-[62ch]">
+              {service.advantages_section.eyebrow && <p className="eyebrow">{service.advantages_section.eyebrow}</p>}
+              {service.advantages_section.heading && <h2 className="mb-3">{service.advantages_section.heading}</h2>}
+              {service.advantages_section.subtitle && (
+                <p className="text-[15.5px] leading-relaxed text-charcoal/80">{service.advantages_section.subtitle}</p>
+              )}
+            </Reveal>
 
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-            {PILLARS.map((pillar, i) => (
-              <motion.div
-                key={pillar.title}
-                initial={{ opacity: 0, y: 18 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.3 }}
-                transition={{ duration: 0.4, delay: i * 0.08 }}
-                className="rounded-2xl border border-line/80 bg-white p-7 shadow-sm transition-all duration-300 hover:border-yellow/50 hover:shadow-lg"
-              >
-                <div className="mb-3 flex items-center gap-3">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-yellow/20 text-yellow-dark font-extrabold text-sm">
-                    ✓
-                  </span>
-                  <h3 className="text-base font-extrabold text-ink">{pillar.title}</h3>
-                </div>
-                <p className="text-[14.5px] leading-relaxed text-charcoal/80 pl-11">
-                  {pillar.desc}
-                </p>
-              </motion.div>
-            ))}
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+              {service.advantages_section.items.map((pillar, i) => (
+                <motion.div
+                  key={pillar.title}
+                  initial={{ opacity: 0, y: 18 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.3 }}
+                  transition={{ duration: 0.4, delay: i * 0.08 }}
+                  className="rounded-2xl border border-line/80 bg-white p-7 shadow-sm transition-all duration-300 hover:border-yellow/50 hover:shadow-lg"
+                >
+                  <div className="mb-3 flex items-center gap-3">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-yellow/20 text-yellow-dark font-extrabold text-sm">
+                      ✓
+                    </span>
+                    <h3 className="text-base font-extrabold text-ink">{pillar.title}</h3>
+                  </div>
+                  <p className="text-[14.5px] leading-relaxed text-charcoal/80 pl-11">{pillar.desc}</p>
+                </motion.div>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
+
+      {/* Why House Electric */}
+      {isVisible("why_he") && service?.why_house_electric_section?.items?.length > 0 && (
+        <section className="bg-cream py-16 md:py-[74px]">
+          <div className="mx-auto max-w-wrap px-6">
+            <Reveal className="mb-12 max-w-[62ch]">
+              {service.why_house_electric_section.eyebrow && <p className="eyebrow">{service.why_house_electric_section.eyebrow}</p>}
+              {service.why_house_electric_section.heading && <h2 className="mb-3">{service.why_house_electric_section.heading}</h2>}
+              {service.why_house_electric_section.subtitle && (
+                <p className="text-[15.5px] leading-relaxed text-charcoal/80">{service.why_house_electric_section.subtitle}</p>
+              )}
+            </Reveal>
+
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+              {service.why_house_electric_section.items.map((item, i) => (
+                <motion.div
+                  key={item.title}
+                  initial={{ opacity: 0, y: 18 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.3 }}
+                  transition={{ duration: 0.4, delay: i * 0.08 }}
+                  className="group relative overflow-hidden rounded-3xl border border-line/80 bg-white p-7 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-blue-300/60 hover:shadow-xl"
+                >
+                  <span className="absolute inset-x-0 top-0 h-[4px] bg-gradient-to-r from-blue-500 to-indigo-600" />
+                  <div className="mb-3 flex items-center gap-3">
+                    <span className="grid h-10 w-10 flex-none place-items-center rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-sm transition-transform duration-300 group-hover:scale-110">
+                      <ShieldIcon className="h-[18px] w-[18px]" />
+                    </span>
+                    <h3 className="text-base font-extrabold text-ink">{item.title}</h3>
+                  </div>
+                  <p className="pl-[52px] text-[14.5px] leading-relaxed text-charcoal/80">{item.desc}</p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* FAQs */}
+      {isVisible("faqs") && service?.faqs?.length > 0 && (
+        <section className="py-16 md:py-[74px]">
+          <div className="mx-auto max-w-wrap px-6">
+            <Reveal className="mx-auto mb-10 max-w-[60ch] text-center">
+              <p className="eyebrow">Common questions</p>
+              <h2>Frequently Asked Questions</h2>
+            </Reveal>
+            <Reveal delay={0.1} className="mx-auto max-w-[72ch]">
+              <FAQAccordion items={service.faqs} />
+            </Reveal>
+          </div>
+        </section>
+      )}
 
       {/* Corporate Quotation Form */}
       <EnquiryForm
@@ -303,4 +351,3 @@ export default function CorporatePage() {
     </main>
   );
 }
-

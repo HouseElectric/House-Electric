@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import { PlusIcon, TrashIcon } from "@/components/icons";
 
 export function FormSection({ title, hint, children }) {
   return (
@@ -24,6 +25,57 @@ export function Field({ label, children }) {
 
 export const inputClass =
   "w-full rounded-md border border-line px-3 py-2.5 text-[13.5px] text-ink outline-none transition-all focus:border-ink focus:ring-2 focus:ring-yellow/20";
+
+// Generic add/edit/remove list editor for repeatable groups of small fields
+// (e.g. SLA stats, advantage cards, FAQs) — each item only renders on the
+// public page once it has at least one populated field.
+export function ListEditor({ items, onChange, fields, addLabel, emptyItem, max }) {
+  const update = (i, key, val) => onChange(items.map((it, idx) => (idx === i ? { ...it, [key]: val } : it)));
+  const remove = (i) => onChange(items.filter((_, idx) => idx !== i));
+  const add = () => onChange([...items, emptyItem]);
+  const atMax = max && items.length >= max;
+
+  return (
+    <div className="space-y-3">
+      {items.map((it, i) => (
+        <div key={i} className="relative space-y-2 rounded-lg border border-line p-3.5 pr-9">
+          <button
+            type="button"
+            onClick={() => remove(i)}
+            aria-label="Remove"
+            className="absolute right-2.5 top-2.5 text-red-400 transition-colors hover:text-red-600"
+          >
+            <TrashIcon className="h-3.5 w-3.5" />
+          </button>
+          {fields.map((f) => (
+            <Field key={f.key} label={f.label}>
+              {f.type === "textarea" ? (
+                <textarea
+                  rows={2}
+                  value={it[f.key] || ""}
+                  onChange={(e) => update(i, f.key, e.target.value)}
+                  className={inputClass}
+                />
+              ) : (
+                <input value={it[f.key] || ""} onChange={(e) => update(i, f.key, e.target.value)} className={inputClass} />
+              )}
+            </Field>
+          ))}
+        </div>
+      ))}
+      {!atMax && (
+        <button
+          type="button"
+          onClick={add}
+          className="flex items-center gap-1.5 text-[12.5px] font-bold text-ink transition-colors hover:underline"
+        >
+          <PlusIcon className="h-3.5 w-3.5" />
+          {addLabel}
+        </button>
+      )}
+    </div>
+  );
+}
 
 export function ImageUploadField({ label = "Photo", value, uploading, onUpload, aspect = "aspect-[16/9]" }) {
   const fileInputRef = useRef(null);

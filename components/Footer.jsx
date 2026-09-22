@@ -8,7 +8,7 @@ const QUICK_LINKS = [
   { href: "/", label: "Home" },
   { href: "/about", label: "About Us" },
   { href: "/services", label: "Services" },
-  { href: "/services/annual-maintenance-contract-amc", label: "AMC" },
+  { href: "/amc/plans", label: "AMC" },
   { href: "/corporate", label: "Corporate" },
   { href: "/projects", label: "Projects" },
   { href: "/reviews", label: "Reviews" },
@@ -22,7 +22,7 @@ const SERVICE_LINKS = [
   { href: "/services/electrical-installation", label: "Electrical Installation" },
   { href: "/services/electrical-maintenance", label: "Electrical Maintenance" },
   { href: "/services/electrical-health-check", label: "Electrical Health Check" },
-  { href: "/services/annual-maintenance-contract-amc", label: "Annual Maintenance Contract" },
+  { href: "/amc/plans", label: "Annual Maintenance Contract" },
 ];
 
 const SOCIALS = [

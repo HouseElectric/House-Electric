@@ -8,7 +8,19 @@ import { supabase } from "@/lib/supabase";
 import { uploadImage, imagekitConfigured } from "@/lib/imagekit";
 import { ArrowLeftIcon } from "@/components/icons";
 
-const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
+const ReactQuill = dynamic(() => import("react-quill-new"), {
+  ssr: false,
+  loading: () => (
+    <div className="animate-pulse space-y-2">
+      <div className="flex gap-1.5 rounded-t-md border border-line bg-cream/40 p-2">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="h-6 w-8 rounded bg-line/60" />
+        ))}
+      </div>
+      <div className="h-40 rounded-b-md border border-t-0 border-line bg-cream/20" />
+    </div>
+  ),
+});
 import "react-quill-new/dist/quill.snow.css";
 
 const CATEGORIES = ["Electrical Safety", "Maintenance Tips", "AMC", "Installation", "Company News"];

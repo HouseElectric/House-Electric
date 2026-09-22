@@ -8,15 +8,18 @@ const AdminAuthContext = createContext(null);
 export function AdminAuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isTechnician, setIsTechnician] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const loadProfile = async (sessionUser) => {
     if (!sessionUser) {
       setIsAdmin(false);
+      setIsTechnician(false);
       return;
     }
-    const { data } = await supabase.from("profiles").select("is_admin").eq("id", sessionUser.id).maybeSingle();
+    const { data } = await supabase.from("profiles").select("is_admin, is_technician").eq("id", sessionUser.id).maybeSingle();
     setIsAdmin(!!data?.is_admin);
+    setIsTechnician(!!data?.is_technician);
   };
 
   useEffect(() => {
@@ -45,7 +48,7 @@ export function AdminAuthProvider({ children }) {
   const signOut = () => supabase?.auth.signOut();
 
   return (
-    <AdminAuthContext.Provider value={{ user, isAdmin, loading, signIn, signOut, supabaseReady: !!supabase }}>
+    <AdminAuthContext.Provider value={{ user, isAdmin, isTechnician, loading, signIn, signOut, supabaseReady: !!supabase }}>
       {children}
     </AdminAuthContext.Provider>
   );

@@ -7,6 +7,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import AuthShowcase from "@/components/AuthShowcase";
+import OtpInput from "@/components/OtpInput";
 import { AlertIcon, EyeIcon, EyeOffIcon, LockIcon, MailIcon, PhoneIcon, UsersIcon } from "@/components/icons";
 
 const inputClass =
@@ -201,16 +202,8 @@ export default function RegisterPage() {
                 className="space-y-4"
               >
                 <div>
-                  <label className="mb-1.5 block text-[13px] font-semibold text-ink">6-Digit Code</label>
-                  <input
-                    type="text"
-                    required
-                    maxLength={6}
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-                    className="w-full rounded-xl border border-line bg-white px-4 py-3.5 text-center text-[22px] font-bold tracking-[0.4em] text-ink outline-none transition-all focus:border-ink focus:ring-4 focus:ring-yellow/15"
-                    placeholder="••••••"
-                  />
+                  <label className="mb-1.5 block text-center text-[13px] font-semibold text-ink">6-Digit Code</label>
+                  <OtpInput value={otp} onChange={setOtp} length={6} disabled={loading} />
                 </div>
                 <button
                   type="submit"

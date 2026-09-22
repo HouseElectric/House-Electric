@@ -14,6 +14,7 @@ const SERVICE_TYPE_OPTIONS = [
   "Electrical Health Check",
   "Electrical Maintenance",
   "AMC",
+  "Certified Electrical Audits",
   "Emergency Service",
   "Other",
 ];
@@ -50,6 +51,7 @@ const FIELD_SETS = {
           "Electrical Health Check",
           "Electrical Maintenance",
           "AMC",
+          "Certified Electrical Audits",
           "Emergency Service",
           "Other",
         ],
@@ -82,9 +84,9 @@ const FIELD_SETS = {
     ],
   },
   corporate: {
-    heading: "Request Corporate Quotation",
-    intro: "I'd like a quotation for corporate/commercial electrical maintenance.",
-    submitLabel: "Request Quotation",
+    heading: "Request Site Assessment",
+    intro: "I'd like to request a site assessment for corporate/commercial electrical maintenance.",
+    submitLabel: "Request Site Assessment",
     fields: [
       { name: "company", label: "Company Name", type: "text", required: true },
       { name: "contactPerson", label: "Contact Person", type: "text", required: true },
@@ -116,11 +118,11 @@ export default function EnquiryForm({ variant = "booking", eyebrow, title, subti
   const config = FIELD_SETS[variant];
   const { phone, whatsapp } = useSiteSettings();
   const { user, profile } = useCustomerAuth() || {};
-  // Logged-in customers already have their name/mobile/email/address on file — for the
-  // booking form specifically, skip re-asking for it and go straight to a real,
+  // Logged-in customers already have their name/mobile/email/address on file — for
+  // booking and AMC specifically, skip re-asking for it and go straight to a real,
   // account-linked service request instead of an anonymous enquiry.
-  const isLoggedInBooking = variant === "booking" && !!user;
-  const [values, setValues] = useState({});
+  const isLoggedInBooking = (variant === "booking" || variant === "amc") && !!user;
+  const [values, setValues] = useState(() => (variant === "amc" ? { serviceType: "AMC" } : {}));
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [ticketNumber, setTicketNumber] = useState("");

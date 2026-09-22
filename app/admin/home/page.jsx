@@ -10,10 +10,13 @@ import { supabase } from "@/lib/supabase";
 import { uploadImage, imagekitConfigured } from "@/lib/imagekit";
 import { DEFAULT_HOME, deepMerge } from "@/contexts/HomeContentContext";
 import {
+  AlertIcon,
+  AmcBadge,
   AwardIcon,
   BuildingIcon,
   CheckCircle,
   ExternalLinkIcon,
+  InboxIcon,
   UsersIcon,
   SparklesIcon,
   WrenchIcon,
@@ -54,6 +57,9 @@ const TABS = [
   { key: "healthCheck", label: "Health Check", icon: ShieldIcon },
   { key: "whyChoose", label: "Why Choose", icon: AwardIcon },
   { key: "customers", label: "Customers", icon: UsersIcon },
+  { key: "amc", label: "AMC Section", icon: AmcBadge },
+  { key: "emergency", label: "Emergency Banner", icon: AlertIcon },
+  { key: "faqs", label: "FAQs", icon: InboxIcon },
   { key: "testimonials", label: "Testimonials", icon: StarIcon },
 ];
 
@@ -201,32 +207,42 @@ export default function AdminHomePage() {
   return (
     <AdminGuard>
       <AdminLayout title="Home Page">
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-          <p className="max-w-[65ch] text-[13.5px] text-body">
-            Every section of{" "}
-            <a href="/" target="_blank" rel="noopener noreferrer" className="font-semibold text-ink underline">
-              the homepage
-            </a>
-            , in the order it appears on the page. Switch tabs, edit, then save.
-          </p>
-          <div className="flex items-center gap-3">
-            {saved && (
-              <span className="flex items-center gap-1.5 text-[13px] font-semibold text-emerald-600">
-                <CheckCircle className="h-4 w-4" /> Saved!
+        <div className="relative mb-6 overflow-hidden rounded-2xl bg-ink px-6 py-7 sm:px-8 sm:py-8">
+          <span className="glow-blob -right-14 -top-20 h-56 w-56 bg-yellow/25" />
+          <span className="glow-blob -bottom-24 -left-10 h-48 w-48 bg-yellow/10" style={{ animationDelay: "2.2s" }} />
+          <div className="relative z-10 flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-yellow/30 bg-yellow/10 px-3 py-1 text-[10.5px] font-bold uppercase tracking-wider text-yellow">
+                <SparklesIcon className="h-3 w-3" /> Homepage
               </span>
-            )}
-            <button
-              onClick={save}
-              disabled={saving}
-              className="whitespace-nowrap rounded-md bg-yellow px-6 py-3 text-[14px] font-bold text-ink transition-all hover:-translate-y-0.5 hover:bg-yellow-dark hover:shadow-md disabled:translate-y-0 disabled:opacity-60"
-            >
-              {saving ? "Saving…" : "Save Changes"}
-            </button>
+              <h2 className="mt-3 text-[21px] font-extrabold text-white sm:text-[25px]">Home Page</h2>
+              <p className="mt-1.5 max-w-[56ch] text-[13.5px] text-white/55">
+                Every section of{" "}
+                <a href="/" target="_blank" rel="noopener noreferrer" className="font-semibold text-white underline">
+                  the public homepage
+                </a>
+                , in the order it appears on the page. Switch tabs, edit, then save.
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              {saved && (
+                <span className="flex items-center gap-1.5 text-[13px] font-semibold text-emerald-400">
+                  <CheckCircle className="h-4 w-4" /> Saved!
+                </span>
+              )}
+              <button
+                onClick={save}
+                disabled={saving}
+                className="whitespace-nowrap rounded-md bg-yellow px-6 py-3 text-[14px] font-bold text-ink transition-all hover:-translate-y-0.5 hover:bg-yellow-dark hover:shadow-md disabled:translate-y-0 disabled:opacity-60"
+              >
+                {saving ? "Saving…" : "Save Changes"}
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="mb-6 flex flex-wrap gap-1.5 overflow-x-auto rounded-xl border border-line bg-white p-1.5">
+        <div className="mb-6 flex flex-wrap gap-1 overflow-x-auto rounded-xl border border-line bg-white p-1">
           {TABS.map((t, i) => {
             const Icon = t.icon;
             const active = tab === t.key;
@@ -595,6 +611,113 @@ export default function AdminHomePage() {
           </div>
         )}
 
+        {/* ---------------- AMC SECTION ---------------- */}
+        {tab === "amc" && (
+          <div className="space-y-5">
+            <FormSection title="Section Content" hint="The dark 'Stop Reacting to Breakdowns' AMC section on the homepage.">
+              <Field label="Badge Label">
+                <input value={data.amc.badgeLabel} onChange={(e) => setField("amc", "badgeLabel", e.target.value)} className={inputClass} />
+              </Field>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <Field label="Title (plain part)">
+                  <input value={data.amc.titlePlain} onChange={(e) => setField("amc", "titlePlain", e.target.value)} className={inputClass} />
+                </Field>
+                <Field label="Title (highlighted part)">
+                  <input value={data.amc.titleHighlight} onChange={(e) => setField("amc", "titleHighlight", e.target.value)} className={inputClass} />
+                </Field>
+              </div>
+              <Field label="Subtitle">
+                <textarea value={data.amc.subtitle} onChange={(e) => setField("amc", "subtitle", e.target.value)} rows={3} className={inputClass} />
+              </Field>
+              <Field label="Button Label">
+                <input value={data.amc.buttonLabel} onChange={(e) => setField("amc", "buttonLabel", e.target.value)} className={inputClass} />
+              </Field>
+            </FormSection>
+
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
+              {data.amc.points.map((p, i) => (
+                <FormSection key={i} title={`Point ${i + 1}`}>
+                  <Field label="Label">
+                    <input value={p.label} onChange={(e) => updateItem("amc", "points", i, "label", e.target.value)} className={inputClass} />
+                  </Field>
+                </FormSection>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
+              {data.amc.segments.map((s, i) => (
+                <FormSection key={i} title={`Segment ${i + 1}`}>
+                  <Field label="Label">
+                    <input value={s.label} onChange={(e) => updateItem("amc", "segments", i, "label", e.target.value)} className={inputClass} />
+                  </Field>
+                </FormSection>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ---------------- EMERGENCY BANNER ---------------- */}
+        {tab === "emergency" && (
+          <div className="space-y-5">
+            <FormSection title="Section Content" hint="The 'Electrical Fault Right Now? Call Us Immediately' banner on the homepage.">
+              <Field label="Badge Label">
+                <input value={data.emergency.badgeLabel} onChange={(e) => setField("emergency", "badgeLabel", e.target.value)} className={inputClass} />
+              </Field>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <Field label="Title (plain part)">
+                  <input value={data.emergency.titlePlain} onChange={(e) => setField("emergency", "titlePlain", e.target.value)} className={inputClass} />
+                </Field>
+                <Field label="Title (highlighted part)">
+                  <input value={data.emergency.titleHighlight} onChange={(e) => setField("emergency", "titleHighlight", e.target.value)} className={inputClass} />
+                </Field>
+              </div>
+              <Field label="Subtitle">
+                <textarea value={data.emergency.subtitle} onChange={(e) => setField("emergency", "subtitle", e.target.value)} rows={2} className={inputClass} />
+              </Field>
+              <Field label="Problem Chips (one per line)">
+                <textarea
+                  value={data.emergency.problems.join("\n")}
+                  onChange={(e) => setField("emergency", "problems", e.target.value.split("\n").map((s) => s.trim()).filter(Boolean))}
+                  rows={7}
+                  className={`${inputClass} font-mono`}
+                />
+              </Field>
+            </FormSection>
+          </div>
+        )}
+
+        {/* ---------------- FAQS ---------------- */}
+        {tab === "faqs" && (
+          <div className="space-y-5">
+            <FormSection title="Section Heading">
+              <Field label="Eyebrow">
+                <input value={data.faqs.eyebrow} onChange={(e) => setField("faqs", "eyebrow", e.target.value)} className={inputClass} />
+              </Field>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <Field label="Title (plain part)">
+                  <input value={data.faqs.titlePlain} onChange={(e) => setField("faqs", "titlePlain", e.target.value)} className={inputClass} />
+                </Field>
+                <Field label="Title (highlighted part)">
+                  <input value={data.faqs.titleHighlight} onChange={(e) => setField("faqs", "titleHighlight", e.target.value)} className={inputClass} />
+                </Field>
+              </div>
+            </FormSection>
+
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+              {data.faqs.items.map((f, i) => (
+                <FormSection key={i} title={`Question ${i + 1}`}>
+                  <Field label="Question">
+                    <input value={f.q} onChange={(e) => updateItem("faqs", "items", i, "q", e.target.value)} className={inputClass} />
+                  </Field>
+                  <Field label="Answer">
+                    <textarea value={f.a} onChange={(e) => updateItem("faqs", "items", i, "a", e.target.value)} rows={3} className={inputClass} />
+                  </Field>
+                </FormSection>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* ---------------- TESTIMONIALS (link out) ---------------- */}
         {tab === "testimonials" && (
           <LinkOutTab
@@ -632,7 +755,7 @@ function SlideFields({ slide, index, onChange, onUpload, uploading }) {
         onChange={(e) => onUpload(index, e.target.files[0])}
       />
       <div className="relative">
-        <img src={slide.image} alt="" className="aspect-square w-full rounded-lg border border-line object-cover" />
+        <img src={slide.image} alt="" className="aspect-square w-full rounded-lg border border-line bg-cream/40 object-contain" />
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}

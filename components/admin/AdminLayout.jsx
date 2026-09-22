@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAdminAuth } from "@/contexts/AdminAuthContext";
@@ -8,7 +8,10 @@ import AdminNotificationsBell from "./AdminNotificationsBell";
 import {
   AmcBadge,
   ArticleIcon,
+  BarChartIcon,
+  BuildingIcon,
   CalendarIcon,
+  ClipboardIcon,
   DashboardIcon,
   ExternalLinkIcon,
   HomeIcon,
@@ -27,7 +30,10 @@ import {
 const NAV_GROUPS = [
   {
     label: "Overview",
-    items: [{ href: "/admin", label: "Dashboard", icon: DashboardIcon, exact: true }],
+    items: [
+      { href: "/admin", label: "Dashboard", icon: DashboardIcon, exact: true },
+      { href: "/admin/reports", label: "Reports & Analytics", icon: BarChartIcon },
+    ],
   },
   {
     label: "Leads",
@@ -37,6 +43,7 @@ const NAV_GROUPS = [
     label: "Operations",
     items: [
       { href: "/admin/service-requests", label: "Service Requests", icon: InboxIcon },
+      { href: "/admin/health-checks", label: "Health Checks", icon: ReportIcon },
       { href: "/admin/appointments", label: "Appointments", icon: CalendarIcon },
       { href: "/admin/technicians", label: "Technicians", icon: UsersIcon },
       { href: "/admin/quotations", label: "Quotations", icon: ReportIcon },
@@ -44,6 +51,7 @@ const NAV_GROUPS = [
       { href: "/admin/payments", label: "Payments", icon: ReportIcon },
       { href: "/admin/amc", label: "AMC Management", icon: AmcBadge },
       { href: "/admin/customers", label: "Customers", icon: UsersIcon },
+      { href: "/admin/properties", label: "Properties", icon: BuildingIcon },
     ],
   },
   {
@@ -53,6 +61,7 @@ const NAV_GROUPS = [
       { href: "/admin/blog", label: "Blog Posts", icon: ArticleIcon },
       { href: "/admin/testimonials", label: "Testimonials", icon: StarIcon },
       { href: "/admin/projects", label: "Projects", icon: ImageIcon },
+      { href: "/admin/project-categories", label: "Project Categories", icon: ClipboardIcon },
       { href: "/admin/before-after", label: "Before / After", icon: ImageIcon },
     ],
   },
@@ -74,6 +83,20 @@ export default function AdminLayout({ children, title }) {
   const router = useRouter();
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const navRef = useRef(null);
+
+  // Every admin page mounts its own <AdminLayout>, so the sidebar's DOM node
+  // (and its scroll position) resets on every navigation. Persist it across
+  // that remount so clicking a link near the bottom doesn't jump the sidebar
+  // back to the top.
+  useEffect(() => {
+    const saved = sessionStorage.getItem("admin-sidebar-scroll");
+    if (saved && navRef.current) navRef.current.scrollTop = Number(saved);
+  }, []);
+
+  const handleNavScroll = () => {
+    if (navRef.current) sessionStorage.setItem("admin-sidebar-scroll", String(navRef.current.scrollTop));
+  };
 
   const isActive = (item) => (item.exact ? pathname === item.href : pathname.startsWith(item.href));
 
@@ -106,7 +129,11 @@ export default function AdminLayout({ children, title }) {
           </div>
         </div>
 
-        <nav className="scrollbar-dark flex flex-1 flex-col gap-5 overflow-y-auto px-3 py-5">
+        <nav
+          ref={navRef}
+          onScroll={handleNavScroll}
+          className="scrollbar-dark flex flex-1 flex-col gap-5 overflow-y-auto px-3 py-5"
+        >
           {NAV_GROUPS.map((group) => (
             <div key={group.label}>
               <p className="mb-1.5 px-3 text-[10.5px] font-bold uppercase tracking-wider text-white/30">
@@ -157,8 +184,8 @@ export default function AdminLayout({ children, title }) {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col lg:ml-64">
-        <header className="sticky top-0 z-[50] flex h-[60px] items-center justify-between border-b border-line bg-white px-5">
-          <div className="flex min-w-0 items-center gap-3">
+        <header className="sticky top-0 z-[50] flex h-[60px] items-center justify-between gap-2 border-b border-line bg-white px-3 sm:px-5">
+          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             <button
               onClick={() => setMobileOpen((v) => !v)}
               aria-label="Toggle menu"
@@ -166,23 +193,23 @@ export default function AdminLayout({ children, title }) {
             >
               <MenuIcon className="h-[18px] w-[18px] text-ink" />
             </button>
-            <h1 className="truncate text-[15px] font-extrabold text-ink">{title}</h1>
+            <h1 className="truncate text-[14px] font-extrabold text-ink sm:text-[15px]">{title}</h1>
           </div>
-          <div className="flex flex-none items-center gap-2.5">
+          <div className="flex flex-none items-center gap-1.5 sm:gap-2.5">
             <AdminNotificationsBell />
             <a
               href="/"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 rounded-md border border-line px-3.5 py-2 text-[13px] font-semibold text-ink hover:border-ink"
+              className="flex items-center gap-1.5 rounded-md border border-line px-2.5 py-2 text-[13px] font-semibold text-ink hover:border-ink sm:px-3.5"
             >
-              View Site
+              <span className="hidden sm:inline">View Site</span>
               <ExternalLinkIcon className="h-3.5 w-3.5" />
             </a>
           </div>
         </header>
 
-        <main className="flex-1 p-5 lg:p-7">{children}</main>
+        <main className="flex-1 p-3 sm:p-5 lg:p-7">{children}</main>
       </div>
     </div>
   );

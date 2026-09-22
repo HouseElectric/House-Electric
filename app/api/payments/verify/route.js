@@ -41,7 +41,7 @@ export async function POST(request) {
     if (type === "quotation") {
       const result = await fulfillQuotationPayment({ quotationId, orderId, paymentId, customerId: user.id });
       if (!result.ok) return NextResponse.json({ error: result.error }, { status: 400 });
-      return NextResponse.json({ ok: true, invoiceId: result.invoiceId });
+      return NextResponse.json({ ok: true, invoiceId: result.invoiceId, amcSubscriptionId: result.amcSubscriptionId });
     }
 
     if (type === "amc") {

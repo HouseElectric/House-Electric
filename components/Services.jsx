@@ -8,10 +8,16 @@ import { supabase } from "@/lib/supabase";
 import {
   AlertBadge,
   AmcBadge,
+  AwardIcon,
   BoltBadge,
-  InstallBadge,
-  ReportIcon,
+  BuildingIcon,
   GearIcon,
+  HomeIcon,
+  InstallBadge,
+  LightbulbIcon,
+  ReportIcon,
+  ShieldIcon,
+  WrenchIcon,
 } from "./icons";
 
 const ICONS = {
@@ -21,6 +27,12 @@ const ICONS = {
   health: ReportIcon,
   amc: AmcBadge,
   emergency: AlertBadge,
+  audit: AwardIcon,
+  corporate: BuildingIcon,
+  safety: ShieldIcon,
+  lighting: LightbulbIcon,
+  residential: HomeIcon,
+  wiring: WrenchIcon,
   bolt: BoltBadge,
 };
 
@@ -63,7 +75,7 @@ const FALLBACK = [
     price_label: null,
     icon_key: "amc",
     image_url: "/service-amc.png",
-    href: "/services/annual-maintenance-contract-amc",
+    href: "/amc/plans",
   },
   {
     title: "Emergency Electrical Service",

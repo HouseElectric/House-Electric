@@ -1,4 +1,5 @@
 import LegalPageLayout from "@/components/LegalPageLayout";
+import AmcTermsContent from "@/components/AmcTermsContent";
 import { getContactSettings } from "@/lib/getContactSettings";
 
 export const metadata = {
@@ -67,13 +68,8 @@ export default async function TermsPage() {
     },
     {
       id: "amc",
-      title: "Annual Maintenance Contracts (AMC)",
-      body: (
-        <p>
-          AMC coverage, duration and pricing are as described on your AMC plan at the time of activation. AMC
-          benefits apply only to the services explicitly listed in your plan's coverage.
-        </p>
-      ),
+      title: "Annual Maintenance Contract (AMC) Terms",
+      body: <AmcTermsContent />,
     },
     {
       id: "liability",

@@ -17,8 +17,14 @@ export async function POST(request) {
   if (!user) return NextResponse.json({ error: "Not authorized." }, { status: 401 });
 
   const body = await request.json().catch(() => ({}));
-  const { service_type, description, preferred_date, preferred_time, location, photo_url, photo_urls } = body;
+  const { service_type, description, preferred_date, preferred_time, location, property_id, photo_url, photo_urls, video_urls } = body;
   if (!service_type) return NextResponse.json({ error: "Service type is required." }, { status: 400 });
+
+  let validPropertyId = null;
+  if (property_id) {
+    const { data: property } = await supabaseAdmin.from("properties").select("id").eq("id", property_id).eq("customer_id", user.id).maybeSingle();
+    validPropertyId = property?.id || null;
+  }
 
   const { data: created, error } = await supabaseAdmin
     .from("service_requests")
@@ -29,8 +35,10 @@ export async function POST(request) {
         preferred_date: preferred_date || null,
         preferred_time: preferred_time || null,
         location: location || null,
+        property_id: validPropertyId,
         photo_url: photo_url || null,
         photo_urls: photo_urls || [],
+        video_urls: video_urls || [],
         customer_id: user.id,
       },
     ])
@@ -69,8 +77,8 @@ export async function POST(request) {
   }
 
   try {
-    const { email: adminEmail } = await getContactSettings();
-    if (adminEmail) {
+    const { email: adminEmail, notify_new_service_requests } = await getContactSettings();
+    if (adminEmail && notify_new_service_requests !== false) {
       await sendAdminAlertEmail({
         to: adminEmail,
         subject: `New service request ${created.ticket_number}`,

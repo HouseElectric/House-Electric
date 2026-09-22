@@ -6,7 +6,18 @@ import Reveal from "@/components/Reveal";
 import StatsBand from "@/components/StatsBand";
 import WhyChoose from "@/components/WhyChoose";
 import { HomeContentProvider } from "@/contexts/HomeContentContext";
-import { AmcBadge, AwardIcon, CheckCircle, GearIcon, PinIcon, ReportIcon, SearchIcon, ShieldIcon } from "@/components/icons";
+import {
+  AmcBadge,
+  ArrowRightIcon,
+  AwardIcon,
+  CheckCircle,
+  GearIcon,
+  PinIcon,
+  ReportIcon,
+  SearchIcon,
+  ShieldIcon,
+  SparklesIcon,
+} from "@/components/icons";
 import { supabase } from "@/lib/supabase";
 import { getContactSettings } from "@/lib/getContactSettings";
 
@@ -148,72 +159,113 @@ export default async function AboutPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
 
-      <section className="relative overflow-hidden bg-cream">
+      {/* Executive Hero Section */}
+      <section className="relative overflow-hidden bg-cream py-14 sm:py-16 md:py-24 border-b border-line/60">
+        {/* Ambient Luxury Background Lights & Pattern */}
         <div
-          className="absolute inset-0 opacity-[0.06] pointer-events-none"
-          style={{ backgroundImage: "radial-gradient(circle, #141414 1px, transparent 1px)", backgroundSize: "24px 24px" }}
+          className="absolute inset-0 opacity-[0.045] pointer-events-none"
+          style={{ backgroundImage: "radial-gradient(circle, #141414 1.2px, transparent 1.2px)", backgroundSize: "28px 28px" }}
           aria-hidden="true"
         />
-        <div className="glow-blob left-[-8%] top-[-15%] h-[320px] w-[320px] bg-yellow/10 opacity-30" />
-        <div className="glow-blob right-[-6%] bottom-[-18%] h-[280px] w-[280px] bg-amber-400/10 opacity-25" />
+        <div className="pointer-events-none absolute -left-20 -top-20 h-[420px] w-[420px] rounded-full bg-amber-300/15 blur-3xl" />
+        <div className="pointer-events-none absolute -right-20 bottom-0 h-[380px] w-[380px] rounded-full bg-yellow/15 blur-3xl" />
 
-        <div className="relative z-[1] mx-auto grid max-w-wrap grid-cols-1 items-center gap-10 px-6 py-14 md:grid-cols-[1fr_1.05fr] md:gap-14 md:py-20">
-          <div className="relative order-2 md:order-1">
-            <div className="absolute -inset-3 -z-[1] hidden rounded-2xl border-2 border-yellow/50 sm:block md:rounded-3xl" />
-            <div className="relative aspect-[4/3.6] w-full overflow-hidden rounded-2xl shadow-xl ring-1 ring-black/5 md:rounded-3xl">
-              <Image
-                src="/hero-electrician.png"
-                alt="House Electric technician working on a distribution board"
-                fill
-                priority
-                className="object-cover"
-              />
-            </div>
-            <div className="absolute -bottom-5 -right-2 flex items-center gap-3 rounded-2xl border border-line bg-white px-4 py-3 shadow-xl sm:-right-6 sm:px-5 sm:py-4">
-              <span className="grid h-10 w-10 flex-none place-items-center rounded-xl bg-yellow/15 text-yellow-dark">
-                <AwardIcon className="h-5 w-5" strokeWidth="1.8" />
-              </span>
-              <div>
-                <b className="block text-[17px] font-extrabold leading-none text-ink">5+ Years</b>
-                <span className="text-[11px] font-semibold text-ink-soft">Of Trusted Service</span>
+        <div className="relative z-[1] mx-auto grid max-w-wrap grid-cols-1 items-center gap-12 px-6 lg:grid-cols-[1fr_1.1fr] lg:gap-16">
+          {/* Visual Showcase (Image + Badges) */}
+          <div className="relative order-2 lg:order-1">
+            <div className="relative mx-auto max-w-lg lg:max-w-none">
+              {/* Luxury Squircle Glow Frame */}
+              <div className="absolute -inset-3 -z-[1] hidden sm:block rounded-[2.5rem] border border-amber-300/40 bg-gradient-to-tr from-amber-100/40 via-yellow/10 to-transparent shadow-sm" />
+              
+              <div className="relative aspect-[4/3.4] w-full overflow-hidden rounded-3xl shadow-2xl ring-1 ring-black/10">
+                <Image
+                  src="/hero-electrician.png"
+                  alt="House Electric technician working on a distribution board"
+                  fill
+                  priority
+                  className="object-cover"
+                />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60" />
+              </div>
+
+              {/* Top Floating Pill: VIP Verified */}
+              <div className="absolute -top-3 left-4 sm:-top-4 sm:left-6 flex items-center gap-2 rounded-full border border-emerald-200/90 bg-white/95 px-3.5 py-1.5 shadow-md backdrop-blur-md">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                </span>
+                <span className="text-[11px] font-black uppercase tracking-wider text-emerald-900">
+                  Certified &amp; Insured Crew
+                </span>
+              </div>
+
+              {/* Bottom Floating Glass Card: 5+ Years */}
+              <div className="absolute -bottom-5 right-2 sm:-bottom-6 sm:-right-4 flex items-center gap-3.5 rounded-2xl sm:rounded-3xl border border-amber-200/90 bg-white/95 px-4 py-3 sm:px-5 sm:py-4 shadow-xl backdrop-blur-md transition-all hover:scale-105">
+                <span className="grid h-11 w-11 sm:h-12 sm:w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-amber-100 to-yellow/20 text-yellow-dark border border-amber-200/60 shadow-2xs">
+                  <AwardIcon className="h-6 w-6" strokeWidth="2" />
+                </span>
+                <div>
+                  <b className="block text-lg sm:text-xl font-black leading-none text-ink [font-variant-numeric:tabular-nums]">
+                    5+ Years
+                  </b>
+                  <span className="text-[11px] sm:text-xs font-extrabold text-muted">
+                    Of Trusted Service
+                  </span>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="order-1 md:order-2">
-            <p className="eyebrow">About Us — {city}, {state}</p>
-            <h1 className="mb-5 text-[clamp(1.9rem,3.2vw,2.75rem)] font-extrabold leading-[1.15]">
+          {/* Hero Content Column */}
+          <div className="order-1 lg:order-2 space-y-6">
+            <div className="inline-flex items-center gap-2 rounded-full border border-amber-300/90 bg-amber-50/90 px-3.5 py-1 text-xs font-black uppercase tracking-wider text-amber-900 shadow-2xs">
+              <SparklesIcon className="h-3.5 w-3.5 text-yellow-dark" />
+              <span>About Us — {city}, {state}</span>
+            </div>
+
+            <h1 className="text-[clamp(2.1rem,3.8vw,3.2rem)] font-black leading-[1.12] tracking-tight text-ink">
               Building a Professional{" "}
-              <span className="text-yellow">Electrical Maintenance</span> Company in {city}
+              <span className="bg-gradient-to-r from-amber-500 via-yellow to-amber-600 bg-clip-text text-transparent">
+                Electrical Maintenance
+              </span>{" "}
+              Company in {city}
             </h1>
-            <p className="max-w-[52ch] text-[16px]">
+
+            <p className="max-w-[54ch] text-base sm:text-lg leading-relaxed text-body">
               House Electric is growing from a local electrical service provider into a full electrical maintenance
               and AMC company — for homes, businesses and corporate properties across {city}, {state}.
             </p>
 
-            <div className="mt-7 flex flex-wrap gap-3">
+            {/* CTAs */}
+            <div className="flex flex-wrap items-center gap-3.5 pt-1">
               <Link
                 href="/contact"
-                className="inline-flex items-center gap-2 rounded-md bg-yellow px-7 py-4 text-sm font-extrabold text-ink shadow-[0_10px_25px_-5px_rgba(242,176,30,0.4)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-yellow-dark hover:shadow-[0_15px_30px_-5px_rgba(242,176,30,0.6)] sm:px-8"
+                className="group inline-flex items-center justify-center gap-2.5 rounded-2xl bg-yellow px-7 py-4 text-sm font-black text-ink shadow-[0_12px_28px_-6px_rgba(242,176,30,0.5)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-yellow-dark hover:shadow-[0_18px_36px_-6px_rgba(242,176,30,0.65)] active:scale-[0.98]"
               >
-                Book a Service
+                <span>Book a Service</span>
+                <ArrowRightIcon className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
               </Link>
               <Link
                 href="/services"
-                className="inline-flex items-center gap-2 rounded-md border border-line px-7 py-4 text-sm font-bold text-ink transition-colors hover:border-ink"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-300/90 bg-white/95 px-7 py-4 text-sm font-black text-ink shadow-2xs backdrop-blur-xs transition-all duration-200 hover:-translate-y-0.5 hover:border-ink hover:bg-white hover:shadow-xs"
               >
                 View Services
               </Link>
             </div>
 
-            <ul className="mt-8 flex flex-wrap gap-x-5 gap-y-2.5">
-              {["Certified Electricians", "Transparent Pricing", "Same-Day Response"].map((t) => (
-                <li key={t} className="flex items-center gap-1.5 text-[13px] font-semibold text-ink">
-                  <CheckCircle className="h-3.5 w-3.5 text-yellow-dark" />
-                  {t}
-                </li>
-              ))}
-            </ul>
+            {/* Assurances ribbon */}
+            <div className="pt-2 border-t border-line/70">
+              <ul className="flex flex-wrap gap-x-6 gap-y-2.5">
+                {["Certified Electricians", "Transparent Pricing", "Same-Day Response"].map((t) => (
+                  <li key={t} className="inline-flex items-center gap-2 text-xs sm:text-[13px] font-bold text-ink">
+                    <span className="grid h-5 w-5 place-items-center rounded-full bg-emerald-100 text-emerald-700">
+                      <CheckCircle className="h-3.5 w-3.5" />
+                    </span>
+                    <span>{t}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
       </section>
@@ -223,84 +275,119 @@ export default async function AboutPage() {
       </HomeContentProvider>
 
       {/* Our Approach Section */}
-      <section className="py-12 md:py-[80px]">
-        <div className="mx-auto grid max-w-wrap grid-cols-1 items-center gap-8 md:gap-12 px-6 md:grid-cols-[1.2fr_1fr]">
+      <section className="py-16 md:py-24 bg-white">
+        <div className="mx-auto grid max-w-wrap grid-cols-1 items-center gap-10 md:gap-14 px-6 md:grid-cols-[1.15fr_1fr]">
           <Reveal>
-            <p className="eyebrow">Our approach</p>
-            <h2 className="mb-4 text-[clamp(1.65rem,3.2vw,2.4rem)] font-extrabold leading-tight">
+            <div className="inline-flex items-center gap-2 rounded-full border border-amber-300/80 bg-amber-50/80 px-3 py-1 text-xs font-black uppercase tracking-wider text-amber-900 shadow-2xs mb-4">
+              Our approach
+            </div>
+            <h2 className="mb-5 text-[clamp(1.75rem,3.2vw,2.5rem)] font-black leading-tight tracking-tight text-ink">
               House Electric Is Not Just an{" "}
-              <span className="text-yellow">Electrician Service</span>
+              <span className="bg-gradient-to-r from-amber-500 to-yellow-dark bg-clip-text text-transparent">
+                Electrician Service
+              </span>
             </h2>
-            <p className="mb-4 max-w-[60ch] text-[15px] leading-relaxed text-ink-soft">
+            <p className="mb-4 max-w-[60ch] text-[15.5px] leading-relaxed text-body">
               We&apos;re building a professional electrical maintenance company —
               one that helps residential, commercial and corporate customers
               stay safe through a clear, repeatable process instead of
               one-off emergency call-outs.
             </p>
-            <p className="mb-6 max-w-[60ch] text-[15px] leading-relaxed text-ink-soft">
-              Our model is simple: <b className="text-ink">Inspect → Identify → Repair → Maintain</b>.
+            <p className="mb-7 max-w-[60ch] text-[15.5px] leading-relaxed text-body">
+              Our model is simple: <b className="font-black text-ink">Inspect → Identify → Repair → Maintain</b>.
               For recurring customers, that turns a one-time visit into a long-term, safer relationship.
             </p>
 
-            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-[11px] sm:text-[12.5px] font-black tracking-wider uppercase font-mono">
-              <span className="rounded-full border border-yellow/40 bg-yellow/15 px-3 py-1 sm:px-3.5 sm:py-1.5 text-yellow-dark">
-                Inspect
-              </span>
-              <span className="text-yellow font-extrabold">→</span>
-              <span className="rounded-full border border-yellow/40 bg-yellow/15 px-3 py-1 sm:px-3.5 sm:py-1.5 text-yellow-dark">
-                Identify
-              </span>
-              <span className="text-yellow font-extrabold">→</span>
-              <span className="rounded-full border border-yellow/40 bg-yellow/15 px-3 py-1 sm:px-3.5 sm:py-1.5 text-yellow-dark">
-                Repair
-              </span>
-              <span className="text-yellow font-extrabold">→</span>
-              <span className="rounded-full border border-yellow/40 bg-yellow/15 px-3 py-1 sm:px-3.5 sm:py-1.5 text-yellow-dark">
-                Maintain
-              </span>
+            {/* Connected Process Ledger Ribbon */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-3 rounded-3xl border border-slate-200/90 bg-gradient-to-b from-slate-50/70 to-amber-50/30 shadow-2xs">
+              {[
+                { name: "Inspect", num: "01" },
+                { name: "Identify", num: "02" },
+                { name: "Repair", num: "03" },
+                { name: "Maintain", num: "04" },
+              ].map((step, idx) => (
+                <div
+                  key={step.name}
+                  className="relative flex items-center justify-between rounded-2xl border border-white/80 bg-white p-3 shadow-2xs transition-all hover:border-amber-300 hover:shadow-xs"
+                >
+                  <div className="min-w-0">
+                    <span className="block font-mono text-[10px] font-black text-amber-700">
+                      STEP {step.num}
+                    </span>
+                    <b className="block text-xs sm:text-sm font-black text-ink">
+                      {step.name}
+                    </b>
+                  </div>
+                  {idx < 3 && (
+                    <span className="hidden sm:inline font-black text-amber-400 text-xs pl-1">
+                      →
+                    </span>
+                  )}
+                </div>
+              ))}
             </div>
           </Reveal>
 
           <Reveal delay={0.15}>
-            <div className="relative aspect-[4/3.4] w-full overflow-hidden rounded-2xl md:rounded-3xl shadow-xl ring-1 ring-black/5">
-              <Image
-                src="/process-electrician.png"
-                alt="Electrician inspecting a consumer unit"
-                fill
-                className="object-cover"
-              />
+            <div className="relative mx-auto max-w-md md:max-w-none">
+              <div className="absolute -inset-3 -z-[1] hidden sm:block rounded-[2.5rem] border border-slate-200/80 bg-slate-50 shadow-xs" />
+              <div className="relative aspect-[4/3.4] w-full overflow-hidden rounded-3xl shadow-xl ring-1 ring-black/5">
+                <Image
+                  src="/process-electrician.png"
+                  alt="Electrician inspecting a consumer unit"
+                  fill
+                  className="object-cover"
+                />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-70" />
+                <div className="absolute bottom-4 left-4 right-4 rounded-2xl border border-white/20 bg-white/90 p-3.5 backdrop-blur-md shadow-lg">
+                  <span className="block text-[11px] font-black uppercase tracking-wider text-amber-900">
+                    Standardized Engineering Protocols
+                  </span>
+                  <p className="text-xs font-bold text-ink mt-0.5">
+                    Every circuit tested, documented, and certified before sign-off.
+                  </p>
+                </div>
+              </div>
             </div>
           </Reveal>
         </div>
       </section>
 
       {/* Our Model Section */}
-      <section className="bg-cream py-12 md:py-[80px]">
+      <section className="bg-cream py-16 md:py-24 border-y border-line/60">
         <div className="mx-auto max-w-wrap px-6">
-          <Reveal className="mb-8 md:mb-10 max-w-[60ch]">
-            <p className="eyebrow">Our model</p>
-            <h2 className="text-[clamp(1.65rem,3.2vw,2.4rem)] font-extrabold">
-              Inspect. Identify. Repair. <span className="text-yellow">Maintain.</span>
+          <Reveal className="mb-10 md:mb-12 max-w-[62ch]">
+            <div className="inline-flex items-center gap-2 rounded-full border border-amber-300/80 bg-amber-50/80 px-3 py-1 text-xs font-black uppercase tracking-wider text-amber-900 shadow-2xs mb-4">
+              Our model
+            </div>
+            <h2 className="text-[clamp(1.8rem,3.4vw,2.6rem)] font-black tracking-tight text-ink">
+              Inspect. Identify. Repair.{" "}
+              <span className="bg-gradient-to-r from-amber-500 to-yellow-dark bg-clip-text text-transparent">
+                Maintain.
+              </span>
             </h2>
           </Reveal>
 
-          <div className="grid grid-cols-1 gap-4 sm:gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {MODEL_STEPS.map((s, i) => (
-              <Reveal key={s.title} delay={i * 0.1}>
-                <div className="group flex flex-col justify-between rounded-2xl border border-line/80 bg-white p-5 sm:p-6 md:p-7 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-yellow/50 hover:shadow-xl h-full">
+              <Reveal key={s.title} delay={i * 0.08}>
+                <div className="group relative flex flex-col justify-between h-full rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-7 shadow-2xs transition-all duration-300 hover:-translate-y-1.5 hover:border-amber-300 hover:shadow-xl">
+                  {/* Subtle top indicator */}
+                  <div className="pointer-events-none absolute top-0 left-6 right-6 h-1 rounded-b-full bg-gradient-to-r from-transparent via-amber-400/0 to-transparent transition-all duration-300 group-hover:via-amber-400" />
+
                   <div>
-                    <div className="mb-4 flex items-center justify-between">
-                      <span className="grid h-11 w-11 place-items-center rounded-xl bg-yellow/15 text-ink ring-1 ring-yellow/30 transition-colors group-hover:bg-yellow">
-                        <s.icon className="h-5 w-5 text-ink" strokeWidth="1.8" />
+                    <div className="mb-5 flex items-center justify-between">
+                      <span className="grid h-12 w-12 place-items-center rounded-2xl bg-amber-50 border border-amber-200/80 text-yellow-dark shadow-2xs transition-all duration-300 group-hover:bg-yellow group-hover:text-ink group-hover:scale-105">
+                        <s.icon className="h-6 w-6" strokeWidth="1.9" />
                       </span>
-                      <span className="font-mono text-[13px] font-black tracking-widest text-yellow-dark">
+                      <span className="rounded-xl border border-amber-200/70 bg-amber-50/60 px-2.5 py-1 font-mono text-xs font-black tracking-wider text-amber-900">
                         {s.num}
                       </span>
                     </div>
-                    <h3 className="mb-1.5 text-[17px] font-extrabold text-ink">
+                    <h3 className="mb-2 text-lg font-black text-ink transition-colors group-hover:text-amber-950">
                       {s.title}
                     </h3>
-                    <p className="text-[13.5px] leading-relaxed text-ink-soft">
+                    <p className="text-xs sm:text-[13.5px] leading-relaxed text-body">
                       {s.desc}
                     </p>
                   </div>
@@ -312,31 +399,37 @@ export default async function AboutPage() {
       </section>
 
       {/* Recent Work Section */}
-      <section className="py-12 md:py-[80px]">
+      <section className="py-16 md:py-24 bg-white">
         <div className="mx-auto max-w-wrap px-6">
-          <Reveal className="mb-8 md:mb-10 flex flex-col sm:flex-row sm:items-end justify-between gap-3 sm:gap-4">
+          <Reveal className="mb-10 md:mb-12 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div className="max-w-[56ch]">
-              <p className="eyebrow">Proof, not promises</p>
-              <h2 className="text-[clamp(1.65rem,3.2vw,2.4rem)] font-extrabold">
-                Recent <span className="text-yellow">Work</span>
+              <div className="inline-flex items-center gap-2 rounded-full border border-amber-300/80 bg-amber-50/80 px-3 py-1 text-xs font-black uppercase tracking-wider text-amber-900 shadow-2xs mb-4">
+                Proof, not promises
+              </div>
+              <h2 className="text-[clamp(1.8rem,3.4vw,2.6rem)] font-black tracking-tight text-ink">
+                Recent{" "}
+                <span className="bg-gradient-to-r from-amber-500 to-yellow-dark bg-clip-text text-transparent">
+                  Work
+                </span>
               </h2>
             </div>
             <Link
               href="/projects"
-              className="inline-flex items-center gap-1.5 whitespace-nowrap text-[13.5px] font-bold text-ink hover:text-yellow-dark"
+              className="group inline-flex items-center gap-2 rounded-2xl border border-slate-200/90 bg-white px-5 py-2.5 text-xs sm:text-[13px] font-black text-ink shadow-2xs transition-all hover:border-ink hover:bg-slate-50 hover:shadow-xs w-fit"
             >
-              View all projects
+              <span>View all projects</span>
+              <ArrowRightIcon className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
             </Link>
           </Reveal>
 
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3.5 sm:gap-5 sm:grid-cols-4">
             {recentWork.map((p, i) => {
               const isLocal = p.image_url?.startsWith("/");
               return (
                 <Reveal
                   key={p.id || p.title}
-                  delay={i * 0.08}
-                  className="card-hover group overflow-hidden rounded-xl border border-line bg-white"
+                  delay={i * 0.07}
+                  className="group relative overflow-hidden rounded-2xl sm:rounded-3xl border border-slate-200/80 bg-slate-100 shadow-2xs transition-all duration-500 hover:-translate-y-1.5 hover:border-amber-300 hover:shadow-xl"
                 >
                   <div className="relative aspect-[4/3] overflow-hidden">
                     {isLocal ? (
@@ -344,20 +437,29 @@ export default async function AboutPage() {
                         src={p.image_url}
                         alt={p.title}
                         fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-108"
                       />
                     ) : (
                       <img
                         src={p.image_url}
                         alt={p.title}
-                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-108"
                       />
                     )}
+                    {/* Gradient overlay */}
+                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-80 transition-opacity duration-300 group-hover:opacity-90" />
+
                     {p.category && (
-                      <span className="absolute left-2 top-2 sm:left-2.5 sm:top-2.5 rounded-full bg-white/90 px-2 sm:px-2.5 py-0.5 sm:py-1 text-[9.5px] sm:text-[10.5px] font-bold text-ink truncate max-w-[85%]">
+                      <span className="absolute left-2.5 top-2.5 sm:left-3 sm:top-3 rounded-full border border-white/40 bg-white/90 backdrop-blur-md px-2.5 py-0.5 sm:py-1 text-[10px] sm:text-[11px] font-black text-ink shadow-2xs truncate max-w-[85%]">
                         {p.category}
                       </span>
                     )}
+
+                    <div className="absolute bottom-2.5 left-2.5 right-2.5 sm:bottom-3 sm:left-3 sm:right-3">
+                      <b className="block text-xs sm:text-sm font-extrabold text-white leading-tight drop-shadow-sm truncate">
+                        {p.title}
+                      </b>
+                    </div>
                   </div>
                 </Reveal>
               );
@@ -367,12 +469,17 @@ export default async function AboutPage() {
       </section>
 
       {/* Safety & Compliance Section */}
-      <section className="py-12 md:py-[80px]">
+      <section className="py-16 md:py-24 bg-cream/60 border-t border-line/60">
         <div className="mx-auto max-w-wrap px-6">
-          <Reveal className="mb-8 md:mb-10 max-w-[62ch]">
-            <p className="eyebrow">Safety &amp; compliance</p>
-            <h2 className="text-[clamp(1.65rem,3.2vw,2.4rem)] font-extrabold">
-              How We Keep Every Job <span className="text-yellow">Safe</span>
+          <Reveal className="mb-10 md:mb-12 max-w-[62ch]">
+            <div className="inline-flex items-center gap-2 rounded-full border border-amber-300/80 bg-amber-50/80 px-3 py-1 text-xs font-black uppercase tracking-wider text-amber-900 shadow-2xs mb-4">
+              Safety &amp; compliance
+            </div>
+            <h2 className="text-[clamp(1.8rem,3.4vw,2.6rem)] font-black tracking-tight text-ink">
+              How We Keep Every Job{" "}
+              <span className="bg-gradient-to-r from-amber-500 to-yellow-dark bg-clip-text text-transparent">
+                Safe
+              </span>
             </h2>
           </Reveal>
 
@@ -385,14 +492,18 @@ export default async function AboutPage() {
               { icon: AwardIcon, title: "GST Invoice", desc: "Transparent, GST-compliant invoicing for all completed work." },
               { icon: GearIcon, title: "Genuine Parts", desc: "Standard, reliable electrical components used across our work." },
             ].map((f, i) => (
-              <Reveal key={f.title} delay={i * 0.06}>
-                <div className="flex h-full items-start gap-3.5 rounded-2xl border border-line/80 bg-white p-5 shadow-sm">
-                  <span className="grid h-10 w-10 flex-none place-items-center rounded-xl bg-yellow/15 text-ink ring-1 ring-yellow/30">
-                    <f.icon className="h-5 w-5" strokeWidth="1.8" />
+              <Reveal key={f.title} delay={i * 0.05}>
+                <div className="group flex h-full items-start gap-4 rounded-3xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-2xs transition-all duration-300 hover:-translate-y-1 hover:border-amber-300 hover:shadow-md">
+                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-amber-50 border border-amber-200/80 text-yellow-dark shadow-2xs transition-all duration-300 group-hover:bg-yellow group-hover:text-ink group-hover:scale-105">
+                    <f.icon className="h-5 w-5" strokeWidth="1.9" />
                   </span>
                   <div>
-                    <b className="mb-1 block text-[14.5px] text-ink">{f.title}</b>
-                    <p className="text-[13px] leading-relaxed text-ink-soft">{f.desc}</p>
+                    <b className="mb-1.5 block text-sm sm:text-base font-black text-ink transition-colors group-hover:text-amber-950">
+                      {f.title}
+                    </b>
+                    <p className="text-xs sm:text-[13px] leading-relaxed text-body">
+                      {f.desc}
+                    </p>
                   </div>
                 </div>
               </Reveal>
@@ -402,25 +513,33 @@ export default async function AboutPage() {
       </section>
 
       {/* Where We Work Section */}
-      <section className="relative overflow-hidden bg-cream py-12 md:py-[80px]">
-        <div className="glow-blob left-[-8%] top-[10%] h-[300px] w-[300px] bg-yellow/10 opacity-30" />
+      <section className="relative overflow-hidden bg-cream py-16 md:py-24 border-t border-line/60">
+        <div className="pointer-events-none absolute -left-20 top-10 h-72 w-72 rounded-full bg-yellow/15 blur-3xl" />
+        <div className="pointer-events-none absolute -right-20 bottom-10 h-72 w-72 rounded-full bg-amber-400/15 blur-3xl" />
+
         <div className="relative z-[1] mx-auto max-w-wrap px-6">
-          <Reveal className="mb-8 md:mb-10 max-w-[62ch]">
-            <p className="eyebrow">Where we work</p>
-            <h2 className="text-[clamp(1.65rem,3.2vw,2.4rem)] font-extrabold">
-              Electrical Services Across <span className="text-yellow">{city}</span> & Nearby Areas
+          <Reveal className="mb-10 md:mb-12 max-w-[62ch]">
+            <div className="inline-flex items-center gap-2 rounded-full border border-amber-300/80 bg-amber-50/80 px-3 py-1 text-xs font-black uppercase tracking-wider text-amber-900 shadow-2xs mb-4">
+              Where we work
+            </div>
+            <h2 className="text-[clamp(1.8rem,3.4vw,2.6rem)] font-black tracking-tight text-ink">
+              Electrical Services Across{" "}
+              <span className="bg-gradient-to-r from-amber-500 to-yellow-dark bg-clip-text text-transparent">
+                {city}
+              </span>{" "}
+              &amp; Nearby Areas
             </h2>
-            <p className="mt-3 max-w-[58ch] text-[15px] leading-relaxed text-ink-soft">
+            <p className="mt-3 max-w-[58ch] text-[15.5px] leading-relaxed text-body">
               House Electric provides electrical repair, installation, maintenance and AMC services
               throughout {city}, {state} — including these localities.
             </p>
           </Reveal>
 
-          <div className="grid grid-cols-2 gap-2.5 sm:gap-3 sm:grid-cols-3 md:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-3.5 sm:grid-cols-3 md:grid-cols-4">
             {areas.map((a, i) => (
-              <Reveal key={a} delay={(i % 8) * 0.04}>
-                <div className="card-hover flex items-center gap-2 sm:gap-2.5 rounded-xl border border-line/80 bg-white px-3 py-2.5 sm:px-4 sm:py-3.5 text-[12.5px] sm:text-[13.5px] font-bold text-ink transition-all duration-200 hover:border-yellow/50 hover:shadow-md min-w-0">
-                  <span className="grid h-6 w-6 sm:h-7 sm:w-7 flex-none place-items-center rounded-full bg-yellow/15 text-yellow-dark">
+              <Reveal key={a} delay={(i % 8) * 0.03}>
+                <div className="group/pin flex items-center gap-3 rounded-2xl border border-slate-200/90 bg-white/95 px-4 py-3 sm:px-4 sm:py-3.5 text-xs sm:text-[13.5px] font-black text-ink shadow-2xs backdrop-blur-xs transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-400 hover:bg-white hover:shadow-xs min-w-0">
+                  <span className="grid h-7 w-7 shrink-0 place-items-center rounded-xl bg-amber-50 border border-amber-200/70 text-yellow-dark transition-transform group-hover/pin:scale-110">
                     <PinIcon className="h-3.5 w-3.5" />
                   </span>
                   <span className="truncate">{a}</span>
@@ -429,30 +548,38 @@ export default async function AboutPage() {
             ))}
           </div>
 
-          <Link
-            href="/service-areas"
-            className="mt-6 sm:mt-8 inline-flex items-center gap-1.5 text-[13.5px] font-bold text-ink hover:text-yellow-dark"
-          >
-            View all service areas
-          </Link>
+          <div className="mt-8 sm:mt-10">
+            <Link
+              href="/service-areas"
+              className="group inline-flex items-center gap-2 rounded-2xl border border-slate-300/90 bg-white px-5 py-3 text-xs sm:text-[13px] font-black text-ink shadow-2xs transition-all hover:border-ink hover:shadow-xs"
+            >
+              <span>View all service areas</span>
+              <ArrowRightIcon className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+            </Link>
+          </div>
         </div>
       </section>
 
       {/* Frequently Asked Questions Section */}
-      <section className="relative overflow-hidden py-12 md:py-[80px]">
-        <div className="glow-blob right-[-6%] bottom-[-10%] h-[280px] w-[280px] bg-amber-400/10 opacity-25" />
+      <section className="relative overflow-hidden py-16 md:py-24 bg-white border-t border-line/60">
+        <div className="pointer-events-none absolute -right-20 bottom-0 h-80 w-80 rounded-full bg-amber-300/10 blur-3xl" />
         <div className="relative z-[1] mx-auto max-w-wrap px-6">
-          <Reveal className="mb-8 md:mb-10 max-w-[60ch]">
-            <p className="eyebrow">Common questions</p>
-            <h2 className="text-[clamp(1.65rem,3.2vw,2.4rem)] font-extrabold">
-              Frequently Asked <span className="text-yellow">Questions</span>
+          <Reveal className="mb-10 md:mb-12 max-w-[60ch]">
+            <div className="inline-flex items-center gap-2 rounded-full border border-amber-300/80 bg-amber-50/80 px-3 py-1 text-xs font-black uppercase tracking-wider text-amber-900 shadow-2xs mb-4">
+              Common questions
+            </div>
+            <h2 className="text-[clamp(1.8rem,3.4vw,2.6rem)] font-black tracking-tight text-ink">
+              Frequently Asked{" "}
+              <span className="bg-gradient-to-r from-amber-500 to-yellow-dark bg-clip-text text-transparent">
+                Questions
+              </span>
             </h2>
           </Reveal>
           <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2">
-            <Reveal delay={0.1}>
+            <Reveal delay={0.08}>
               <FAQAccordion items={faqs.slice(0, 3)} />
             </Reveal>
-            <Reveal delay={0.18}>
+            <Reveal delay={0.16}>
               <FAQAccordion items={faqs.slice(3)} defaultOpen={-1} />
             </Reveal>
           </div>

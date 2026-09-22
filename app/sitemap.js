@@ -14,6 +14,7 @@ const STATIC_PATHS = [
   { path: "/about", priority: 0.8, changeFrequency: "monthly" },
   { path: "/services", priority: 0.9, changeFrequency: "weekly" },
   { path: "/amc/plans", priority: 0.9, changeFrequency: "weekly" },
+  { path: "/health-check", priority: 0.8, changeFrequency: "weekly" },
   { path: "/corporate", priority: 0.7, changeFrequency: "monthly" },
   { path: "/projects", priority: 0.6, changeFrequency: "weekly" },
   { path: "/reviews", priority: 0.6, changeFrequency: "weekly" },

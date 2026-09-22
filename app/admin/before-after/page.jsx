@@ -7,9 +7,50 @@ import AdminLayout from "@/components/admin/AdminLayout";
 import { ImageUploadField } from "@/components/admin/FormKit";
 import { supabase } from "@/lib/supabase";
 import { uploadImage, imagekitConfigured } from "@/lib/imagekit";
-import { EditIcon, ImageIcon, PlusIcon, TrashIcon } from "@/components/icons";
+import { CheckCircle, EditIcon, EyeOffIcon, ImageIcon, PlusIcon, SparklesIcon, TrashIcon } from "@/components/icons";
 
 const EMPTY = { title: "", before_image_url: "", after_image_url: "", display_order: 0, active: true };
+
+function CountUp({ value }) {
+  const [display, setDisplay] = useState(0);
+  useEffect(() => {
+    if (typeof value !== "number") return;
+    let frame;
+    const duration = 700;
+    const start = performance.now();
+    const tick = (now) => {
+      const progress = Math.min((now - start) / duration, 1);
+      setDisplay(Math.round(value * (1 - Math.pow(1 - progress, 3))));
+      if (progress < 1) frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [value]);
+  return typeof value === "number" ? display : value;
+}
+
+function StatCard({ label, value, icon: Icon, cls, glow, accent, delay = 0 }) {
+  return (
+    <div
+      style={{ animationDelay: `${delay}s` }}
+      className="card-hover group relative isolate overflow-hidden rounded-2xl border border-line bg-white p-4 opacity-0 animate-fade-up"
+    >
+      <span className={`absolute inset-x-0 top-0 h-[3px] origin-left scale-x-0 bg-gradient-to-r ${accent} transition-transform duration-300 ease-out group-hover:scale-x-100`} />
+      <span className={`pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-100 ${glow}`} />
+      <div className="relative flex items-start justify-between gap-2.5">
+        <div className="min-w-0">
+          <p className="text-[11.5px] font-semibold text-body">{label}</p>
+          <b className="mt-1 block text-[17px] font-black leading-none tabular-nums text-ink sm:text-[24px]">
+            <CountUp value={value} />
+          </b>
+        </div>
+        <span className={`grid h-9 w-9 flex-none place-items-center rounded-xl shadow-sm ring-4 ring-white transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 ${cls}`}>
+          <Icon className="h-4 w-4" />
+        </span>
+      </div>
+    </div>
+  );
+}
 
 export default function AdminBeforeAfterPage() {
   const [items, setItems] = useState([]);
@@ -94,29 +135,72 @@ export default function AdminBeforeAfterPage() {
     fetchItems();
   };
 
+  const liveCount = items.filter((i) => i.active).length;
+  const hiddenCount = items.filter((i) => !i.active).length;
+
   return (
     <AdminGuard>
       <AdminLayout title="Before / After Photos">
-        <p className="mb-6 max-w-[65ch] text-[13.5px] text-body">
-          Real before/after photos of your completed work. Shown as an interactive slider on the homepage —
-          only real, genuine project photos should be added here.
-        </p>
+        <div className="relative mb-6 overflow-hidden rounded-2xl bg-ink px-6 py-7 sm:px-8 sm:py-8">
+          <span className="glow-blob -right-14 -top-20 h-56 w-56 bg-yellow/25" />
+          <span className="glow-blob -bottom-24 -left-10 h-48 w-48 bg-yellow/10" style={{ animationDelay: "2.2s" }} />
+          <div className="relative z-10">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-yellow/30 bg-yellow/10 px-3 py-1 text-[10.5px] font-bold uppercase tracking-wider text-yellow">
+              <SparklesIcon className="h-3 w-3" /> Gallery
+            </span>
+            <h2 className="mt-3 text-[21px] font-extrabold text-white sm:text-[25px]">Before / After Photos</h2>
+            <p className="mt-1.5 max-w-[56ch] text-[13.5px] text-white/55">
+              Real before/after photos of your completed work. Shown as an interactive slider on the homepage —
+              only real, genuine project photos should be added here.
+            </p>
+          </div>
+        </div>
+
+        <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <StatCard
+            label="Total Comparisons"
+            value={items.length}
+            icon={ImageIcon}
+            cls="bg-ink text-yellow"
+            glow="bg-yellow"
+            accent="from-yellow to-amber-500"
+            delay={0}
+          />
+          <StatCard
+            label="Live on Site"
+            value={liveCount}
+            icon={CheckCircle}
+            cls="bg-emerald-50 text-emerald-600"
+            glow="bg-emerald-400"
+            accent="from-emerald-400 to-teal-500"
+            delay={0.06}
+          />
+          <StatCard
+            label="Hidden"
+            value={hiddenCount}
+            icon={EyeOffIcon}
+            cls="bg-slate-100 text-slate-600"
+            glow="bg-slate-400"
+            accent="from-slate-400 to-slate-500"
+            delay={0.12}
+          />
+        </div>
 
         {form ? (
-          <form onSubmit={save} className="max-w-xl space-y-4 rounded-2xl border border-line bg-white p-6">
+          <form onSubmit={save} className="max-w-xl space-y-4 rounded-2xl border border-line bg-white p-6 shadow-sm">
             <div>
               <label className="mb-1.5 block text-[12px] font-semibold text-body">Title (optional)</label>
               <input
                 value={form.title}
                 onChange={(e) => set("title", e.target.value)}
                 placeholder="e.g. DB Panel Upgrade"
-                className="w-full rounded-md border border-line px-3 py-2.5 text-[13.5px] outline-none focus:border-ink"
+                className="w-full rounded-md border border-line px-3 py-2.5 text-[13.5px] outline-none transition-colors focus:border-ink focus:ring-2 focus:ring-ink/5"
               />
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <ImageUploadField label="Before Photo *" value={form.before_image_url} uploading={uploadingBefore} onUpload={uploadBefore} aspect="aspect-square" />
-              <ImageUploadField label="After Photo *" value={form.after_image_url} uploading={uploadingAfter} onUpload={uploadAfter} aspect="aspect-square" />
+              <ImageUploadField label="Before Photo *" value={form.before_image_url} uploading={uploadingBefore} onUpload={uploadBefore} aspect="aspect-[3/2]" />
+              <ImageUploadField label="After Photo *" value={form.after_image_url} uploading={uploadingAfter} onUpload={uploadAfter} aspect="aspect-[3/2]" />
             </div>
             {!imagekitConfigured && <p className="text-[11px] font-bold text-red-500">⚠ ImageKit not configured</p>}
 
@@ -127,7 +211,7 @@ export default function AdminBeforeAfterPage() {
                   type="number"
                   value={form.display_order}
                   onChange={(e) => set("display_order", e.target.value)}
-                  className="w-full rounded-md border border-line px-3 py-2.5 text-[13.5px] outline-none focus:border-ink"
+                  className="w-full rounded-md border border-line px-3 py-2.5 text-[13.5px] outline-none transition-colors focus:border-ink focus:ring-2 focus:ring-ink/5"
                 />
               </div>
               <label className="flex items-center gap-2 pt-5 text-[13px] font-semibold text-ink">
@@ -140,14 +224,14 @@ export default function AdminBeforeAfterPage() {
               <button
                 type="submit"
                 disabled={saving}
-                className="rounded-md bg-yellow px-6 py-3 text-[13.5px] font-extrabold text-ink hover:bg-yellow-dark disabled:opacity-60"
+                className="rounded-md bg-yellow px-6 py-3 text-[13.5px] font-extrabold text-ink transition-all hover:-translate-y-0.5 hover:bg-yellow-dark hover:shadow-md disabled:translate-y-0 disabled:opacity-60 disabled:shadow-none"
               >
                 {saving ? "Saving…" : "Save"}
               </button>
               <button
                 type="button"
                 onClick={() => setForm(null)}
-                className="rounded-md border border-line px-6 py-3 text-[13.5px] font-semibold text-body hover:border-ink/40"
+                className="rounded-md border border-line px-6 py-3 text-[13.5px] font-semibold text-body transition-colors hover:border-ink/40"
               >
                 Cancel
               </button>
@@ -157,7 +241,7 @@ export default function AdminBeforeAfterPage() {
           <>
             <button
               onClick={() => setForm({ ...EMPTY, display_order: items.length })}
-              className="mb-5 flex items-center gap-1.5 rounded-md bg-yellow px-6 py-3 text-[14px] font-bold text-ink hover:bg-yellow-dark"
+              className="mb-5 flex items-center gap-1.5 rounded-md bg-yellow px-6 py-3 text-[14px] font-bold text-ink transition-all hover:-translate-y-0.5 hover:bg-yellow-dark hover:shadow-md"
             >
               <PlusIcon className="h-4 w-4" />
               Add Before / After
@@ -173,17 +257,38 @@ export default function AdminBeforeAfterPage() {
             ) : (
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {items.map((item) => (
-                  <div key={item.id} className="overflow-hidden rounded-2xl border border-line bg-white">
-                    <div className="grid grid-cols-2">
-                      <img src={item.before_image_url} alt="Before" className="aspect-square w-full object-cover" />
-                      <img src={item.after_image_url} alt="After" className="aspect-square w-full object-cover" />
+                  <div
+                    key={item.id}
+                    className="group overflow-hidden rounded-2xl border border-line bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
+                  >
+                    <div className="grid grid-cols-2 gap-0.5 bg-line">
+                      <div className="relative overflow-hidden">
+                        <img
+                          src={item.before_image_url}
+                          alt="Before"
+                          className="aspect-[3/2] w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                        <span className="absolute left-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
+                          Before
+                        </span>
+                      </div>
+                      <div className="relative overflow-hidden">
+                        <img
+                          src={item.after_image_url}
+                          alt="After"
+                          className="aspect-[3/2] w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                        <span className="absolute left-2 top-2 rounded-full bg-yellow px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-ink">
+                          After
+                        </span>
+                      </div>
                     </div>
                     <div className="flex items-center justify-between gap-2 p-4">
                       <div className="min-w-0">
                         <b className="block truncate text-[13.5px] text-ink">{item.title || "Untitled"}</b>
                         <button
                           onClick={() => toggleActive(item)}
-                          className={`mt-1 rounded-full px-2 py-0.5 text-[10.5px] font-bold ${item.active ? "bg-emerald-50 text-emerald-700" : "bg-gray-100 text-gray-500"}`}
+                          className={`mt-1 rounded-full px-2 py-0.5 text-[10.5px] font-bold transition-colors ${item.active ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100" : "bg-gray-100 text-gray-500 hover:bg-gray-200"}`}
                         >
                           {item.active ? "Live" : "Hidden"}
                         </button>
@@ -200,11 +305,11 @@ export default function AdminBeforeAfterPage() {
                               active: item.active,
                             })
                           }
-                          className="text-ink hover:opacity-70"
+                          className="text-ink transition-opacity hover:opacity-70"
                         >
                           <EditIcon className="h-4 w-4" />
                         </button>
-                        <button onClick={() => remove(item.id)} className="text-red-400 hover:text-red-600">
+                        <button onClick={() => remove(item.id)} className="text-red-400 transition-colors hover:text-red-600">
                           <TrashIcon className="h-4 w-4" />
                         </button>
                       </div>

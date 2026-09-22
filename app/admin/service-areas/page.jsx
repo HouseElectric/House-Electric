@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import AdminGuard from "@/components/admin/AdminGuard";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/lib/supabase";
-import { MapIcon, PlusIcon, PinIcon, EditIcon, XIcon, CheckCircle } from "@/components/icons";
+import { MapIcon, PlusIcon, PinIcon, EditIcon, XIcon, CheckCircle, SparklesIcon, ClipboardIcon } from "@/components/icons";
 
 export default function AdminServiceAreasPage() {
   const [areas, setAreas] = useState([]);
@@ -73,21 +73,49 @@ export default function AdminServiceAreasPage() {
   return (
     <AdminGuard>
       <AdminLayout title="Service Areas">
-        <p className="mb-6 max-w-[65ch] text-[13.5px] text-body">
-          These localities appear on the public{" "}
-          <a href="/service-areas" target="_blank" rel="noopener noreferrer" className="font-semibold text-ink underline">
-            Service Areas
-          </a>{" "}
-          page. Add a new area whenever you expand coverage.
-        </p>
+        <div className="relative mb-6 overflow-hidden rounded-2xl bg-ink px-6 py-7 sm:px-8 sm:py-8">
+          <span className="glow-blob -right-14 -top-20 h-56 w-56 bg-yellow/25" />
+          <span className="glow-blob -bottom-24 -left-10 h-48 w-48 bg-yellow/10" style={{ animationDelay: "2.2s" }} />
+          <div className="relative z-10">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-yellow/30 bg-yellow/10 px-3 py-1 text-[10.5px] font-bold uppercase tracking-wider text-yellow">
+              <SparklesIcon className="h-3 w-3" /> Settings
+            </span>
+            <h2 className="mt-3 text-[21px] font-extrabold text-white sm:text-[25px]">Service Areas</h2>
+            <p className="mt-1.5 max-w-[56ch] text-[13.5px] text-white/55">
+              These localities appear on the public{" "}
+              <a href="/service-areas" target="_blank" rel="noopener noreferrer" className="font-semibold text-white underline decoration-white/40 underline-offset-2 hover:decoration-white">
+                Service Areas
+              </a>{" "}
+              page. Add a new area whenever you expand coverage.
+            </p>
+          </div>
+        </div>
 
         <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <div className="card-hover rounded-2xl border border-line bg-white p-4 opacity-0 animate-fade-up">
-            <div className="mb-2.5 grid h-9 w-9 place-items-center rounded-lg bg-ink text-yellow">
+          <div
+            className="card-hover group relative isolate overflow-hidden rounded-2xl border border-line bg-white p-4 opacity-0 animate-fade-up"
+          >
+            <span className="absolute inset-x-0 top-0 h-[3px] origin-left scale-x-0 bg-gradient-to-r from-yellow to-amber-500 transition-transform duration-300 ease-out group-hover:scale-x-100" />
+            <span className="pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full bg-yellow opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-100" />
+            <div className="relative mb-2.5 grid h-9 w-9 place-items-center rounded-lg bg-ink text-yellow shadow-sm ring-4 ring-white transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
               <MapIcon className="h-4 w-4" />
             </div>
             <div className="text-[11.5px] font-semibold text-body">Total Areas</div>
-            <div className="mt-0.5 text-[22px] font-extrabold tabular-nums text-ink">{areas.length}</div>
+            <div className="mt-0.5 text-[16px] font-extrabold tabular-nums text-ink sm:text-[22px]">{areas.length}</div>
+          </div>
+          <div
+            style={{ animationDelay: "0.06s" }}
+            className="card-hover group relative isolate overflow-hidden rounded-2xl border border-line bg-white p-4 opacity-0 animate-fade-up"
+          >
+            <span className="absolute inset-x-0 top-0 h-[3px] origin-left scale-x-0 bg-gradient-to-r from-emerald-400 to-teal-500 transition-transform duration-300 ease-out group-hover:scale-x-100" />
+            <span className="pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full bg-emerald-400 opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-100" />
+            <div className="relative mb-2.5 grid h-9 w-9 place-items-center rounded-lg bg-emerald-50 text-emerald-600 shadow-sm ring-4 ring-white transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+              <ClipboardIcon className="h-4 w-4" />
+            </div>
+            <div className="text-[11.5px] font-semibold text-body">With Local Notes</div>
+            <div className="mt-0.5 text-[16px] font-extrabold tabular-nums text-ink sm:text-[22px]">
+              {areas.filter((a) => a.local_note?.trim()).length}
+            </div>
           </div>
         </div>
 
@@ -164,7 +192,7 @@ export default function AdminServiceAreasPage() {
                       aria-label={`Remove ${a.name}`}
                       className="grid h-5 w-5 place-items-center rounded-full text-body transition-colors hover:bg-red-100 hover:text-red-500"
                     >
-                      ×
+                      <XIcon className="h-3 w-3" />
                     </button>
                   </span>
                 ))}

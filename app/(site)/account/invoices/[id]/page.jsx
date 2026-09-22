@@ -10,7 +10,7 @@ import { startPayment } from "@/lib/payments";
 import DocumentTemplate from "@/components/DocumentTemplate";
 import ResponsiveDocumentWrapper from "@/components/ResponsiveDocumentWrapper";
 import Reveal from "@/components/Reveal";
-import { AlertIcon, ArrowLeftIcon, PhoneIcon, PrinterIcon, WhatsAppIcon } from "@/components/icons";
+import { AlertIcon, ArrowLeftIcon, PhoneIcon, PrinterIcon, WalletIcon, WhatsAppIcon } from "@/components/icons";
 
 const STATUS_META = {
   pending: { label: "Pending", color: "#b45309" },
@@ -94,14 +94,28 @@ export default function InvoiceDetailPage() {
           <span className="sm:hidden">Back</span>
           <span className="hidden sm:inline">Back to Invoices</span>
         </button>
-        <button
-          onClick={() => window.print()}
-          className="inline-flex flex-none items-center gap-2 whitespace-nowrap rounded-xl border border-line bg-white px-4 py-2.5 text-xs font-black text-ink shadow-2xs transition-all hover:border-ink"
-        >
-          <PrinterIcon className="h-4 w-4 flex-none" />
-          <span className="sm:hidden">Print</span>
-          <span className="hidden sm:inline">Print / Save as PDF</span>
-        </button>
+
+        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+          {balance > 0 && invoice.payment_status !== "paid" && (
+            <button
+              onClick={handlePayNow}
+              disabled={paying}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-yellow px-4 py-2 text-xs font-black text-ink shadow-sm transition-all hover:bg-yellow-dark hover:shadow-md active:scale-[0.99] disabled:opacity-60"
+            >
+              <WalletIcon className="h-3.5 w-3.5" />
+              <span>{paying ? "Opening payment…" : `Pay ₹${balance.toLocaleString("en-IN")} Now`}</span>
+            </button>
+          )}
+
+          <button
+            onClick={() => window.print()}
+            className="inline-flex flex-none items-center gap-2 whitespace-nowrap rounded-xl border border-line bg-white px-3.5 sm:px-4 py-2 text-xs font-black text-ink shadow-2xs transition-all hover:border-ink"
+          >
+            <PrinterIcon className="h-4 w-4 flex-none" />
+            <span className="sm:hidden">Print</span>
+            <span className="hidden sm:inline">Print / Save as PDF</span>
+          </button>
+        </div>
       </div>
 
       <Reveal y={12}>

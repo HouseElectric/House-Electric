@@ -1,5 +1,8 @@
 import CorporateContent from "./CorporateContent";
 import { getContactSettings } from "@/lib/getContactSettings";
+import { supabase } from "@/lib/supabase";
+
+export const revalidate = 60;
 
 export async function generateMetadata() {
   const { city, state } = await getContactSettings();
@@ -10,6 +13,13 @@ export async function generateMetadata() {
   };
 }
 
-export default function CorporatePage() {
-  return <CorporateContent />;
+async function getServiceDetail() {
+  if (!supabase) return null;
+  const { data } = await supabase.from("services").select("*").eq("slug", "corporate-amc-solutions").eq("active", true).maybeSingle();
+  return data;
+}
+
+export default async function CorporatePage() {
+  const service = await getServiceDetail();
+  return <CorporateContent service={service} />;
 }

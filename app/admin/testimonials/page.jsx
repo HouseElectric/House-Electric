@@ -8,6 +8,48 @@ import { ImageUploadField } from "@/components/admin/FormKit";
 import { supabase } from "@/lib/supabase";
 import { uploadImage, imagekitConfigured } from "@/lib/imagekit";
 import { EditIcon, StarIcon, TrashIcon, UsersIcon, CheckCircle, SparklesIcon } from "@/components/icons";
+import { avatarGradient } from "@/components/admin/CustomerPicker";
+
+function CountUp({ value, format = (v) => v }) {
+  const [display, setDisplay] = useState(0);
+  useEffect(() => {
+    if (typeof value !== "number") return;
+    let frame;
+    const duration = 700;
+    const start = performance.now();
+    const tick = (now) => {
+      const progress = Math.min((now - start) / duration, 1);
+      setDisplay(Math.round(value * (1 - Math.pow(1 - progress, 3))));
+      if (progress < 1) frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [value]);
+  return typeof value === "number" ? format(display) : value;
+}
+
+function StatCard({ label, value, icon: Icon, cls, glow, accent, delay = 0 }) {
+  return (
+    <div
+      style={{ animationDelay: `${delay}s` }}
+      className="card-hover group relative isolate overflow-hidden rounded-2xl border border-line bg-white p-4 opacity-0 animate-fade-up"
+    >
+      <span className={`absolute inset-x-0 top-0 h-[3px] origin-left scale-x-0 bg-gradient-to-r ${accent} transition-transform duration-300 ease-out group-hover:scale-x-100`} />
+      <span className={`pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-100 ${glow}`} />
+      <div className="relative flex items-start justify-between gap-2.5">
+        <div className="min-w-0">
+          <p className="text-[11.5px] font-semibold text-body">{label}</p>
+          <b className="mt-1 block text-[17px] font-black leading-none tabular-nums text-ink sm:text-[24px]">
+            <CountUp value={value} />
+          </b>
+        </div>
+        <span className={`grid h-9 w-9 flex-none place-items-center rounded-xl shadow-sm ring-4 ring-white transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 ${cls}`}>
+          <Icon className="h-4 w-4" />
+        </span>
+      </div>
+    </div>
+  );
+}
 
 const EMPTY = { name: "", role: "", text: "", rating: 5, avatar_url: "", published: true };
 const EMPTY_GOOGLE = { rating: "", reviewCount: "", profileUrl: "" };
@@ -122,26 +164,67 @@ export default function AdminTestimonialsPage() {
   return (
     <AdminGuard>
       <AdminLayout title="Testimonials">
-        <p className="mb-5 max-w-[65ch] text-[13.5px] text-body">
-          Customer reviews shown in the "What Our Customers Say" section on the homepage. Add, edit,
-          publish/hide or delete them here.
-        </p>
+        <div className="relative mb-6 overflow-hidden rounded-2xl bg-ink px-6 py-7 sm:px-8 sm:py-8">
+          <span className="glow-blob -right-14 -top-20 h-56 w-56 bg-yellow/25" />
+          <span className="glow-blob -bottom-24 -left-10 h-48 w-48 bg-yellow/10" style={{ animationDelay: "2.2s" }} />
+          <div className="relative z-10">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-yellow/30 bg-yellow/10 px-3 py-1 text-[10.5px] font-bold uppercase tracking-wider text-yellow">
+              <SparklesIcon className="h-3 w-3" /> Content
+            </span>
+            <h2 className="mt-3 text-[21px] font-extrabold text-white sm:text-[25px]">Testimonials</h2>
+            <p className="mt-1.5 max-w-[56ch] text-[13.5px] text-white/55">
+              Customer reviews shown in the "What Our Customers Say" section on the homepage. Add, edit,
+              publish/hide or delete them here.
+            </p>
+          </div>
+        </div>
 
-        <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {[
-            { label: "Total", value: items.length, icon: StarIcon, cls: "bg-ink text-yellow" },
-            { label: "Published", value: items.filter((i) => i.published).length, icon: CheckCircle, cls: "bg-emerald-50 text-emerald-600" },
-            { label: "Hidden", value: items.filter((i) => !i.published).length, icon: EditIcon, cls: "bg-gray-100 text-gray-500" },
-            { label: "From Customers", value: items.filter((i) => i.source === "customer").length, icon: UsersIcon, cls: "bg-blue-50 text-blue-600" },
-          ].map((c, i) => (
-            <div key={c.label} style={{ animationDelay: `${i * 0.06}s` }} className="card-hover rounded-2xl border border-line bg-white p-4 opacity-0 animate-fade-up">
-              <div className={`mb-2.5 grid h-9 w-9 place-items-center rounded-lg ${c.cls}`}>
-                <c.icon className="h-4 w-4" />
-              </div>
-              <div className="text-[11.5px] font-semibold text-body">{c.label}</div>
-              <div className="mt-0.5 text-[22px] font-extrabold tabular-nums text-ink">{c.value}</div>
-            </div>
-          ))}
+        <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          <StatCard
+            label="Total Reviews"
+            value={items.length}
+            icon={StarIcon}
+            cls="bg-ink text-yellow"
+            glow="bg-yellow"
+            accent="from-yellow to-amber-500"
+            delay={0}
+          />
+          <StatCard
+            label="Published"
+            value={items.filter((i) => i.published).length}
+            icon={CheckCircle}
+            cls="bg-emerald-50 text-emerald-600"
+            glow="bg-emerald-400"
+            accent="from-emerald-400 to-teal-500"
+            delay={0.06}
+          />
+          <StatCard
+            label="Hidden"
+            value={items.filter((i) => !i.published).length}
+            icon={EditIcon}
+            cls="bg-gray-100 text-gray-500"
+            glow="bg-gray-400"
+            accent="from-gray-300 to-gray-500"
+            delay={0.12}
+          />
+          <StatCard
+            label="From Customers"
+            value={items.filter((i) => i.source === "customer").length}
+            icon={UsersIcon}
+            cls="bg-blue-50 text-blue-600"
+            glow="bg-blue-400"
+            accent="from-blue-400 to-indigo-500"
+            delay={0.18}
+          />
+          <StatCard
+            label="Avg. Rating"
+            value={items.length ? (items.reduce((s, i) => s + (Number(i.rating) || 0), 0) / items.length).toFixed(1) : "—"}
+            icon={SparklesIcon}
+            cls="bg-amber-50 text-amber-600"
+            glow="bg-amber-400"
+            accent="from-amber-400 to-yellow"
+            delay={0.24}
+          />
         </div>
 
         <form onSubmit={saveGoogleMeta} className="card-hover mb-6 rounded-2xl border border-line bg-white p-5 sm:p-6">
@@ -219,11 +302,11 @@ export default function AdminTestimonialsPage() {
                 {items.map((item) => (
                   <div key={item.id} className="group flex items-start justify-between gap-4 p-5 transition-colors hover:bg-cream/30">
                     <div className="flex min-w-0 gap-3">
-                      <div className="h-11 w-11 flex-none overflow-hidden rounded-full border border-line bg-cream shadow-sm transition-transform duration-200 group-hover:scale-105">
+                      <div className="h-11 w-11 flex-none overflow-hidden rounded-full border border-line shadow-sm transition-transform duration-200 group-hover:scale-105">
                         {item.avatar_url ? (
                           <img src={item.avatar_url} alt={item.name} className="h-full w-full object-cover" />
                         ) : (
-                          <div className="grid h-full w-full place-items-center bg-gradient-to-br from-yellow/20 to-amber-100 text-[13px] font-extrabold text-ink/70">
+                          <div className={`grid h-full w-full place-items-center bg-gradient-to-br text-[13px] font-extrabold text-white ${avatarGradient(item.name)}`}>
                             {item.name?.[0]?.toUpperCase()}
                           </div>
                         )}
@@ -232,7 +315,14 @@ export default function AdminTestimonialsPage() {
                         <div className="flex flex-wrap items-center gap-2">
                           <b className="text-[14px] text-ink">{item.name}</b>
                           {item.role && <span className="text-[12.5px] text-body">· {item.role}</span>}
-                          <span className="text-[12px] tracking-wide text-yellow-dark">{"★".repeat(item.rating)}</span>
+                          <span className="flex items-center gap-0.5">
+                            {Array.from({ length: 5 }).map((_, i) => (
+                              <StarIcon
+                                key={i}
+                                className={`h-3 w-3 ${i < item.rating ? "fill-yellow-dark text-yellow-dark" : "fill-line text-line"}`}
+                              />
+                            ))}
+                          </span>
                           {item.source === "customer" && (
                             <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10.5px] font-bold text-blue-700">
                               Customer Review
@@ -245,10 +335,11 @@ export default function AdminTestimonialsPage() {
                     <div className="flex flex-none flex-col items-end gap-1.5">
                       <button
                         onClick={() => togglePublished(item)}
-                        className={`whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-bold ${
-                          item.published ? "bg-emerald-50 text-emerald-700" : "bg-cream text-body"
+                        className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-bold transition-colors ${
+                          item.published ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100" : "bg-cream text-body hover:bg-line/50"
                         }`}
                       >
+                        <span className={`h-1.5 w-1.5 rounded-full ${item.published ? "bg-emerald-500" : "bg-body/40"}`} />
                         {item.published ? "Published" : "Hidden"}
                       </button>
                       <button onClick={() => edit(item)} className="flex items-center gap-1 text-[12.5px] font-semibold text-ink hover:underline">

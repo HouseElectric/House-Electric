@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -13,9 +13,10 @@ const inputClass =
   "w-full rounded-xl border border-line bg-white py-3.5 pl-11 pr-4 text-[14.5px] text-ink outline-none transition-all focus:border-ink focus:ring-4 focus:ring-yellow/15 disabled:bg-cream disabled:text-body";
 const passwordInputClass = inputClass.replace("pr-4", "pr-11");
 
-export default function LoginPage() {
+function LoginForm() {
   const { signIn, supabaseReady } = useCustomerAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -28,7 +29,8 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await signIn(email, password);
-      router.replace("/account");
+      const redirect = searchParams.get("redirect");
+      router.replace(redirect && redirect.startsWith("/") ? redirect : "/account");
     } catch (err) {
       setError(err?.message === "Invalid login credentials" ? "Invalid email or password." : err?.message || "Login failed.");
     } finally {
@@ -131,5 +133,13 @@ export default function LoginPage() {
         </motion.div>
       </div>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
   );
 }

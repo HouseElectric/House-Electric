@@ -52,8 +52,8 @@ export async function POST(request) {
   // Email failures must never fail the enquiry submission itself — the DB row is
   // already saved and visible in the admin panel either way.
   try {
-    const { email: adminEmail } = await getContactSettings();
-    if (adminEmail) {
+    const { email: adminEmail, notify_new_enquiries } = await getContactSettings();
+    if (adminEmail && notify_new_enquiries !== false) {
       await sendAdminAlertEmail({
         to: adminEmail,
         subject: `New ${type} enquiry from ${payload.name || payload.company || "a visitor"}`,

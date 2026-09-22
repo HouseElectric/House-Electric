@@ -2,20 +2,12 @@
 
 import Reveal from "./Reveal";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
+import { useHomeContent } from "@/contexts/HomeContentContext";
 import { PhoneIcon, SparklesIcon, WhatsAppIcon } from "./icons";
-
-const PROBLEMS = [
-  "Power Failure",
-  "MCB Tripping",
-  "Short Circuit",
-  "Electrical Sparking",
-  "Burning Smell",
-  "Wiring Fault",
-  "DB / Panel Issues",
-];
 
 export default function HomeEmergency() {
   const { phone, whatsapp } = useSiteSettings();
+  const { emergency } = useHomeContent();
 
   return (
     <section className="bg-cream py-16 md:py-[80px]">
@@ -26,17 +18,14 @@ export default function HomeEmergency() {
               <div>
                 <span className="mb-3 inline-flex items-center gap-2 rounded-full bg-red-50 px-3.5 py-1.5 text-[11.5px] font-extrabold uppercase tracking-wide text-red-600">
                   <SparklesIcon className="h-4 w-4" />
-                  Emergency Electrical Service
+                  {emergency.badgeLabel}
                 </span>
                 <h2 className="mb-3 text-[clamp(1.6rem,3vw,2.2rem)] font-extrabold leading-tight text-ink">
-                  Electrical Fault Right Now? <span className="text-yellow-dark">Call Us Immediately.</span>
+                  {emergency.titlePlain} <span className="text-yellow-dark">{emergency.titleHighlight}</span>
                 </h2>
-                <p className="mb-5 max-w-[52ch] text-[14.5px] leading-relaxed text-ink-soft">
-                  Electrical faults can be dangerous — don't wait. If you're facing any of these, get in
-                  touch straight away.
-                </p>
+                <p className="mb-5 max-w-[52ch] text-[14.5px] leading-relaxed text-ink-soft">{emergency.subtitle}</p>
                 <div className="flex flex-wrap gap-2">
-                  {PROBLEMS.map((p) => (
+                  {emergency.problems.map((p) => (
                     <span
                       key={p}
                       className="rounded-full border border-line bg-cream/60 px-3.5 py-1.5 text-[12.5px] font-semibold text-ink"

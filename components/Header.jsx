@@ -28,7 +28,7 @@ const FALLBACK_SERVICE_LINKS = [
   { href: "/services/electrical-installation", label: "Electrical Installation" },
   { href: "/services/electrical-maintenance", label: "Electrical Maintenance" },
   { href: "/services/electrical-health-check", label: "Health Check" },
-  { href: "/services/annual-maintenance-contract-amc", label: "AMC" },
+  { href: "/amc/plans", label: "AMC" },
 ];
 
 const BASE_LINKS = [
@@ -107,11 +107,43 @@ export default function Header() {
   }, [open]);
 
   const isActive = (href) => {
+    if (!pathname || !href) return false;
     const path = href.split("#")[0];
     return path === "/" ? pathname === "/" : pathname.startsWith(path);
   };
-  const isActiveGroup = (l) =>
-    isActive(l.href) || (l.children && l.children.some((c) => c.href.startsWith("/") && pathname.startsWith(c.href)));
+
+  const isActiveGroup = (l) => {
+    if (!pathname || !l) return false;
+
+    // When on any /amc route, only 'AMC Plans' should be highlighted, NEVER 'Services'
+    if (pathname.startsWith("/amc")) {
+      if (l.href === "/services" || l.href?.startsWith("/services")) {
+        return false;
+      }
+      if (l.href?.startsWith("/amc")) {
+        return true;
+      }
+    }
+
+    // When on /services routes, never highlight 'AMC Plans'
+    if (pathname.startsWith("/services") && l.href?.startsWith("/amc")) {
+      return false;
+    }
+
+    if (isActive(l.href)) return true;
+
+    if (l.children && l.children.length > 0) {
+      return l.children.some((c) => {
+        if (!c?.href) return false;
+        const childPath = c.href.split("#")[0];
+        if (!childPath.startsWith("/")) return false;
+        // Never let an AMC child link activate the Services parent menu
+        if (childPath.startsWith("/amc")) return false;
+        return pathname.startsWith(childPath);
+      });
+    }
+    return false;
+  };
 
   return (
     <header className="sticky top-0 z-[110] px-2 pt-2 transition-all duration-300 sm:px-4 sm:pt-3 print:hidden">
@@ -150,8 +182,8 @@ export default function Header() {
 
                 {/* Dropdown Menu for Services */}
                 {l.children && (
-                  <div className="invisible absolute left-1/2 -translate-x-1/2 top-full z-20 w-64 translate-y-3 scale-95 pt-2 opacity-0 transition-all duration-200 ease-out group-hover:visible group-hover:translate-y-0 group-hover:scale-100 group-hover:opacity-100">
-                    <div className="overflow-hidden rounded-2xl border border-line/90 bg-white/95 p-2 shadow-[0_20px_50px_-10px_rgba(20,20,20,0.22)] backdrop-blur-xl">
+                  <div className="invisible absolute left-1/2 -translate-x-1/2 top-full z-20 w-80 translate-y-3 scale-95 pt-2 opacity-0 transition-all duration-200 ease-out group-hover:visible group-hover:translate-y-0 group-hover:scale-100 group-hover:opacity-100">
+                    <div className="overflow-hidden rounded-2xl border border-line/90 bg-white p-2 shadow-[0_20px_50px_-10px_rgba(20,20,20,0.22)]">
                       {l.children.map((c) => {
                         const isEmergency = c.href.startsWith("tel:");
                         return (
@@ -334,10 +366,10 @@ export default function Header() {
                       variants={{ hidden: { opacity: 0, x: 16 }, visible: { opacity: 1, x: 0 } }}
                       href={l.href}
                       onClick={() => setOpen(false)}
-                      className={`flex items-center gap-3 border-b border-line/60 py-3 text-[14.5px] font-extrabold ${isActive(l.href) ? "text-ink" : "text-charcoal/80"
+                      className={`flex items-center gap-3 border-b border-line/60 py-3 text-[14.5px] font-extrabold ${isActiveGroup(l) ? "text-ink" : "text-charcoal/80"
                         }`}
                     >
-                      <span className={`grid h-8 w-8 flex-none place-items-center rounded-xl ${isActive(l.href) ? "bg-yellow text-ink shadow-sm" : "bg-cream text-charcoal/70"
+                      <span className={`grid h-8 w-8 flex-none place-items-center rounded-xl ${isActiveGroup(l) ? "bg-yellow text-ink shadow-sm" : "bg-cream text-charcoal/70"
                         }`}>
                         <l.icon className="h-4 w-4" />
                       </span>

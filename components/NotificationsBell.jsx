@@ -65,15 +65,12 @@ export default function NotificationsBell() {
 
   const unreadCount = items.filter((n) => !n.read).length;
 
-  const toggleOpen = async () => {
-    const next = !open;
-    setOpen(next);
-    if (next && unreadCount > 0) {
-      const unreadIds = items.filter((n) => !n.read).map((n) => n.id);
-      await supabase.from("notifications").update({ read: true }).in("id", unreadIds);
-      setItems((prev) => prev.map((n) => ({ ...n, read: true })));
-    }
+  const markRead = async (id) => {
+    setItems((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+    await supabase.from("notifications").update({ read: true }).eq("id", id);
   };
+
+  const toggleOpen = () => setOpen((v) => !v);
 
   return (
     <div ref={ref} className="relative">
@@ -138,19 +135,29 @@ export default function NotificationsBell() {
                   {items.map((n) => {
                     const { href, icon: Icon, tint } = resolveNotification(n);
                     return (
-                      <div key={n.id} className="group flex gap-3 px-5 py-3.5 transition-colors hover:bg-amber-50/30">
+                      <div
+                        key={n.id}
+                        onClick={() => !n.read && markRead(n.id)}
+                        className={`group flex gap-3 px-5 py-3.5 transition-colors hover:bg-amber-50/30 ${!n.read ? "bg-amber-50/40" : ""}`}
+                      >
                         <span className={`mt-0.5 grid h-9 w-9 flex-none place-items-center rounded-xl shadow-sm ring-4 ring-white transition-transform group-hover:scale-105 ${tint}`}>
                           <Icon className="h-4 w-4" />
                         </span>
                         <div className="min-w-0 flex-1">
-                          <b className="block text-[13px] font-extrabold text-ink">{n.title}</b>
+                          <div className="flex items-start gap-1.5">
+                            <b className="block flex-1 text-[13px] font-extrabold text-ink">{n.title}</b>
+                            {!n.read && <span className="mt-1 h-1.5 w-1.5 flex-none rounded-full bg-red-500" />}
+                          </div>
                           {n.message && <p className="mt-0.5 text-[12px] leading-relaxed text-body">{n.message}</p>}
                           <div className="mt-1.5 flex items-center justify-between gap-2">
                             <span className="text-[10.5px] font-semibold text-muted">{timeAgo(n.created_at)}</span>
                             {href && (
                               <Link
                                 href={href}
-                                onClick={() => setOpen(false)}
+                                onClick={() => {
+                                  markRead(n.id);
+                                  setOpen(false);
+                                }}
                                 className="inline-flex items-center gap-1 rounded-lg border border-line bg-white px-2.5 py-1 text-[11px] font-black text-ink shadow-2xs transition-all hover:border-ink hover:bg-ink hover:text-white"
                               >
                                 View

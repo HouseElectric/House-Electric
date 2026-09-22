@@ -24,6 +24,26 @@ const trustBadges = [
 
 const METRIC_ICON_MAP = { users: UsersIcon, star: StarIcon, shield: ShieldIcon, pin: PinIcon, award: AwardIcon, check: CheckCircle };
 
+function TrustBadgeBar({ className = "" }) {
+  return (
+    <div className={`rounded-2xl border border-line/80 bg-white p-2.5 sm:p-3 shadow-md grid grid-cols-3 divide-x divide-line/70 ${className}`}>
+      {trustBadges.map((b) => (
+        <div
+          key={b.title}
+          className="group flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2.5 rounded-xl px-1 py-1.5 text-center sm:text-left transition-all duration-300 hover:-translate-y-0.5 hover:bg-yellow/5"
+        >
+          <span className="grid h-8 w-8 flex-none place-items-center rounded-full bg-yellow/15 text-yellow-dark transition-all duration-300 group-hover:scale-110 group-hover:bg-yellow group-hover:text-ink group-hover:shadow-[0_6px_16px_-4px_rgba(242,176,30,0.6)]">
+            <b.icon className="h-4 w-4" strokeWidth="2" />
+          </span>
+          <span className="text-[10.5px] sm:text-xs font-extrabold text-ink leading-tight">
+            {b.title}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 const AUTOPLAY_MS = 6000;
 
 export default function Hero() {
@@ -41,7 +61,7 @@ export default function Hero() {
   const isLocal = slide.image?.startsWith("/");
 
   return (
-    <section className="relative overflow-hidden bg-[#FAF8F5] py-6 sm:py-10 md:py-16" id="top">
+    <section className="relative overflow-hidden bg-[#FAF8F5] py-4 sm:py-8 md:py-5" id="top">
       {/* Subtle dot-grid texture for depth */}
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.35]"
@@ -53,10 +73,10 @@ export default function Hero() {
       <div className="glow-blob right-[8%] bottom-[-8%] h-[260px] w-[260px] bg-yellow/10 opacity-30" />
 
       <div className="relative z-[1] mx-auto max-w-wrap px-4 sm:px-6">
-        <div className="grid grid-cols-1 items-center gap-6 md:grid-cols-[1fr_1.1fr] md:gap-10">
+        <div className="grid grid-cols-1 items-center gap-3 sm:gap-6 md:grid-cols-[1fr_1.1fr] md:gap-6">
           
           {/* Left Column: Text & Actions */}
-          <div className="relative pt-2 pb-2 sm:py-6">
+          <div className="relative pt-2 pb-2 sm:py-4">
             <AnimatePresence mode="popLayout">
               <motion.div
                 key={index}
@@ -107,7 +127,7 @@ export default function Hero() {
                 </p>
 
                 {/* 1-Line Side-by-Side Action Buttons */}
-                <div className="mb-6 flex items-center gap-2.5 sm:gap-3">
+                <div className="mb-4 flex items-center gap-2.5 sm:mb-6 sm:gap-3">
                   <a
                     href={slide.primaryHref}
                     className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-xl bg-yellow px-4 py-3.5 text-xs sm:text-sm font-extrabold text-ink shadow-[0_10px_25px_-5px_rgba(242,176,30,0.5)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-yellow-dark sm:px-7 whitespace-nowrap text-center"
@@ -124,22 +144,8 @@ export default function Hero() {
               </motion.div>
             </AnimatePresence>
 
-            {/* Horizontal Trust Card Bar (3 Badges) */}
-            <div className="rounded-2xl border border-line/80 bg-white p-2.5 sm:p-3 shadow-md grid grid-cols-3 divide-x divide-line/70">
-              {trustBadges.map((b) => (
-                <div
-                  key={b.title}
-                  className="group flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2.5 rounded-xl px-1 py-1.5 text-center sm:text-left transition-all duration-300 hover:-translate-y-0.5 hover:bg-yellow/5"
-                >
-                  <span className="grid h-8 w-8 flex-none place-items-center rounded-full bg-yellow/15 text-yellow-dark transition-all duration-300 group-hover:scale-110 group-hover:bg-yellow group-hover:text-ink group-hover:shadow-[0_6px_16px_-4px_rgba(242,176,30,0.6)]">
-                    <b.icon className="h-4 w-4" strokeWidth="2" />
-                  </span>
-                  <span className="text-[10.5px] sm:text-xs font-extrabold text-ink leading-tight">
-                    {b.title}
-                  </span>
-                </div>
-              ))}
-            </div>
+            {/* Trust bar: desktop only here (tight under the buttons); mobile copy sits after the image */}
+            <TrustBadgeBar className="hidden md:grid" />
           </div>
 
           {/* Right Column: Hero Image Frame with Floating 24/7 Support Badge */}
@@ -150,7 +156,7 @@ export default function Hero() {
             <span className="pointer-events-none absolute -right-1.5 -top-1.5 z-[5] h-10 w-10 rounded-tr-2xl border-r-[3px] border-t-[3px] border-yellow/70" />
             <span className="pointer-events-none absolute -bottom-1.5 -left-1.5 z-[5] h-10 w-10 rounded-bl-2xl border-b-[3px] border-l-[3px] border-yellow/70" />
 
-            <div className="relative aspect-[4/3.2] sm:aspect-[4/3] md:aspect-[4/3.6] w-full overflow-hidden rounded-2xl md:rounded-3xl border border-line/80 shadow-2xl bg-white">
+            <div className="relative aspect-square w-full overflow-hidden rounded-2xl md:rounded-3xl border border-line/80 shadow-2xl bg-white">
               <AnimatePresence mode="sync">
                 <motion.div
                   key={index}
@@ -166,20 +172,20 @@ export default function Hero() {
                       alt={slide.alt}
                       fill
                       priority={index === 0}
-                      className="object-cover"
+                      className="object-contain"
                     />
                   ) : (
                     <img
                       src={slide.image}
                       alt={slide.alt}
-                      className="absolute inset-0 h-full w-full object-cover"
+                      className="absolute inset-0 h-full w-full object-contain"
                     />
                   )}
                 </motion.div>
               </AnimatePresence>
 
-              {/* Floating Badge (Top-Left): 24/7 Electrical Support */}
-              <div className="absolute top-3.5 left-3.5 z-10 flex items-center gap-3 rounded-2xl border border-white/40 bg-white/95 p-3 shadow-xl backdrop-blur-md max-w-[210px] sm:max-w-[240px]">
+              {/* Floating Badge (Bottom-Right): 24/7 Electrical Support */}
+              <div className="absolute bottom-12 right-3.5 z-10 flex items-center gap-3 rounded-2xl border border-white/40 bg-white/95 p-3 shadow-xl backdrop-blur-md max-w-[210px] sm:max-w-[240px]">
                 <span className="relative grid h-9 w-9 flex-none place-items-center rounded-xl bg-yellow text-ink shadow-md">
                   <span className="absolute inset-0 -z-[1] animate-ping rounded-xl bg-yellow/60 [animation-duration:2.2s]" />
                   <BoltBadge className="h-5 w-5" />
@@ -217,24 +223,27 @@ export default function Hero() {
             </div>
           </div>
 
+          {/* Mobile-only copy: after the image */}
+          <TrustBadgeBar className="md:hidden" />
+
         </div>
 
         {/* Bottom 4-Column Stats Strip */}
         {heroMetricsVisible && heroMetrics?.length > 0 && (
-          <div className="mt-6 grid grid-cols-4 gap-2 rounded-2xl border border-line/80 bg-white p-3.5 shadow-sm sm:gap-3 sm:p-4">
+          <div className="relative mt-3 grid grid-cols-2 gap-2 overflow-hidden rounded-2xl border border-line/80 bg-white p-3 shadow-[0_12px_30px_-16px_rgba(20,20,20,0.25)] sm:grid-cols-4 sm:gap-0 sm:divide-x sm:divide-line/70 md:mt-4 sm:p-3.5">
+            <span className="pointer-events-none absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-yellow/0 via-yellow to-yellow/0" />
             {heroMetrics.map((m) => {
               const Icon = METRIC_ICON_MAP[m.icon] || UsersIcon;
               return (
                 <div
                   key={m.label}
-                  className="group relative flex flex-col items-center justify-center overflow-hidden rounded-xl px-1 py-2 text-center transition-all duration-300 hover:-translate-y-1 hover:bg-gradient-to-b hover:from-yellow/10 hover:to-transparent"
+                  className="group relative flex flex-col items-center justify-center gap-1 rounded-xl px-2 py-1 text-center transition-all duration-300 hover:-translate-y-1"
                 >
-                  <span className="pointer-events-none absolute inset-x-3 top-0 h-[2px] scale-x-0 rounded-full bg-yellow transition-transform duration-300 group-hover:scale-x-100" />
-                  <span className="mb-1.5 grid h-8 w-8 place-items-center rounded-full bg-yellow/15 text-yellow-dark transition-all duration-300 group-hover:scale-110 group-hover:bg-yellow group-hover:text-ink group-hover:shadow-[0_6px_16px_-4px_rgba(242,176,30,0.6)]">
-                    <Icon className="h-4 w-4" />
+                  <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-yellow/25 to-yellow/5 text-yellow-dark shadow-[0_4px_14px_-4px_rgba(242,176,30,0.4)] transition-all duration-300 group-hover:scale-110 group-hover:from-yellow group-hover:to-yellow-dark group-hover:text-ink group-hover:shadow-[0_8px_20px_-6px_rgba(242,176,30,0.6)]">
+                    <Icon className="h-4 w-4" strokeWidth="2.2" />
                   </span>
-                  <b className="text-sm sm:text-base font-black text-ink leading-tight">{m.val}</b>
-                  <span className="text-[9.5px] sm:text-[11px] font-bold text-charcoal/60 uppercase tracking-wide">
+                  <b className="text-base font-black text-ink leading-none sm:text-lg">{m.val}</b>
+                  <span className="text-[9.5px] font-bold text-charcoal/55 uppercase tracking-wider sm:text-[11px]">
                     {m.label}
                   </span>
                 </div>

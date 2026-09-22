@@ -22,6 +22,7 @@ function BeforeAfterSlider({ item }) {
   useEffect(() => {
     const onMove = (e) => {
       if (!dragging.current) return;
+      if (e.touches) e.preventDefault();
       const clientX = e.touches ? e.touches[0].clientX : e.clientX;
       setFromClientX(clientX);
     };
@@ -29,7 +30,7 @@ function BeforeAfterSlider({ item }) {
       dragging.current = false;
     };
     window.addEventListener("mousemove", onMove);
-    window.addEventListener("touchmove", onMove);
+    window.addEventListener("touchmove", onMove, { passive: false });
     window.addEventListener("mouseup", onUp);
     window.addEventListener("touchend", onUp);
     return () => {
@@ -43,7 +44,7 @@ function BeforeAfterSlider({ item }) {
   return (
     <div
       ref={trackRef}
-      className="group relative aspect-[4/3] w-full select-none overflow-hidden rounded-2xl border border-white/10 shadow-[0_20px_45px_-20px_rgba(0,0,0,0.6)]"
+      className="group relative aspect-[3/2] w-full touch-none select-none overflow-hidden rounded-2xl border border-white/10 shadow-[0_20px_45px_-20px_rgba(0,0,0,0.6)] transition-all duration-300 hover:border-yellow/40 hover:shadow-[0_28px_55px_-18px_rgba(242,176,30,0.35)]"
       onMouseDown={(e) => {
         dragging.current = true;
         setFromClientX(e.clientX);
@@ -72,18 +73,18 @@ function BeforeAfterSlider({ item }) {
       </div>
 
       {/* Divider + drag handle */}
-      <div className="pointer-events-none absolute inset-y-0 w-0.5 bg-white/90" style={{ left: `${pos}%` }}>
-        <span className="absolute left-1/2 top-1/2 grid h-10 w-10 -translate-x-1/2 -translate-y-1/2 cursor-ew-resize place-items-center rounded-full bg-white text-ink shadow-[0_6px_16px_-4px_rgba(0,0,0,0.5)] transition-transform duration-200 group-hover:scale-110">
+      <div className="pointer-events-none absolute inset-y-0 w-[3px] bg-gradient-to-b from-white/20 via-white to-white/20 shadow-[0_0_12px_rgba(255,255,255,0.6)]" style={{ left: `${pos}%` }}>
+        <span className="absolute left-1/2 top-1/2 grid h-11 w-11 -translate-x-1/2 -translate-y-1/2 cursor-ew-resize place-items-center rounded-full bg-white text-ink shadow-[0_8px_20px_-4px_rgba(0,0,0,0.6)] ring-4 ring-white/30 transition-transform duration-200 group-hover:scale-110">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="h-4 w-4">
             <path d="M8 7 4 12l4 5M16 7l4 5-4 5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </span>
       </div>
 
-      <span className="pointer-events-none absolute left-3 top-3 rounded-full bg-ink/80 px-2.5 py-1 text-[11px] font-bold text-white backdrop-blur-sm">
+      <span className="pointer-events-none absolute left-3 top-3 rounded-full bg-ink/80 px-2.5 py-1 text-[11px] font-bold text-white shadow-md backdrop-blur-sm">
         Before
       </span>
-      <span className="pointer-events-none absolute right-3 top-3 rounded-full bg-yellow px-2.5 py-1 text-[11px] font-bold text-ink">
+      <span className="pointer-events-none absolute right-3 top-3 rounded-full bg-yellow px-2.5 py-1 text-[11px] font-bold text-ink shadow-[0_4px_14px_-2px_rgba(242,176,30,0.7)]">
         After
       </span>
     </div>
@@ -135,7 +136,11 @@ export default function HomeBeforeAfter() {
           <div className="max-w-[60ch]">
             <p className="text-[11px] font-extrabold uppercase tracking-widest text-yellow">Real Results</p>
             <h2 className="text-[clamp(1.65rem,3.2vw,2.4rem)] font-extrabold leading-tight text-white">
-              Before &amp; <span className="text-yellow">After</span>
+              Before &amp;{" "}
+              <span className="relative inline-block text-yellow">
+                After
+                <span className="absolute -bottom-0.5 left-0 h-[3px] w-full rounded-full bg-yellow/50" />
+              </span>
             </h2>
             <p className="mt-2 text-[14.5px] text-white/60">Real transformations. Real results. Drag to compare.</p>
           </div>
@@ -144,14 +149,14 @@ export default function HomeBeforeAfter() {
             <button
               onClick={() => scrollByCard(-1)}
               aria-label="Previous"
-              className="grid h-10 w-10 place-items-center rounded-full border border-white/15 text-white transition-all hover:border-yellow hover:bg-yellow hover:text-ink"
+              className="grid h-10 w-10 place-items-center rounded-full border border-white/15 text-white transition-all duration-300 hover:-translate-y-0.5 hover:border-yellow hover:bg-yellow hover:text-ink hover:shadow-[0_10px_24px_-8px_rgba(242,176,30,0.6)] active:scale-95"
             >
               <ArrowLeftIcon className="h-4 w-4" />
             </button>
             <button
               onClick={() => scrollByCard(1)}
               aria-label="Next"
-              className="grid h-10 w-10 place-items-center rounded-full border border-white/15 text-white transition-all hover:border-yellow hover:bg-yellow hover:text-ink"
+              className="grid h-10 w-10 place-items-center rounded-full border border-white/15 text-white transition-all duration-300 hover:-translate-y-0.5 hover:border-yellow hover:bg-yellow hover:text-ink hover:shadow-[0_10px_24px_-8px_rgba(242,176,30,0.6)] active:scale-95"
             >
               <ArrowRightIcon className="h-4 w-4" />
             </button>
@@ -172,7 +177,12 @@ export default function HomeBeforeAfter() {
             >
               <Reveal delay={i * 0.05}>
                 <BeforeAfterSlider item={item} />
-                {item.title && <p className="mt-3 text-center text-[14px] font-bold text-white">{item.title}</p>}
+                {item.title && (
+                  <p className="mt-3 flex items-center justify-center gap-1.5 text-center text-[14px] font-bold text-white">
+                    <span className="h-1.5 w-1.5 rounded-full bg-yellow" />
+                    {item.title}
+                  </p>
+                )}
               </Reveal>
             </div>
           ))}
